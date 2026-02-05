@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChopTube</title>
-    <link rel="stylesheet" href="styles.css?v=20260205" />
+    <link rel="stylesheet" href="styles.css?v=20260205c" />
   </head>
   <body>
     <div class="app">
@@ -12,11 +12,11 @@
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
-          <button id="community-toggle" class="help-toggle" aria-label="Featured sessions">Featured sessions</button>
+          <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">Featured sessions</button>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
-            <button id="present-mode" class="edit-side" type="button">Present</button>
+            <button id="present-mode" class="edit-side" type="button">Show</button>
             <button id="edit-mode" class="edit-side" type="button">Edit</button>
           </div>
           <button id="play-toggle" class="play-toggle" aria-label="Play or stop"></button>
@@ -32,6 +32,15 @@
           <button id="metronome-toggle" class="metronome-toggle" aria-label="Metronome">
             <img class="metronome-icon" src="assets/metronome-icon.png" alt="" aria-hidden="true" />
           </button>
+          <input
+            id="metronome-volume"
+            class="metronome-volume"
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            aria-label="Metronome volume"
+          />
         </div>
         <div class="global-controls">
           <div class="global-buttons">
@@ -103,7 +112,7 @@
         <a
           id="community-discord-link"
           class="community-discord-link"
-          href="https://discord.gg/"
+          href="https://discord.gg/j6D9WKZN"
           target="_blank"
           rel="noreferrer"
           >Join ChopTube Discord</a
@@ -141,6 +150,6 @@
     <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="app.js?v=20260205"></script>
+    <script src="app.js?v=20260205c"></script>
   </body>
 </html>

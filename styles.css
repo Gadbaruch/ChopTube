@@ -80,7 +80,7 @@ body {
   width: auto;
   height: 40px;
   padding: 0 14px;
-  border-radius: 999px;
+  border-radius: 14px;
   background: #111520;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text);
@@ -101,7 +101,7 @@ body {
 .edit-switch {
   width: 150px;
   height: 50px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.14);
   padding: 4px;
@@ -205,6 +205,11 @@ body {
   gap: 2px;
 }
 
+.tap-tempo span {
+  display: block;
+  line-height: 1;
+}
+
 .tap-tempo.flash {
   animation: tap-flash 180ms ease;
 }
@@ -216,14 +221,29 @@ body {
   background: #202736;
   color: #d9e8ff;
   font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 }
 
 .metronome-toggle.active {
   background: linear-gradient(135deg, #6ae0ff, #3fa7ff);
   color: #0b0d13;
+}
+
+
+.metronome-volume {
+  width: 70px;
+  height: 10px;
+  transform: rotate(-90deg);
+  margin-left: 7px;
+  accent-color: #4fb8ff;
+}
+
+.metronome-toggle:not(.active) + .metronome-volume {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  margin: 0;
 }
 
 .metronome-icon {
@@ -509,14 +529,14 @@ button.active {
 }
 
 .seq-config-row {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .seq-config-row input {
-  width: 74px;
+  width: 64px;
 }
 
 .seq-config-row select {
@@ -532,10 +552,10 @@ button.active {
 }
 
 .cue-row {
-  background: rgba(106, 224, 255, 0.08);
-  border: 1px solid rgba(106, 224, 255, 0.35);
-  border-radius: 10px;
-  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   gap: 6px;
 }
 
@@ -558,22 +578,43 @@ button.active {
 
 .tile-num-input,
 .tile-select-input {
-  width: 74px;
+  width: 60px;
   height: 30px;
 }
 
+.cue-select-input {
+  width: 40px;
+}
+
+.cue-vol-input {
+  width: 40px;
+}
+
+.steps-input {
+  width: 40px;
+}
+
+.time-div-input {
+  width: 55px;
+}
+
 .perf-play-btn {
-  min-width: 72px;
+  min-width: 62px;
   white-space: nowrap;
   padding: 6px 8px;
 }
 
+.perf-play-btn .hotkey {
+  font-weight: 500;
+  color: rgba(200, 206, 220, 0.8);
+}
+
 .perf-vol-input {
-  width: 90px;
+  width: 70px;
 }
 
 .perf-speed-select {
-  width: 74px;
+  width: 60px;
   height: 30px;
 }
 
@@ -673,6 +714,8 @@ button.active {
   border-radius: 10px;
   display: inline-grid;
   place-items: center;
+  background: linear-gradient(135deg, rgba(98, 209, 147, 0.2), rgba(54, 110, 80, 0.3));
+  border: 1px solid rgba(120, 255, 190, 0.35);
 }
 
 .share-icon {
@@ -690,6 +733,11 @@ button.active {
 #showcase-toggle {
   min-height: 40px;
   padding: 0 12px;
+}
+
+.featured-toggle {
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.35), rgba(52, 26, 120, 0.45));
+  border: 1px solid rgba(170, 140, 255, 0.4);
 }
 
 #new-session.clicked {
