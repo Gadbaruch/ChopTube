@@ -12,11 +12,13 @@
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
-          <button id="community-toggle" class="help-toggle" aria-label="Featured sessions">Featured sessions</button>
+          <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">
+            Featured sessions
+          </button>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
-            <button id="present-mode" class="edit-side" type="button">Present</button>
+            <button id="present-mode" class="edit-side" type="button">Show</button>
             <button id="edit-mode" class="edit-side" type="button">Edit</button>
           </div>
           <button id="play-toggle" class="play-toggle" aria-label="Play or stop"></button>
@@ -32,12 +34,15 @@
           <button id="metronome-toggle" class="metronome-toggle" aria-label="Metronome">
             <img class="metronome-icon" src="assets/metronome-icon.png" alt="" aria-hidden="true" />
           </button>
+          <div class="metronome-volume">
+            <input id="metronome-volume" type="range" min="0" max="100" value="50" />
+          </div>
         </div>
         <div class="global-controls">
           <div class="global-buttons">
             <button id="showcase-toggle">My Sessions</button>
             <button id="new-session">+ New</button>
-            <button id="share" aria-label="Copy share link">
+            <button id="share" class="share-button" aria-label="Copy share link">
               <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
             </button>
           </div>

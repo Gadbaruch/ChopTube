@@ -88,6 +88,12 @@ body {
   font-size: 12px;
 }
 
+.featured-toggle {
+  background: linear-gradient(135deg, rgba(153, 112, 255, 0.2), rgba(77, 182, 255, 0.2));
+  border-color: rgba(153, 112, 255, 0.35);
+  color: #e8ddff;
+}
+
 .center-control {
   flex: 1;
   display: flex;
@@ -101,7 +107,7 @@ body {
 .edit-switch {
   width: 150px;
   height: 50px;
-  border-radius: 999px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.14);
   padding: 4px;
@@ -111,7 +117,7 @@ body {
 }
 
 .edit-side {
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 0;
   font-size: 13px;
   font-weight: 700;
@@ -224,6 +230,29 @@ body {
 .metronome-toggle.active {
   background: linear-gradient(135deg, #6ae0ff, #3fa7ff);
   color: #0b0d13;
+}
+
+.metronome-volume {
+  width: 28px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 7px;
+}
+
+.metronome-volume input {
+  width: 50px;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.metronome-toggle:not(.active) + .metronome-volume {
+  display: none;
+}
+
+.metronome-toggle.active + .metronome-volume input {
+  accent-color: #4fb8ff;
 }
 
 .metronome-icon {
@@ -558,22 +587,46 @@ button.active {
 
 .tile-num-input,
 .tile-select-input {
-  width: 74px;
+  width: 60px;
   height: 30px;
 }
 
+.cue-select-input {
+  width: 40px;
+  min-width: 40px;
+}
+
+.cue-vol-input {
+  width: 40px;
+}
+
+.steps-input {
+  width: 40px;
+}
+
+.time-div-input {
+  width: 55px;
+}
+
 .perf-play-btn {
-  min-width: 72px;
+  min-width: 62px;
   white-space: nowrap;
   padding: 6px 8px;
+  font-weight: 500;
+  color: rgba(233, 238, 247, 0.8);
+}
+
+.perf-play-btn .hotkey {
+  font-weight: 400;
+  color: rgba(200, 206, 220, 0.8);
 }
 
 .perf-vol-input {
-  width: 90px;
+  width: 70px;
 }
 
 .perf-speed-select {
-  width: 74px;
+  width: 64px;
   height: 30px;
 }
 
@@ -673,6 +726,11 @@ button.active {
   border-radius: 10px;
   display: inline-grid;
   place-items: center;
+}
+
+.share-button {
+  background: linear-gradient(135deg, rgba(110, 220, 150, 0.2), rgba(80, 200, 120, 0.2));
+  border: 1px solid rgba(90, 220, 140, 0.4);
 }
 
 .share-icon {

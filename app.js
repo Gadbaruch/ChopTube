@@ -174,6 +174,7 @@ const playToggleBtn = document.getElementById("play-toggle");
 const loopToggleBtn = document.getElementById("loop-toggle");
 const tapTempoBtn = document.getElementById("tap-tempo");
 const metronomeToggleBtn = document.getElementById("metronome-toggle");
+const metronomeVolumeInput = document.getElementById("metronome-volume");
 const newSessionBtn = document.getElementById("new-session");
 const shareBtn = document.getElementById("share");
 const helpToggleBtn = document.getElementById("help-toggle");
@@ -207,6 +208,7 @@ let newBtnResetTimer = null;
 let metronomeEnabled = false;
 let metronomeContext = null;
 let skipNextMetronome = false;
+let metronomeVolume = 50;
 let historyPast = [];
 let historyFuture = [];
 let isApplyingHistory = false;
@@ -270,10 +272,10 @@ function buildGrid() {
     perfRow.className = "status-row cue-row editable-only";
     const perfPlayBtn = document.createElement("button");
     perfPlayBtn.className = "perf-play-btn";
-    perfPlayBtn.textContent = `▶ (${TILE_PLAY_KEYS[i].toUpperCase()})`;
+    perfPlayBtn.innerHTML = `▶ <span class="hotkey">${TILE_PLAY_KEYS[i].toUpperCase()}</span>`;
     const perfVolLabel = document.createElement("div");
     perfVolLabel.className = "mini-label";
-    perfVolLabel.textContent = "Master Vol";
+    perfVolLabel.textContent = "Volume";
     const perfVolInput = document.createElement("input");
     perfVolInput.className = "perf-vol-input";
     perfVolInput.type = "range";
@@ -561,6 +563,9 @@ function bindGlobalControls() {
       stopMetronome();
     }
   });
+  metronomeVolumeInput?.addEventListener("input", () => {
+    metronomeVolume = clamp(Number(metronomeVolumeInput.value) || 0, 0, 100);
+  });
 
   newSessionBtn.addEventListener("click", () => {
     newSessionBtn.classList.add("clicked");
@@ -652,6 +657,13 @@ function bindGlobalControls() {
 }
 
 function handleKeyDown(event) {
+  if (event.key === "Tab") {
+    event.preventDefault();
+    state.isEditMode = !state.isEditMode;
+    tileEls.forEach((entry) => entry.tile.classList.toggle("collapsed", !state.isEditMode));
+    updateTransportButton();
+    return;
+  }
   if (event.key === "Escape") {
     const active = document.activeElement;
     if (
@@ -1140,9 +1152,9 @@ function updateTileDisplays() {
     entry.divisionSelect.value = String(tile.division || BASE_DIVISION);
     entry.perfVolInput.value = String(clamp(tile.masterVolume ?? 100, 0, 100));
     entry.perfSpeedSelect.value = String(tile.playbackRate ?? 1);
-    entry.perfPlayBtn.textContent = tile.isClipPlaying
-      ? `❚❚ (${TILE_PLAY_KEYS[idx].toUpperCase()})`
-      : `▶ (${TILE_PLAY_KEYS[idx].toUpperCase()})`;
+    entry.perfPlayBtn.innerHTML = tile.isClipPlaying
+      ? `❚❚ <span class="hotkey">${TILE_PLAY_KEYS[idx].toUpperCase()}</span>`
+      : `▶ <span class="hotkey">${TILE_PLAY_KEYS[idx].toUpperCase()}</span>`;
     const cueIndex = idx === state.selectedIndex ? state.selectedCue : 0;
     const cueTime = tile.cues[cueIndex] || 0;
     entry.cueSelect.value = String(cueIndex);
@@ -1194,6 +1206,7 @@ function togglePlay() {
 function toggleLoop() {
   state.isRecording = !state.isRecording;
   loopToggleBtn.classList.toggle("active", state.isRecording);
+  updateTileDisplays();
   updateStatus();
 }
 
@@ -1360,6 +1373,8 @@ function startNewSession() {
   state.selectedStep = null;
   metronomeEnabled = false;
   metronomeToggleBtn?.classList.remove("active");
+  metronomeVolume = 50;
+  if (metronomeVolumeInput) metronomeVolumeInput.value = "50";
   stopMetronome();
   state.tiles = Array.from({ length: TILE_COUNT }, () => ({
     videoUrl: "",
@@ -1547,7 +1562,7 @@ function clickMetronome(isDownbeat = false) {
   const gain = metronomeContext.createGain();
   osc.type = "triangle";
   osc.frequency.value = isDownbeat ? 1200 : 800;
-  gain.gain.value = 0.12;
+  gain.gain.value = 0.24 * (metronomeVolume / 100);
   osc.connect(gain);
   gain.connect(metronomeContext.destination);
   const now = metronomeContext.currentTime;
