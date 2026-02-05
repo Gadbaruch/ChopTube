@@ -12,6 +12,7 @@
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
+          <button id="community-toggle" class="help-toggle" aria-label="Featured sessions">Featured sessions</button>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
@@ -24,11 +25,13 @@
             <input id="bpm" type="number" min="40" max="240" value="120" aria-label="BPM" />
             <span>BPM</span>
           </div>
-          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap</button>
+          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap<br />Tempo</button>
         </div>
         <div class="global-controls">
-          <button id="new-session">New Session</button>
-          <button id="share">Copy Share Link</button>
+          <button id="showcase-toggle">My Sessions</button>
+          <button id="new-session">+ New</button>
+          <button id="share" aria-label="Copy share link">⤴</button>
+          <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
       </header>
 
@@ -73,6 +76,59 @@
         </div>
       </div>
     </div>
+
+    <div class="community-panel" id="community-panel" aria-hidden="true">
+      <div class="community-card">
+        <button id="community-close" class="help-close community-close" aria-label="Close community">×</button>
+        <img class="community-logo" src="assets/choptube-logo.png" alt="ChopTube logo" />
+        <div class="help-header">
+          <div>
+            <div class="help-title">Top Choppers Showcase</div>
+            <div class="help-subtitle">See what people are making with ChopTube</div>
+          </div>
+        </div>
+        <p class="help-paragraph">
+          Join our Discord to share your session links, submit your sessions to get featured, and discover new remixes.
+        </p>
+        <a
+          id="community-discord-link"
+          class="community-discord-link"
+          href="https://discord.gg/"
+          target="_blank"
+          rel="noreferrer"
+          >Join ChopTube Discord</a
+        >
+        <div class="community-list" id="community-popup-list"></div>
+      </div>
+    </div>
+
+    <div class="mobile-blocker" id="mobile-blocker" aria-hidden="true">
+      <div class="mobile-blocker-card">
+        <h2>Desktop Only For Now</h2>
+        <p>Sorry, this currently works only on desktop browsers.</p>
+      </div>
+    </div>
+
+    <aside class="showcase-sidebar" id="showcase-sidebar" aria-hidden="true">
+      <div class="showcase-header">
+        <div class="showcase-title">My Sessions</div>
+        <button id="showcase-close" class="showcase-close" aria-label="Close links">×</button>
+      </div>
+      <p class="showcase-subtitle">
+        This list is saved only in your current browser on this computer. To back up sessions, keep your URLs in any note or
+        document you can access later.
+      </p>
+      <div class="showcase-actions">
+        <button id="showcase-add-current" type="button">Add Current Session</button>
+      </div>
+      <div class="showcase-form">
+        <input id="showcase-name" type="text" placeholder="Session name" />
+        <input id="showcase-url" type="url" placeholder="https://..." />
+        <button id="showcase-add" type="button">Add Link</button>
+      </div>
+      <div class="showcase-list" id="showcase-list"></div>
+    </aside>
+    <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="app.js"></script>
