@@ -8,6 +8,127 @@ const BASE_DIVISION = 16;
 const TILE_PLAY_KEYS = ["q", "w", "e", "r", "t", "y", "u", "i"];
 const PLAY_RETRY_DELAY_MS = 250;
 const PLAY_RETRY_COUNT = 8;
+const RANDOM_VIDEO_IDS = Array.from(
+  new Set([
+  "dQw4w9WgXcQ",
+  "kJQP7kiw5Fk",
+  "9bZkp7q19f0",
+  "fJ9rUzIMcZQ",
+  "3JZ_D3ELwOQ",
+  "hTWKbfoikeg",
+  "YqeW9_5kURI",
+  "L_jWHffIx5E",
+  "CevxZvSJLk8",
+  "RgKAFK5djSk",
+  "2Vv-BfVoq4g",
+  "OPf0YbXqDm0",
+  "JGwWNGJdvx8",
+  "YQHsXMglC9A",
+  "CevxZvSJLk8",
+  "YykjpeuMNEk",
+  "iS1g8G_njx8",
+  "hLQl3WQQoQ0",
+  "uelHwf8o7_U",
+  "KQ6zr6kCPj8",
+  "ktvTqknDobU",
+  "60ItHLz5WEA",
+  "pRpeEdMmmQ0",
+  "lp-EO5I60KA",
+  "UceaB4D0jpo",
+  "vNoKguSdy4Y",
+  "nYh-n7EOtMA",
+  "cH4E_t3m3xM",
+  "2vjPBrBU-TM",
+  "e-ORhEE9VVg",
+  "hT_nvWreIhg",
+  "tVj0ZTS4WF4",
+  "09R8_2nJtjg",
+  "YqeW9_5kURI",
+  "L_jWHffIx5E",
+  "hTWKbfoikeg",
+  "ZZ5LpwO-An4",
+  "DLzxrzFCyOs",
+  "IcrbM1l_BoI",
+  "8j9zMok6two",
+  "QJO3ROT-A4E",
+  "XOYs6QvA3hM",
+  "u9Dg-g7t2l4",
+  "fLexgOxsZu0",
+  "YVkUvmDQ3HY",
+  "9jK-NcRmVcw",
+  "ktvTqknDobU",
+  "vTIIMJ9tUc8",
+  "34Na4j8AVgA",
+  "QK8mJJJvaes",
+  "6JCLY0Rlx6Q",
+  "Pkh8UtuejGw",
+  "fRh_vgS2dFE",
+  "RubBzkZzpUA",
+  "1lyu1KKwC74",
+  "JwQZQygg3Lk",
+  "d-diB65scQU",
+  "XqZsoesa55w",
+  "aqz-KE-bpKQ",
+  "M7lc1UVf-VE",
+  "ScMzIvxBSi4",
+  "kXYiU_JCYtU",
+  "M11SvDtPBhA",
+  "LsoLEjrDogU",
+  "hTWKbfoikeg",
+  "y6120QOlsfU",
+  "XGSy3_Czz8k",
+  "4NRXx6U8ABQ",
+  "J_ub7Etch2U",
+  "k2qgadSvNyU",
+  "wXhTHyIgQ_U",
+  "XbGs_qK2PQA",
+  "iik25wqIuFo",
+  "VbfpW0pbvaU",
+  "mWRsgZuwf_8",
+  "tAGnKpE4NCI",
+  "QJO3ROT-A4E",
+  "bM7SZ5SBzyY",
+  "5NV6Rdv1a3I",
+  "4fndeDfaWCg",
+  "nntGTK2Fhb0",
+  "HgzGwKwLmgM",
+  "Pkh8UtuejGw",
+  "xTlNMmZKwpA",
+  "8UVNT4wvIGY",
+  "UqyT8IEBkvY",
+  "3JWTaaS7LdU",
+  "eY52Zsg-KVI",
+  "4Tr0otuiQuU",
+  "gCYcHz2k5x0",
+  "LsoLEjrDogU",
+  "QH2-TGUlwu4",
+  "8ybW48rKBME",
+  "yPYZpwSpKmA",
+  "As03tlODkdw",
+  "sOnqjkJTMaA",
+  "2vjPBrBU-TM",
+  "nfWlot6h_JM",
+  "4aQDOUbErNg",
+  "TUVcZfQe-Kw",
+  "D8K90hX4PrE",
+  "IdneKLhsWOQ",
+  "LHCob76kigA",
+  "7wtfhZwyrcc",
+  "kffacxfA7G4",
+  "sNPnbI1arSE",
+  "uelHwf8o7_U",
+  "5qm8PH4xAss",
+  "Y66j_BUCBMY",
+  "2zNSgSzhBfM",
+  "F57P9C4SAW4",
+  "2zToEPpFEN8",
+  "eVTXPUF4Oz4",
+  "bMt47wvK6u0",
+  "jofNR_WkoCE",
+  "Q0oIoR9mLwc",
+  "fWNaR-rxAic",
+])
+);
 const COMMUNITY_DISCORD_URL = "https://discord.gg/j6D9WKZN";
 const COMMUNITY_SESSIONS = [
   {
@@ -52,6 +173,7 @@ const editModeBtn = document.getElementById("edit-mode");
 const playToggleBtn = document.getElementById("play-toggle");
 const loopToggleBtn = document.getElementById("loop-toggle");
 const tapTempoBtn = document.getElementById("tap-tempo");
+const metronomeToggleBtn = document.getElementById("metronome-toggle");
 const newSessionBtn = document.getElementById("new-session");
 const shareBtn = document.getElementById("share");
 const helpToggleBtn = document.getElementById("help-toggle");
@@ -82,11 +204,18 @@ let shareResetTimer = null;
 let tapTimes = [];
 let showcaseLinks = [];
 let newBtnResetTimer = null;
+let metronomeEnabled = false;
+let metronomeContext = null;
+let skipNextMetronome = false;
+let historyPast = [];
+let historyFuture = [];
+let isApplyingHistory = false;
 
 function init() {
   loadShowcaseLinks();
   loadFromUrl();
   buildGrid();
+  resetHistory();
   bindGlobalControls();
   updateTransportButton();
   updateStatus();
@@ -132,7 +261,10 @@ function buildGrid() {
     const loadBtn = document.createElement("button");
     loadBtn.textContent = "Load";
     loadBtn.className = "load-btn";
-    urlRow.append(urlInput, loadBtn);
+    const randomBtn = document.createElement("button");
+    randomBtn.textContent = "Random";
+    randomBtn.className = "load-btn";
+    urlRow.append(urlInput, loadBtn, randomBtn);
 
     const perfRow = document.createElement("div");
     perfRow.className = "status-row cue-row editable-only";
@@ -169,7 +301,7 @@ function buildGrid() {
     const stepsInput = document.createElement("input");
     stepsInput.className = "tile-num-input";
     stepsInput.type = "number";
-    stepsInput.min = "4";
+    stepsInput.min = "1";
     stepsInput.max = "128";
     stepsInput.value = String(state.tiles[i].steps);
     stepsRow.append(stepsLabel, stepsInput);
@@ -250,6 +382,7 @@ function buildGrid() {
     for (let s = 0; s < totalSteps; s += 1) {
       const dot = document.createElement("div");
       dot.className = "step";
+      if (s % 4 === 0) dot.classList.add("beat-step");
       dot.dataset.step = String(s);
       stepIndicator.appendChild(dot);
       stepDots.push(dot);
@@ -276,6 +409,7 @@ function buildGrid() {
       tile,
       urlInput,
       loadBtn,
+      randomBtn,
       perfPlayBtn,
       perfVolInput,
       perfSpeedSelect,
@@ -295,6 +429,10 @@ function buildGrid() {
       event.stopPropagation();
       loadVideo(i, urlInput.value);
     });
+    randomBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      loadRandomVideo(i);
+    });
     perfPlayBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleTilePlayPause(i, false);
@@ -305,11 +443,13 @@ function buildGrid() {
       applySelectedCueVolume(i);
       saveToUrl();
     });
+    perfVolInput.addEventListener("change", () => pushHistorySnapshot());
     perfSpeedSelect.addEventListener("change", (event) => {
       event.stopPropagation();
       state.tiles[i].playbackRate = Number(perfSpeedSelect.value) || 1;
       state.tiles[i].player?.setPlaybackRate?.(state.tiles[i].playbackRate);
       saveToUrl();
+      pushHistorySnapshot();
     });
     urlInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -331,7 +471,10 @@ function buildGrid() {
       tile.customCues = true;
       saveToUrl();
     });
-    cueSecInput.addEventListener("change", () => updateTileDisplays());
+    cueSecInput.addEventListener("change", () => {
+      updateTileDisplays();
+      pushHistorySnapshot();
+    });
     cueVolInput.addEventListener("input", () => {
       const tile = state.tiles[i];
       const parsed = Number(cueVolInput.value);
@@ -340,9 +483,12 @@ function buildGrid() {
       applySelectedCueVolume(i);
       saveToUrl();
     });
-    cueVolInput.addEventListener("change", () => updateTileDisplays());
+    cueVolInput.addEventListener("change", () => {
+      updateTileDisplays();
+      pushHistorySnapshot();
+    });
     stepsInput.addEventListener("change", () => {
-      const value = clamp(Number(stepsInput.value) || 16, 4, 128);
+      const value = clamp(Number(stepsInput.value) || 16, 1, 128);
       stepsInput.value = String(value);
       state.tiles[i].steps = value;
       if (state.selectedStep !== null && state.selectedStep >= value) {
@@ -351,12 +497,14 @@ function buildGrid() {
       resizeActions(state.tiles[i]);
       rebuildTileSteps(i);
       saveToUrl();
+      pushHistorySnapshot();
     });
     divisionSelect.addEventListener("change", () => {
       const value = Number(divisionSelect.value) || BASE_DIVISION;
       state.tiles[i].division = value;
       updateStepIndicators();
       saveToUrl();
+      pushHistorySnapshot();
     });
     stepDots.forEach((dot, stepIdx) => {
       dot.addEventListener("click", (event) => {
@@ -375,8 +523,12 @@ function bindGlobalControls() {
   bpmInput.addEventListener("change", () => {
     state.bpm = clamp(Number(bpmInput.value) || 120, 40, 240);
     bpmInput.value = state.bpm;
-    if (state.isPlaying) restartTransport(false);
+    if (state.isPlaying) {
+      skipNextMetronome = true;
+      restartTransport(false);
+    }
     saveToUrl();
+    pushHistorySnapshot();
   });
 
   playToggleBtn.addEventListener("click", () => togglePlay());
@@ -400,6 +552,15 @@ function bindGlobalControls() {
     tapTempoBtn.classList.add("flash");
     tapTempo();
   });
+  metronomeToggleBtn?.addEventListener("click", () => {
+    metronomeEnabled = !metronomeEnabled;
+    metronomeToggleBtn.classList.toggle("active", metronomeEnabled);
+    if (metronomeEnabled) {
+      startMetronome();
+    } else {
+      stopMetronome();
+    }
+  });
 
   newSessionBtn.addEventListener("click", () => {
     newSessionBtn.classList.add("clicked");
@@ -418,7 +579,8 @@ function bindGlobalControls() {
       clearTimeout(shareResetTimer);
       shareResetTimer = setTimeout(() => {
         shareBtn.classList.remove("copied");
-        shareBtn.textContent = "⤴";
+        shareBtn.innerHTML =
+          '<img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />';
       }, 1300);
     } catch (error) {
       statusEl.textContent = "Could not copy link. Select the URL manually.";
@@ -459,7 +621,7 @@ function bindGlobalControls() {
   showcaseCloseBtn?.addEventListener("click", () => setShowcaseOpen(false));
   showcaseBackdrop?.addEventListener("click", () => setShowcaseOpen(false));
   showcaseAddCurrentBtn?.addEventListener("click", () => {
-    addShowcaseLink(`Session ${showcaseLinks.length + 1}`, window.location.href);
+    addShowcaseLink(generateSessionName(), window.location.href);
   });
   showcaseAddBtn?.addEventListener("click", () => {
     const name = (showcaseNameInput?.value || "").trim();
@@ -490,11 +652,43 @@ function bindGlobalControls() {
 }
 
 function handleKeyDown(event) {
+  if (event.key === "Escape") {
+    const active = document.activeElement;
+    if (
+      active &&
+      (active instanceof HTMLInputElement ||
+        active instanceof HTMLSelectElement ||
+        active instanceof HTMLTextAreaElement)
+    ) {
+      event.preventDefault();
+      active.blur();
+      return;
+    }
+  }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+    event.preventDefault();
+    if (event.shiftKey) {
+      redoHistory();
+    } else {
+      undoHistory();
+    }
+    return;
+  }
+
   if (
     event.target instanceof HTMLInputElement ||
     event.target instanceof HTMLSelectElement ||
     event.target instanceof HTMLTextAreaElement
   ) {
+    return;
+  }
+  if (event.key.toLowerCase() === "c") {
+    event.preventDefault();
+    metronomeEnabled = !metronomeEnabled;
+    metronomeToggleBtn?.classList.toggle("active", metronomeEnabled);
+    if (metronomeEnabled && !metronomeContext) {
+      metronomeContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
     return;
   }
   if (event.key === "Escape" && communityPanel?.classList.contains("show")) {
@@ -682,6 +876,7 @@ function setCue(index, cueIndex) {
   state.selectedCue = cueIndex;
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function nudgeCue(index, cueIndex, delta) {
@@ -689,6 +884,7 @@ function nudgeCue(index, cueIndex, delta) {
   tile.cues[cueIndex] = Math.max(0, tile.cues[cueIndex] + delta);
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function jumpToCue(index, cueIndex) {
@@ -739,6 +935,21 @@ function loadVideo(index, url) {
   saveToUrl();
 }
 
+function loadRandomVideo(index) {
+  if (!RANDOM_VIDEO_IDS.length) return;
+  const current = state.tiles[index].videoId;
+  let nextId = RANDOM_VIDEO_IDS[Math.floor(Math.random() * RANDOM_VIDEO_IDS.length)];
+  if (RANDOM_VIDEO_IDS.length > 1 && nextId === current) {
+    nextId = RANDOM_VIDEO_IDS[(RANDOM_VIDEO_IDS.indexOf(nextId) + 1) % RANDOM_VIDEO_IDS.length];
+  }
+  const url = `https://www.youtube.com/watch?v=${nextId}`;
+  loadVideo(index, url);
+  const entry = tileEls[index];
+  if (entry?.urlInput) {
+    entry.urlInput.value = url;
+  }
+}
+
 function triggerAction(index, action, addToLoop) {
   const tile = state.tiles[index];
   const player = tile.player;
@@ -751,6 +962,7 @@ function triggerAction(index, action, addToLoop) {
     tile.actions[localStep] = [action];
     updateTileDisplays();
     saveToUrl();
+    pushHistorySnapshot();
   }
 }
 
@@ -806,6 +1018,7 @@ function clearActions(index) {
   tile.actions = Array.from({ length: tile.steps }, () => []);
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function clearStep(index, stepIdx) {
@@ -813,6 +1026,7 @@ function clearStep(index, stepIdx) {
   tile.actions[stepIdx] = [];
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function setStepAction(index, stepIdx, action) {
@@ -820,6 +1034,7 @@ function setStepAction(index, stepIdx, action) {
   tile.actions[stepIdx] = [action];
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function toggleMuteStep(index, stepIdx) {
@@ -829,6 +1044,7 @@ function toggleMuteStep(index, stepIdx) {
   tile.actions[stepIdx] = hasMute ? [] : [{ type: "mute-step" }];
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function startTransport() {
@@ -837,6 +1053,7 @@ function startTransport() {
   const interval = (60 / state.bpm) * (4 / BASE_DIVISION) * 1000;
   transportTimer = setInterval(tick, interval);
   updateStatus();
+  if (metronomeEnabled) startMetronome();
 }
 
 function restartTransport(pauseVideos = true) {
@@ -849,12 +1066,24 @@ function stopTransport(pauseVideos = true) {
     clearInterval(transportTimer);
     transportTimer = null;
   }
+  stopMetronome();
   if (pauseVideos) pauseAllVideos();
   updateStatus();
 }
 
 function tick() {
   state.globalStep += 1;
+  if (metronomeEnabled && state.isPlaying) {
+    const beatStep = BASE_DIVISION / 4;
+    if (state.globalStep % beatStep === 0) {
+      const isDownbeat = state.globalStep % BASE_DIVISION === 0;
+      if (skipNextMetronome) {
+        skipNextMetronome = false;
+      } else {
+        clickMetronome(isDownbeat);
+      }
+    }
+  }
   state.tiles.forEach((tile) => {
     const stepAdvance = getStepAdvance(tile);
     const localStep = getLocalStep(tile);
@@ -1110,6 +1339,7 @@ function adjustCueVolumeFromArrow(key) {
   tile.cueVolumes[cueIndex] = clamp(current + delta, 0, 100);
   updateTileDisplays();
   saveToUrl();
+  pushHistorySnapshot();
 }
 
 function startNewSession() {
@@ -1122,6 +1352,9 @@ function startNewSession() {
   state.selectedIndex = 0;
   state.selectedCue = 0;
   state.selectedStep = null;
+  metronomeEnabled = false;
+  metronomeToggleBtn?.classList.remove("active");
+  stopMetronome();
   state.tiles = Array.from({ length: TILE_COUNT }, () => ({
     videoUrl: "",
     videoId: "",
@@ -1143,6 +1376,7 @@ function startNewSession() {
   buildGrid();
   updateTransportButton();
   saveToUrl();
+  resetHistory();
 }
 
 function clamp(value, min, max) {
@@ -1256,6 +1490,7 @@ function rebuildTileSteps(index) {
   for (let s = 0; s < tileState.steps; s += 1) {
     const dot = document.createElement("div");
     dot.className = "step";
+    if (s % 4 === 0) dot.classList.add("beat-step");
     dot.dataset.step = String(s);
     dot.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1272,6 +1507,7 @@ function rebuildTileSteps(index) {
 
 function resizeActions(tile) {
   const totalSteps = tile.steps;
+  if (totalSteps < 1) tile.steps = 1;
   const next = Array.from({ length: totalSteps }, (_, idx) => tile.actions[idx] || []);
   tile.actions = next;
 }
@@ -1289,6 +1525,32 @@ function getStepDurationMs(tile) {
   return baseInterval * stepAdvance;
 }
 
+function startMetronome() {
+  if (!metronomeContext) {
+    metronomeContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function stopMetronome() {
+  return;
+}
+
+function clickMetronome(isDownbeat = false) {
+  if (!metronomeContext) return;
+  const osc = metronomeContext.createOscillator();
+  const gain = metronomeContext.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = isDownbeat ? 1200 : 800;
+  gain.gain.value = 0.12;
+  osc.connect(gain);
+  gain.connect(metronomeContext.destination);
+  const now = metronomeContext.currentTime;
+  gain.gain.setValueAtTime(gain.gain.value, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+  osc.start(now);
+  osc.stop(now + 0.03);
+}
+
 function flashStep(dot) {
   dot.classList.add("flash");
   setTimeout(() => {
@@ -1298,6 +1560,102 @@ function flashStep(dot) {
 
 function getStepAdvance(tile) {
   return BASE_DIVISION / (tile.division || BASE_DIVISION);
+}
+
+function getHistorySnapshot() {
+  return {
+    bpm: state.bpm,
+    selectedIndex: state.selectedIndex,
+    selectedCue: state.selectedCue,
+    selectedStep: state.selectedStep,
+    tiles: state.tiles.map((tile) => ({
+      cues: tile.cues.slice(),
+      cueVolumes: tile.cueVolumes.slice(),
+      masterVolume: tile.masterVolume,
+      playbackRate: tile.playbackRate,
+      actions: tile.actions.map((step) => (step || []).map((action) => ({ ...action }))),
+      steps: tile.steps,
+      division: tile.division,
+      customCues: tile.customCues,
+    })),
+  };
+}
+
+function snapshotEquals(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function pushHistorySnapshot() {
+  if (isApplyingHistory) return;
+  const next = getHistorySnapshot();
+  const prev = historyPast[historyPast.length - 1];
+  if (prev && snapshotEquals(prev, next)) return;
+  historyPast.push(next);
+  if (historyPast.length > 200) historyPast.shift();
+  historyFuture = [];
+}
+
+function resetHistory() {
+  historyPast = [getHistorySnapshot()];
+  historyFuture = [];
+}
+
+function applyHistorySnapshot(snapshot) {
+  if (!snapshot) return;
+  isApplyingHistory = true;
+  state.bpm = clamp(Number(snapshot.bpm) || 120, 40, 240);
+  bpmInput.value = String(state.bpm);
+  state.selectedIndex = clamp(Number(snapshot.selectedIndex) || 0, 0, TILE_COUNT - 1);
+  state.selectedCue = clamp(Number(snapshot.selectedCue) || 0, 0, 9);
+  state.selectedStep =
+    snapshot.selectedStep === null || snapshot.selectedStep === undefined
+      ? null
+      : Number.isNaN(Number(snapshot.selectedStep))
+        ? null
+        : Number(snapshot.selectedStep);
+
+  snapshot.tiles.forEach((tileSnap, idx) => {
+    const tile = state.tiles[idx];
+    if (!tile || !tileSnap) return;
+    tile.cues = Array.isArray(tileSnap.cues) ? tileSnap.cues.slice(0, 10) : tile.cues;
+    while (tile.cues.length < 10) tile.cues.push(0);
+    tile.cueVolumes = Array.isArray(tileSnap.cueVolumes) ? tileSnap.cueVolumes.slice(0, 10) : tile.cueVolumes;
+    while (tile.cueVolumes.length < 10) tile.cueVolumes.push(100);
+    tile.masterVolume = clamp(Number(tileSnap.masterVolume) || 100, 0, 100);
+    tile.playbackRate = Number(tileSnap.playbackRate) || 1;
+    tile.steps = clamp(Number(tileSnap.steps) || 16, 1, 128);
+    tile.division = Number(tileSnap.division) || BASE_DIVISION;
+    tile.customCues = Boolean(tileSnap.customCues);
+    tile.actions = Array.from({ length: tile.steps }, (_, stepIdx) => {
+      const row = (tileSnap.actions && tileSnap.actions[stepIdx]) || [];
+      return row.map((action) => ({ ...action }));
+    });
+    if (tileEls[idx]?.stepDots?.length !== tile.steps) {
+      rebuildTileSteps(idx);
+    }
+  });
+
+  tileEls.forEach((entry, idx) => {
+    entry.tile.classList.toggle("selected", idx === state.selectedIndex);
+  });
+  updateTileDisplays();
+  saveToUrl();
+  isApplyingHistory = false;
+}
+
+function undoHistory() {
+  if (historyPast.length <= 1) return;
+  const current = historyPast.pop();
+  historyFuture.push(current);
+  const prev = historyPast[historyPast.length - 1];
+  applyHistorySnapshot(prev);
+}
+
+function redoHistory() {
+  if (!historyFuture.length) return;
+  const next = historyFuture.pop();
+  historyPast.push(next);
+  applyHistorySnapshot(next);
 }
 
 function showShareHint(text) {
@@ -1368,21 +1726,21 @@ function renderShowcaseLinks() {
     title.className = "showcase-item-title";
     title.textContent = item.name || `Session ${index + 1}`;
 
-    const link = document.createElement("a");
-    link.className = "showcase-item-url";
-    link.href = item.url;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    link.textContent = item.url;
-
     const actions = document.createElement("div");
     actions.className = "showcase-item-row";
 
-    const openBtn = document.createElement("button");
-    openBtn.type = "button";
-    openBtn.textContent = "Open";
-    openBtn.addEventListener("click", () => {
+    const loadBtn = document.createElement("button");
+    loadBtn.type = "button";
+    loadBtn.textContent = "Load Session";
+    loadBtn.addEventListener("click", () => {
       window.location.href = item.url;
+    });
+
+    const openNewTabBtn = document.createElement("button");
+    openNewTabBtn.type = "button";
+    openNewTabBtn.textContent = "Open In New Tab";
+    openNewTabBtn.addEventListener("click", () => {
+      window.open(item.url, "_blank", "noopener,noreferrer");
     });
 
     const removeBtn = document.createElement("button");
@@ -1395,10 +1753,32 @@ function renderShowcaseLinks() {
     renameBtn.textContent = "Rename";
     renameBtn.addEventListener("click", () => renameShowcaseLink(index));
 
-    actions.append(openBtn, renameBtn, removeBtn);
-    row.append(title, link, actions);
+    actions.append(loadBtn, openNewTabBtn, renameBtn, removeBtn);
+    row.append(title, actions);
     showcaseList.appendChild(row);
   });
+}
+
+function generateSessionName() {
+  const words = [];
+  state.tiles.forEach((tile) => {
+    const title = tile.player?.getVideoData?.()?.title || "";
+    if (!title) return;
+    const token = title
+      .replace(/\[[^\]]*\]|\([^\)]*\)/g, " ")
+      .split(/[^a-zA-Z0-9]+/)
+      .map((part) => part.trim())
+      .filter((part) => part.length >= 4);
+    if (token.length) {
+      words.push(token[Math.floor(Math.random() * token.length)]);
+    }
+  });
+  if (!words.length) {
+    return `Session ${showcaseLinks.length + 1}`;
+  }
+  const unique = Array.from(new Set(words));
+  const picked = unique.slice(0, 3);
+  return picked.join(" ");
 }
 
 function renderCommunityPanelLinks() {

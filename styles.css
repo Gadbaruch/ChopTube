@@ -161,6 +161,24 @@ body {
 .loop-toggle.active {
   background: linear-gradient(135deg, #ff2d2d, #ff6b3d);
   color: #0b0d13;
+  box-shadow: 0 0 0 1px rgba(255, 107, 61, 0.35), 0 0 10px rgba(255, 85, 51, 0.35);
+  animation: loop-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes loop-glow {
+  0% {
+    box-shadow: 0 0 0 1px rgba(255, 107, 61, 0.25), 0 0 8px rgba(255, 85, 51, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(255, 140, 90, 0.55), 0 0 14px rgba(255, 85, 51, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 1px rgba(255, 107, 61, 0.25), 0 0 8px rgba(255, 85, 51, 0.25);
+  }
+}
+
+.loop-toggle:hover {
+  transform: none;
 }
 
 .tap-tempo {
@@ -176,6 +194,29 @@ body {
 
 .tap-tempo.flash {
   animation: tap-flash 180ms ease;
+}
+
+.metronome-toggle {
+  width: 54px;
+  height: 58px;
+  border-radius: 10px;
+  background: #202736;
+  color: #d9e8ff;
+  font-size: 18px;
+  display: inline-grid;
+  place-items: center;
+}
+
+.metronome-toggle.active {
+  background: linear-gradient(135deg, #6ae0ff, #3fa7ff);
+  color: #0b0d13;
+}
+
+.metronome-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 
 @keyframes tap-flash {
@@ -200,7 +241,7 @@ body {
 }
 
 .loop-toggle.active .transport-icon {
-  animation: spin-inline 1s linear infinite;
+  animation: spin-inline 0.9s linear infinite;
 }
 
 @keyframes spin-inline {
@@ -210,6 +251,11 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+.loop-toggle .transport-icon {
+  font-size: 24px;
+  transform: translateY(1px);
 }
 
 .transport-label {
@@ -302,6 +348,11 @@ button.active {
   flex: 1;
 }
 
+.app.performance .grid {
+  align-items: start;
+  align-content: start;
+}
+
 @media (max-width: 1100px) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -328,6 +379,12 @@ button.active {
 .tile.collapsed .tile-controls {
   padding: 0;
   gap: 0;
+  flex: 0;
+}
+
+.tile.collapsed {
+  height: fit-content;
+  align-self: start;
 }
 
 .tile.selected {
@@ -386,6 +443,8 @@ button.active {
 
 .load-btn {
   font-weight: 500;
+  padding: 8px 10px;
+  min-width: 64px;
 }
 
 .key {
@@ -510,17 +569,20 @@ button.active {
 
 .step {
   width: 100%;
-  aspect-ratio: 1 / 1;
   min-height: 20px;
   border-radius: 3px;
   border: 2px solid #0b0d13;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.16);
   color: #e9eef7;
   font-size: 10px;
   font-weight: 700;
   display: grid;
   place-items: center;
   transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.step.beat-step {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .step.flash {
@@ -589,10 +651,14 @@ button.active {
   height: 40px;
   padding: 0;
   border-radius: 10px;
-  font-size: 18px;
-  font-weight: 800;
   display: inline-grid;
   place-items: center;
+}
+
+.share-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 #new-session {
