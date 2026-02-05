@@ -432,6 +432,9 @@ function bindGlobalControls() {
   communityToggleBtn?.addEventListener("click", () => {
     setCommunityOpen(true);
   });
+  communityToggleBtn?.addEventListener("pointerup", () => {
+    setCommunityOpen(true);
+  });
 
   helpCloseBtn.addEventListener("click", () => {
     helpPanel.classList.remove("show");
@@ -452,6 +455,7 @@ function bindGlobalControls() {
   });
 
   showcaseToggleBtn?.addEventListener("click", () => setShowcaseOpen(true));
+  showcaseToggleBtn?.addEventListener("pointerup", () => setShowcaseOpen(true));
   showcaseCloseBtn?.addEventListener("click", () => setShowcaseOpen(false));
   showcaseBackdrop?.addEventListener("click", () => setShowcaseOpen(false));
   showcaseAddCurrentBtn?.addEventListener("click", () => {
