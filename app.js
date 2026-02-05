@@ -6,6 +6,8 @@ const NUDGE_LR_FINE = 0.01;
 const NUDGE_UD_FINE = 1;
 const BASE_DIVISION = 16;
 const TILE_PLAY_KEYS = ["q", "w", "e", "r", "t", "y", "u", "i"];
+const PLAY_RETRY_DELAY_MS = 250;
+const PLAY_RETRY_COUNT = 8;
 
 const state = {
   bpm: 120,
@@ -231,6 +233,11 @@ function buildGrid() {
       <div>Upgrade to unlock more tiles.</div>
       <button type="button">Upgrade</button>
     `;
+    const upgradeBtn = lockedOverlay.querySelector("button");
+    upgradeBtn?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      window.alert("We are working on this expansion. Coming soon.");
+    });
 
     controls.append(urlRow, perfRow, liveTitle, cueSection, seqTitle, clearRow, stepIndicator);
     tile.append(frame, controls, lockedOverlay);
@@ -616,6 +623,7 @@ function loadVideo(index, url) {
 
   if (tile.player) {
     tile.player.loadVideoById(videoId);
+    queueDefaultCues(index);
   } else if (window.YT && window.YT.Player) {
     tile.player = new window.YT.Player(`player-${index}`, {
       videoId,
@@ -897,11 +905,12 @@ function pauseAllVideos() {
 }
 
 function playAllVideos() {
-  state.tiles.forEach((tile) => {
+  state.tiles.forEach((tile, idx) => {
     if (tile.player && tile.player.playVideo) {
       tile.player.playVideo();
       tile.isClipPlaying = true;
       tile.desiredClipPlaying = true;
+      ensureTilePlaying(idx, PLAY_RETRY_COUNT);
     }
   });
   updateTileDisplays();
@@ -974,6 +983,12 @@ function loadFromUrl() {
           customCues: false,
         }))
       );
+      const hasComposition = state.tiles.some(
+        (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
+      );
+      if (hasComposition) {
+        state.isEditMode = false;
+      }
     }
   } catch (error) {
     console.warn("Failed to load state from URL", error);
@@ -1074,16 +1089,30 @@ function maybeSetDefaultCues(index) {
   if (!player) return;
   tile.player?.setPlaybackRate?.(tile.playbackRate ?? 1);
   applySelectedCueVolume(index);
+  queueDefaultCues(index);
+}
+
+function queueDefaultCues(index, triesLeft = 30) {
+  const tile = state.tiles[index];
+  const player = tile?.player;
+  if (!tile || !player) return;
   if (tile.customCues) return;
   if (tile.cues.some((cue) => cue > 0)) return;
+
   const duration = player.getDuration?.() || 0;
-  if (duration <= 0) return;
-  const slice = duration / 10;
-  for (let i = 0; i < 10; i += 1) {
-    tile.cues[i] = slice * i;
+  if (duration > 0) {
+    const slice = duration / 10;
+    for (let i = 0; i < 10; i += 1) {
+      tile.cues[i] = slice * i;
+    }
+    updateTileDisplays();
+    saveToUrl();
+    return;
   }
-  updateTileDisplays();
-  saveToUrl();
+
+  if (triesLeft > 0) {
+    setTimeout(() => queueDefaultCues(index, triesLeft - 1), 150);
+  }
 }
 
 function handlePlayerState(index, event) {
@@ -1175,4 +1204,20 @@ function flashStep(dot) {
 
 function getStepAdvance(tile) {
   return BASE_DIVISION / (tile.division || BASE_DIVISION);
+}
+
+function ensureTilePlaying(index, triesLeft) {
+  if (!state.isPlaying || triesLeft <= 0) return;
+  const tile = state.tiles[index];
+  const player = tile?.player;
+  if (!player) return;
+  const playerState = player.getPlayerState?.();
+  const isPlaying =
+    playerState === window.YT?.PlayerState?.PLAYING || playerState === window.YT?.PlayerState?.BUFFERING;
+  if (isPlaying) return;
+  setTimeout(() => {
+    if (!state.isPlaying) return;
+    player.playVideo?.();
+    ensureTilePlaying(index, triesLeft - 1);
+  }, PLAY_RETRY_DELAY_MS);
 }
