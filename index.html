@@ -14,14 +14,20 @@
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
         </div>
         <div class="center-control">
-          <button id="play-toggle" class="play-toggle" aria-label="Play or stop">▶ Play (Space)</button>
-          <button id="loop-toggle" class="loop-toggle" aria-label="Loop toggle">Loop (R)</button>
-          <label class="field inline">
+          <div class="edit-switch" aria-label="View mode">
+            <button id="present-mode" class="edit-side" type="button">Present</button>
+            <button id="edit-mode" class="edit-side" type="button">Edit</button>
+          </div>
+          <button id="play-toggle" class="play-toggle" aria-label="Play or stop"></button>
+          <button id="loop-toggle" class="loop-toggle" aria-label="Loop toggle"></button>
+          <div class="field bpm-field">
+            <input id="bpm" type="number" min="40" max="240" value="120" aria-label="BPM" />
             <span>BPM</span>
-            <input id="bpm" type="number" min="40" max="240" value="120" />
-          </label>
+          </div>
+          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap</button>
         </div>
         <div class="global-controls">
+          <button id="new-session">New Session</button>
           <button id="share">Copy Share Link</button>
         </div>
       </header>
@@ -49,17 +55,20 @@
         </p>
         <div class="help-grid">
           <div><span class="key">Space</span>Play / Stop</div>
-          <div><span class="key">R</span>Loop On / Off</div>
-          <div><span class="key">Shift + Arrows</span>Move between tiles</div>
+          <div><span class="key">L</span>Loop On / Off</div>
+          <div><span class="key">Shift + Arrows</span>Fine nudge cue (0.01s / 1s)</div>
           <div><span class="key">Click Step</span>Select step for editing</div>
-          <div><span class="key">← / →</span>Nudge cue by 0.25s</div>
-          <div><span class="key">Option + ← / →</span>Nudge by 1s</div>
-          <div><span class="key">Command + ← / →</span>Nudge by 10s</div>
+          <div><span class="key">← / →</span>Nudge cue by 0.10s</div>
+          <div><span class="key">↑ / ↓</span>Nudge cue by 10s</div>
+          <div><span class="key">Option + Arrows</span>Adjust cue volume</div>
           <div><span class="key">0-9</span>Trigger cue (performance)</div>
+          <div><span class="key">Q W E R T Y U I</span>Tile play / stop</div>
+          <div><span class="key">Shift + Q..I</span>Select tile only</div>
           <div><span class="key">Shift + 0-9</span>Set cue at current time</div>
           <div><span class="key">M</span>Mute step</div>
           <div><span class="key">Delete</span>Clear step</div>
           <div><span class="key">Shift + Delete</span>Clear tile loop</div>
+          <div><span class="key">Tap</span>Tap tempo into BPM</div>
         </div>
       </div>
     </div>
