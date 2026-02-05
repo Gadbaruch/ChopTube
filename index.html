@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChopTube</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
+          <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
+        </div>
+        <div class="center-control">
+          <button id="play-toggle" class="play-toggle" aria-label="Play or stop">▶ Play (Space)</button>
+          <button id="loop-toggle" class="loop-toggle" aria-label="Loop toggle">Loop (R)</button>
+          <label class="field inline">
+            <span>BPM</span>
+            <input id="bpm" type="number" min="40" max="240" value="120" />
+          </label>
+        </div>
+        <div class="global-controls">
+          <button id="share">Copy Share Link</button>
+        </div>
+      </header>
+
+      <section class="grid" id="grid"></section>
+
+      <footer class="footer">
+        <div class="status" id="status"></div>
+      </footer>
+    </div>
+
+    <div class="help-panel" id="help-panel" aria-hidden="true">
+      <div class="help-card">
+        <div class="help-header">
+          <div>
+            <div class="help-title">ChopTube Shortcuts</div>
+            <div class="help-subtitle">Performance mode = no step selected</div>
+          </div>
+          <button id="help-close" class="help-close" aria-label="Close help">×</button>
+        </div>
+        <p class="help-paragraph">
+          ChopTube lets you remix YouTube clips live. In performance mode, number keys trigger cue points on the selected tile.
+          Click a step to enter edit mode and write cues or mutes into the sequencer. Use loop mode to record your live
+          triggers into the timeline while the global metronome keeps everything locked to the grid.
+        </p>
+        <div class="help-grid">
+          <div><span class="key">Space</span>Play / Stop</div>
+          <div><span class="key">R</span>Loop On / Off</div>
+          <div><span class="key">Shift + Arrows</span>Move between tiles</div>
+          <div><span class="key">Click Step</span>Select step for editing</div>
+          <div><span class="key">← / →</span>Nudge cue by 0.25s</div>
+          <div><span class="key">Option + ← / →</span>Nudge by 1s</div>
+          <div><span class="key">Command + ← / →</span>Nudge by 10s</div>
+          <div><span class="key">0-9</span>Trigger cue (performance)</div>
+          <div><span class="key">Shift + 0-9</span>Set cue at current time</div>
+          <div><span class="key">M</span>Mute step</div>
+          <div><span class="key">Delete</span>Clear step</div>
+          <div><span class="key">Shift + Delete</span>Clear tile loop</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
