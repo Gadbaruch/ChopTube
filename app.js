@@ -26,6 +26,7 @@ const state = {
     masterVolume: 100,
     playbackRate: 1,
     isClipPlaying: false,
+    desiredClipPlaying: null,
     actions: [],
     muted: false,
     steps: 16,
@@ -659,10 +660,12 @@ function performAction(tile, action) {
     case "play":
       player.playVideo();
       tile.isClipPlaying = true;
+      tile.desiredClipPlaying = true;
       break;
     case "pause":
       player.pauseVideo();
       tile.isClipPlaying = false;
+      tile.desiredClipPlaying = false;
       break;
     case "mute":
       player.mute();
@@ -861,10 +864,13 @@ function toggleTilePlayPause(index, shouldRecord) {
   const tile = state.tiles[index];
   const player = tile?.player;
   if (!player) return;
-  const isPlayingNow = Boolean(tile.isClipPlaying);
-  const action = isPlayingNow ? { type: "pause" } : { type: "play" };
+  const current =
+    typeof tile.desiredClipPlaying === "boolean" ? tile.desiredClipPlaying : Boolean(tile.isClipPlaying);
+  const next = !current;
+  const action = next ? { type: "play" } : { type: "pause" };
+  tile.desiredClipPlaying = next;
   triggerAction(index, action, shouldRecord);
-  tile.isClipPlaying = !isPlayingNow;
+  tile.isClipPlaying = next;
   updateTileDisplays();
 }
 
@@ -884,6 +890,7 @@ function pauseAllVideos() {
     if (tile.player && tile.player.pauseVideo) {
       tile.player.pauseVideo();
       tile.isClipPlaying = false;
+      tile.desiredClipPlaying = false;
     }
   });
   updateTileDisplays();
@@ -894,6 +901,7 @@ function playAllVideos() {
     if (tile.player && tile.player.playVideo) {
       tile.player.playVideo();
       tile.isClipPlaying = true;
+      tile.desiredClipPlaying = true;
     }
   });
   updateTileDisplays();
@@ -941,6 +949,7 @@ function loadFromUrl() {
         masterVolume: tile.masterVolume ?? 100,
         playbackRate: tile.playbackRate ?? 1,
         isClipPlaying: false,
+        desiredClipPlaying: null,
         actions: tile.actions || Array.from({ length: tile.steps || 16 }, () => []),
         muted: false,
         steps: tile.steps || 16,
@@ -957,6 +966,7 @@ function loadFromUrl() {
           masterVolume: 100,
           playbackRate: 1,
           isClipPlaying: false,
+          desiredClipPlaying: null,
           actions: Array.from({ length: 16 }, () => []),
           muted: false,
           steps: 16,
@@ -1012,6 +1022,7 @@ function startNewSession() {
     masterVolume: 100,
     playbackRate: 1,
     isClipPlaying: false,
+    desiredClipPlaying: null,
     actions: Array.from({ length: 16 }, () => []),
     muted: false,
     steps: 16,
@@ -1067,8 +1078,9 @@ function maybeSetDefaultCues(index) {
   if (tile.cues.some((cue) => cue > 0)) return;
   const duration = player.getDuration?.() || 0;
   if (duration <= 0) return;
+  const slice = duration / 10;
   for (let i = 0; i < 10; i += 1) {
-    tile.cues[i] = (duration / 9) * i;
+    tile.cues[i] = slice * i;
   }
   updateTileDisplays();
   saveToUrl();
@@ -1080,14 +1092,14 @@ function handlePlayerState(index, event) {
   const ytState = event?.data;
   if (ytState === window.YT?.PlayerState?.PLAYING) {
     tile.isClipPlaying = true;
+    if (tile.desiredClipPlaying === true) tile.desiredClipPlaying = null;
     tile.player?.setPlaybackRate?.(tile.playbackRate ?? 1);
-    applySelectedCueVolume(index);
   } else if (
     ytState === window.YT?.PlayerState?.PAUSED ||
-    ytState === window.YT?.PlayerState?.ENDED ||
-    ytState === window.YT?.PlayerState?.CUED
+    ytState === window.YT?.PlayerState?.ENDED
   ) {
     tile.isClipPlaying = false;
+    if (tile.desiredClipPlaying === false) tile.desiredClipPlaying = null;
   }
   updateTileDisplays();
 }
