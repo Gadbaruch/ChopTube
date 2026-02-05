@@ -6,6 +6,15 @@ const NUDGE_LR_FINE = 0.01;
 const NUDGE_UD_FINE = 1;
 const BASE_DIVISION = 16;
 const TILE_PLAY_KEYS = ["q", "w", "e", "r", "t", "y", "u", "i"];
+const PLAY_RETRY_DELAY_MS = 250;
+const PLAY_RETRY_COUNT = 8;
+const COMMUNITY_DISCORD_URL = "https://discord.gg/j6D9WKZN";
+const COMMUNITY_SESSIONS = [
+  {
+    name: "Peppa Beat",
+    url: "https://gadbaruch.github.io/ChopTube/#JTdCJTIyYnBtJTIyJTNBMTE3JTJDJTIyc2VsZWN0ZWRJbmRleCUyMiUzQTAlMkMlMjJzZWxlY3RlZEN1ZSUyMiUzQTUlMkMlMjJ0aWxlcyUyMiUzQSU1QiU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RLVmVFN3NFVGx2QSUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDOC41NCUyQzE1Ljc3Nzc3Nzc3Nzc3Nzc3OSUyQzIzLjY2NjY2NjY2NjY2NjY2OCUyQzMxLjU1NTU1NTU1NTU1NTU1NyUyQzMwLjY0JTJDNDcuMzMzMzMzMzMzMzMzMzM2JTJDNTUuMjIyMjIyMjIyMjIyMjMlMkM2My4xMTExMTExMTExMTExMTQlMkM3MSU1RCUyQyUyMmFjdGlvbnMlMjIlM0ElNUIlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMSU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E1JTdEJTVEJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkNudWxsJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNSU3RCU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQXRydWUlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNESnAyQ2VkVTNCa0klMjIlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzMwMCUyQzYwMCUyQzkwMCUyQzEyMDAlMkMxNTAwJTJDMTgwMCUyQzIxMDEuNSUyQzI0MDAlMkMyNzAwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0ExJTdEJTVEJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNyU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E0JTdEJTVEJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTJDJTdCJTIydmlkZW9VcmwlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRC1EcmE1UjYtMUxFJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMxNDYuODg4ODg4ODg4ODg4ODklMkMyOTMuNzc3Nzc3Nzc3Nzc3NzclMkM0NDAuNjY2NjY2NjY2NjY2NjMlMkM1ODcuNTU1NTU1NTU1NTU1NSUyQzczNi42OTQ0NDQ0NDQ0NDQ1JTJDODgxLjMzMzMzMzMzMzMzMzMlMkMxMDI4LjIyMjIyMjIyMjIyMjIlMkMxMTc1LjExMTExMTExMTExMSUyQzEzMjIlNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMSU3RCU1RCUyQyU1QiU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0EyJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTYlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNSU3RCU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E1JTdEJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTUlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlNUQlMkMlMjJzdGVwcyUyMiUzQTMyJTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RfR1psSkdFUmJ2RSUyNmxpc3QlM0RSRF9HWmxKR0VSYnZFJTI2c3RhcnRfcmFkaW8lM0QxJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMyNC41NTU1NTU1NTU1NTU1NTclMkM0OS4xMTExMTExMTExMTExMTQlMkM3My42NjY2NjY2NjY2NjY2NyUyQzk0Ljk3MjIyMjIyMjIyMjIzJTJDMTIyLjc3Nzc3Nzc3Nzc3Nzc5JTJDMTQ3LjMzMzMzMzMzMzMzMzM0JTJDMTcxLjg4ODg4ODg4ODg4ODklMkMxOTYuNDQ0NDQ0NDQ0NDQ0NDYlMkMyMjElNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkMlNUIlNUQlMkNudWxsJTJDbnVsbCUyQyU1QiU1RCUyQyU1QiU1RCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E0JTdEJTVEJTJDJTVCJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTJDJTdCJTIydmlkZW9VcmwlMjIlM0ElMjIlMjIlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMmFjdGlvbnMlMjIlM0ElNUIlNUQlMkMlMjJzdGVwcyUyMiUzQTE2JTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTVEJTdE",
+  },
+];
 
 const state = {
   bpm: 120,
@@ -46,8 +55,24 @@ const tapTempoBtn = document.getElementById("tap-tempo");
 const newSessionBtn = document.getElementById("new-session");
 const shareBtn = document.getElementById("share");
 const helpToggleBtn = document.getElementById("help-toggle");
+const communityToggleBtn = document.getElementById("community-toggle");
 const helpPanel = document.getElementById("help-panel");
 const helpCloseBtn = document.getElementById("help-close");
+const communityPanel = document.getElementById("community-panel");
+const communityCloseBtn = document.getElementById("community-close");
+const communityDiscordLink = document.getElementById("community-discord-link");
+const communityPopupList = document.getElementById("community-popup-list");
+const mobileBlocker = document.getElementById("mobile-blocker");
+const showcaseToggleBtn = document.getElementById("showcase-toggle");
+const showcaseSidebar = document.getElementById("showcase-sidebar");
+const showcaseCloseBtn = document.getElementById("showcase-close");
+const showcaseBackdrop = document.getElementById("showcase-backdrop");
+const showcaseAddCurrentBtn = document.getElementById("showcase-add-current");
+const showcaseAddBtn = document.getElementById("showcase-add");
+const showcaseNameInput = document.getElementById("showcase-name");
+const showcaseUrlInput = document.getElementById("showcase-url");
+const showcaseList = document.getElementById("showcase-list");
+const shareHint = document.getElementById("share-hint");
 const statusEl = document.getElementById("status");
 
 const tileEls = [];
@@ -55,13 +80,19 @@ const stepEls = [];
 let transportTimer = null;
 let shareResetTimer = null;
 let tapTimes = [];
+let showcaseLinks = [];
+let newBtnResetTimer = null;
 
 function init() {
+  loadShowcaseLinks();
   loadFromUrl();
   buildGrid();
   bindGlobalControls();
   updateTransportButton();
   updateStatus();
+  updateMobileBlocker();
+  renderShowcaseLinks();
+  renderCommunityPanelLinks();
 }
 
 function buildGrid() {
@@ -231,6 +262,11 @@ function buildGrid() {
       <div>Upgrade to unlock more tiles.</div>
       <button type="button">Upgrade</button>
     `;
+    const upgradeBtn = lockedOverlay.querySelector("button");
+    upgradeBtn?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      window.alert("We are working on this expansion. Coming soon.");
+    });
 
     controls.append(urlRow, perfRow, liveTitle, cueSection, seqTitle, clearRow, stepIndicator);
     tile.append(frame, controls, lockedOverlay);
@@ -358,20 +394,31 @@ function bindGlobalControls() {
   });
 
   loopToggleBtn.addEventListener("click", () => toggleLoop());
-  tapTempoBtn?.addEventListener("click", () => tapTempo());
+  tapTempoBtn?.addEventListener("click", () => {
+    tapTempoBtn.classList.remove("flash");
+    void tapTempoBtn.offsetWidth;
+    tapTempoBtn.classList.add("flash");
+    tapTempo();
+  });
 
-  newSessionBtn.addEventListener("click", () => startNewSession());
+  newSessionBtn.addEventListener("click", () => {
+    newSessionBtn.classList.add("clicked");
+    clearTimeout(newBtnResetTimer);
+    newBtnResetTimer = setTimeout(() => newSessionBtn.classList.remove("clicked"), 220);
+    startNewSession();
+  });
 
   shareBtn.addEventListener("click", async () => {
     saveToUrl();
     try {
       await navigator.clipboard.writeText(window.location.href);
       shareBtn.classList.add("copied");
-      shareBtn.textContent = "Copied ✓";
+      shareBtn.textContent = "✓";
+      showShareHint("Session copied to clipboard - paste anywhere to share or save your session");
       clearTimeout(shareResetTimer);
       shareResetTimer = setTimeout(() => {
         shareBtn.classList.remove("copied");
-        shareBtn.textContent = "Copy Share Link";
+        shareBtn.textContent = "⤴";
       }, 1300);
     } catch (error) {
       statusEl.textContent = "Could not copy link. Select the URL manually.";
@@ -381,6 +428,9 @@ function bindGlobalControls() {
   helpToggleBtn.addEventListener("click", () => {
     helpPanel.classList.add("show");
     helpPanel.setAttribute("aria-hidden", "false");
+  });
+  communityToggleBtn?.addEventListener("click", () => {
+    setCommunityOpen(true);
   });
 
   helpCloseBtn.addEventListener("click", () => {
@@ -394,8 +444,45 @@ function bindGlobalControls() {
       helpPanel.setAttribute("aria-hidden", "true");
     }
   });
+  communityCloseBtn?.addEventListener("click", () => setCommunityOpen(false));
+  communityPanel?.addEventListener("click", (event) => {
+    if (event.target === communityPanel) {
+      setCommunityOpen(false);
+    }
+  });
+
+  showcaseToggleBtn?.addEventListener("click", () => setShowcaseOpen(true));
+  showcaseCloseBtn?.addEventListener("click", () => setShowcaseOpen(false));
+  showcaseBackdrop?.addEventListener("click", () => setShowcaseOpen(false));
+  showcaseAddCurrentBtn?.addEventListener("click", () => {
+    addShowcaseLink(`Session ${showcaseLinks.length + 1}`, window.location.href);
+  });
+  showcaseAddBtn?.addEventListener("click", () => {
+    const name = (showcaseNameInput?.value || "").trim();
+    const url = (showcaseUrlInput?.value || "").trim();
+    addShowcaseLink(name || `Session ${showcaseLinks.length + 1}`, url);
+  });
+  showcaseUrlInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      showcaseAddBtn?.click();
+    }
+  });
 
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("resize", updateMobileBlocker);
+  appEl?.addEventListener("input", (event) => {
+    if (event.target === shareBtn) return;
+    hideShareHint();
+  });
+  appEl?.addEventListener("change", (event) => {
+    if (event.target === shareBtn) return;
+    hideShareHint();
+  });
+  appEl?.addEventListener("click", (event) => {
+    if (event.target === shareBtn) return;
+    hideShareHint();
+  });
 }
 
 function handleKeyDown(event) {
@@ -404,6 +491,16 @@ function handleKeyDown(event) {
     event.target instanceof HTMLSelectElement ||
     event.target instanceof HTMLTextAreaElement
   ) {
+    return;
+  }
+  if (event.key === "Escape" && communityPanel?.classList.contains("show")) {
+    event.preventDefault();
+    setCommunityOpen(false);
+    return;
+  }
+  if (event.key === "Escape" && showcaseSidebar?.classList.contains("show")) {
+    event.preventDefault();
+    setShowcaseOpen(false);
     return;
   }
   const tileHotkeyIndex = TILE_PLAY_KEYS.indexOf(event.key.toLowerCase());
@@ -616,6 +713,7 @@ function loadVideo(index, url) {
 
   if (tile.player) {
     tile.player.loadVideoById(videoId);
+    queueDefaultCues(index);
   } else if (window.YT && window.YT.Player) {
     tile.player = new window.YT.Player(`player-${index}`, {
       videoId,
@@ -897,11 +995,12 @@ function pauseAllVideos() {
 }
 
 function playAllVideos() {
-  state.tiles.forEach((tile) => {
+  state.tiles.forEach((tile, idx) => {
     if (tile.player && tile.player.playVideo) {
       tile.player.playVideo();
       tile.isClipPlaying = true;
       tile.desiredClipPlaying = true;
+      ensureTilePlaying(idx, PLAY_RETRY_COUNT);
     }
   });
   updateTileDisplays();
@@ -974,6 +1073,12 @@ function loadFromUrl() {
           customCues: false,
         }))
       );
+      const hasComposition = state.tiles.some(
+        (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
+      );
+      if (hasComposition) {
+        state.isEditMode = false;
+      }
     }
   } catch (error) {
     console.warn("Failed to load state from URL", error);
@@ -1074,16 +1179,30 @@ function maybeSetDefaultCues(index) {
   if (!player) return;
   tile.player?.setPlaybackRate?.(tile.playbackRate ?? 1);
   applySelectedCueVolume(index);
+  queueDefaultCues(index);
+}
+
+function queueDefaultCues(index, triesLeft = 30) {
+  const tile = state.tiles[index];
+  const player = tile?.player;
+  if (!tile || !player) return;
   if (tile.customCues) return;
   if (tile.cues.some((cue) => cue > 0)) return;
+
   const duration = player.getDuration?.() || 0;
-  if (duration <= 0) return;
-  const slice = duration / 10;
-  for (let i = 0; i < 10; i += 1) {
-    tile.cues[i] = slice * i;
+  if (duration > 0) {
+    const slice = duration / 10;
+    for (let i = 0; i < 10; i += 1) {
+      tile.cues[i] = slice * i;
+    }
+    updateTileDisplays();
+    saveToUrl();
+    return;
   }
-  updateTileDisplays();
-  saveToUrl();
+
+  if (triesLeft > 0) {
+    setTimeout(() => queueDefaultCues(index, triesLeft - 1), 150);
+  }
 }
 
 function handlePlayerState(index, event) {
@@ -1175,4 +1294,208 @@ function flashStep(dot) {
 
 function getStepAdvance(tile) {
   return BASE_DIVISION / (tile.division || BASE_DIVISION);
+}
+
+function showShareHint(text) {
+  if (!shareHint) return;
+  shareHint.textContent = text;
+  shareHint.classList.add("show");
+}
+
+function hideShareHint() {
+  if (!shareHint || !shareHint.classList.contains("show")) return;
+  shareHint.classList.remove("show");
+}
+
+function setShowcaseOpen(open) {
+  showcaseSidebar?.classList.toggle("show", open);
+  showcaseBackdrop?.classList.toggle("show", open);
+  showcaseSidebar?.setAttribute("aria-hidden", open ? "false" : "true");
+  showcaseBackdrop?.setAttribute("aria-hidden", open ? "false" : "true");
+}
+
+function setCommunityOpen(open) {
+  communityPanel?.classList.toggle("show", open);
+  communityPanel?.setAttribute("aria-hidden", open ? "false" : "true");
+}
+
+function addShowcaseLink(name, url) {
+  if (!isValidSessionUrl(url)) {
+    statusEl.textContent = "Please enter a valid session URL.";
+    return;
+  }
+  showcaseLinks.unshift({ name, url });
+  saveShowcaseLinks();
+  renderShowcaseLinks();
+  if (showcaseNameInput) showcaseNameInput.value = "";
+  if (showcaseUrlInput) showcaseUrlInput.value = "";
+}
+
+function removeShowcaseLink(index) {
+  showcaseLinks.splice(index, 1);
+  saveShowcaseLinks();
+  renderShowcaseLinks();
+}
+
+function renameShowcaseLink(index) {
+  const current = showcaseLinks[index];
+  if (!current) return;
+  const next = window.prompt("Rename session:", current.name || `Session ${index + 1}`);
+  if (next === null) return;
+  const trimmed = next.trim();
+  if (!trimmed) return;
+  showcaseLinks[index] = { ...current, name: trimmed };
+  saveShowcaseLinks();
+  renderShowcaseLinks();
+}
+
+function renderShowcaseLinks() {
+  if (!showcaseList) return;
+  if (!showcaseLinks.length) {
+    showcaseList.innerHTML = '<div class="showcase-item">No links yet. Add one above.</div>';
+    return;
+  }
+  showcaseList.innerHTML = "";
+  showcaseLinks.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "showcase-item";
+
+    const title = document.createElement("div");
+    title.className = "showcase-item-title";
+    title.textContent = item.name || `Session ${index + 1}`;
+
+    const link = document.createElement("a");
+    link.className = "showcase-item-url";
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.textContent = item.url;
+
+    const actions = document.createElement("div");
+    actions.className = "showcase-item-row";
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.textContent = "Open";
+    openBtn.addEventListener("click", () => {
+      window.location.href = item.url;
+    });
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => removeShowcaseLink(index));
+
+    const renameBtn = document.createElement("button");
+    renameBtn.type = "button";
+    renameBtn.textContent = "Rename";
+    renameBtn.addEventListener("click", () => renameShowcaseLink(index));
+
+    actions.append(openBtn, renameBtn, removeBtn);
+    row.append(title, link, actions);
+    showcaseList.appendChild(row);
+  });
+}
+
+function renderCommunityPanelLinks() {
+  if (!communityPopupList) return;
+  if (communityDiscordLink) {
+    communityDiscordLink.href = COMMUNITY_DISCORD_URL;
+  }
+  if (!COMMUNITY_SESSIONS.length) {
+    communityPopupList.innerHTML = '<div class="showcase-item">No community sessions yet.</div>';
+    return;
+  }
+  communityPopupList.innerHTML = "";
+  COMMUNITY_SESSIONS.forEach((item, index) => {
+    if (!isValidSessionUrl(item.url)) return;
+    const row = document.createElement("div");
+    row.className = "showcase-item";
+
+    const title = document.createElement("div");
+    title.className = "showcase-item-title";
+    title.textContent = item.name || `Community ${index + 1}`;
+
+    const actions = document.createElement("div");
+    actions.className = "showcase-item-row";
+    const loadBtn = document.createElement("button");
+    loadBtn.type = "button";
+    loadBtn.textContent = "Load Session";
+    loadBtn.addEventListener("click", () => {
+      window.location.href = item.url;
+    });
+    const openNewTabBtn = document.createElement("button");
+    openNewTabBtn.type = "button";
+    openNewTabBtn.textContent = "Open In New Tab";
+    openNewTabBtn.addEventListener("click", () => {
+      window.open(item.url, "_blank", "noopener,noreferrer");
+    });
+    actions.append(loadBtn, openNewTabBtn);
+
+    row.append(title, actions);
+    communityPopupList.appendChild(row);
+  });
+}
+
+function saveShowcaseLinks() {
+  try {
+    window.localStorage.setItem("choptube_showcase_links", JSON.stringify(showcaseLinks.slice(0, 40)));
+  } catch (error) {
+    console.warn("Could not save showcase links", error);
+  }
+}
+
+function loadShowcaseLinks() {
+  try {
+    const raw = window.localStorage.getItem("choptube_showcase_links");
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      showcaseLinks = parsed
+        .filter((item) => item && typeof item.url === "string" && isValidSessionUrl(item.url))
+        .map((item) => ({ name: String(item.name || "Session"), url: item.url }));
+    }
+  } catch (error) {
+    console.warn("Could not load showcase links", error);
+  }
+}
+
+function isValidSessionUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (error) {
+    return false;
+  }
+}
+
+function isMobileClient() {
+  const ua = navigator.userAgent || "";
+  const mobileUA = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(ua);
+  const smallScreen = window.matchMedia("(max-width: 900px)").matches;
+  const touchDevice = window.matchMedia("(pointer: coarse)").matches;
+  return mobileUA || (smallScreen && touchDevice);
+}
+
+function updateMobileBlocker() {
+  if (!mobileBlocker) return;
+  const blocked = isMobileClient();
+  mobileBlocker.classList.toggle("show", blocked);
+  mobileBlocker.setAttribute("aria-hidden", blocked ? "false" : "true");
+}
+
+function ensureTilePlaying(index, triesLeft) {
+  if (!state.isPlaying || triesLeft <= 0) return;
+  const tile = state.tiles[index];
+  const player = tile?.player;
+  if (!player) return;
+  const playerState = player.getPlayerState?.();
+  const isPlaying =
+    playerState === window.YT?.PlayerState?.PLAYING || playerState === window.YT?.PlayerState?.BUFFERING;
+  if (isPlaying) return;
+  setTimeout(() => {
+    if (!state.isPlaying) return;
+    player.playVideo?.();
+    ensureTilePlaying(index, triesLeft - 1);
+  }, PLAY_RETRY_DELAY_MS);
 }

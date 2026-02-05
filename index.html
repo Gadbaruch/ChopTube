@@ -12,6 +12,7 @@
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
+          <button id="community-toggle" class="help-toggle" aria-label="Featured sessions">Featured sessions</button>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
@@ -24,11 +25,13 @@
             <input id="bpm" type="number" min="40" max="240" value="120" aria-label="BPM" />
             <span>BPM</span>
           </div>
-          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap</button>
+          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap<br />Tempo</button>
         </div>
         <div class="global-controls">
-          <button id="new-session">New Session</button>
-          <button id="share">Copy Share Link</button>
+          <button id="showcase-toggle">My Sessions</button>
+          <button id="new-session">+ New</button>
+          <button id="share" aria-label="Copy share link">⤴</button>
+          <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
       </header>
 
@@ -49,29 +52,83 @@
           <button id="help-close" class="help-close" aria-label="Close help">×</button>
         </div>
         <p class="help-paragraph">
-          ChopTube lets you remix YouTube clips live. In performance mode, number keys trigger cue points on the selected tile.
-          Click a step to enter edit mode and write cues or mutes into the sequencer. Use loop mode to record your live
-          triggers into the timeline while the global metronome keeps everything locked to the grid.
+          ChopTube is a live YouTube clip sequencer. Load a video into a tile, choose cue points, then play or record trigger
+          patterns in sync with the global clock. Use Edit mode to set cues and write steps, then switch to Present mode for a
+          cleaner performance view.
         </p>
         <div class="help-grid">
           <div><span class="key">Space</span>Play / Stop</div>
           <div><span class="key">L</span>Loop On / Off</div>
-          <div><span class="key">Shift + Arrows</span>Fine nudge cue (0.01s / 1s)</div>
-          <div><span class="key">Click Step</span>Select step for editing</div>
-          <div><span class="key">← / →</span>Nudge cue by 0.10s</div>
-          <div><span class="key">↑ / ↓</span>Nudge cue by 10s</div>
-          <div><span class="key">Option + Arrows</span>Adjust cue volume</div>
-          <div><span class="key">0-9</span>Trigger cue (performance)</div>
-          <div><span class="key">Q W E R T Y U I</span>Tile play / stop</div>
+          <div><span class="key">Q W E R T Y U I</span>Play / Stop tile 1-8</div>
           <div><span class="key">Shift + Q..I</span>Select tile only</div>
-          <div><span class="key">Shift + 0-9</span>Set cue at current time</div>
-          <div><span class="key">M</span>Mute step</div>
-          <div><span class="key">Delete</span>Clear step</div>
-          <div><span class="key">Shift + Delete</span>Clear tile loop</div>
+          <div><span class="key">0-9</span>Trigger cue on selected tile</div>
+          <div><span class="key">Shift + 0-9</span>Set cue from current playhead</div>
+          <div><span class="key">Click Step</span>Select step for editing</div>
+          <div><span class="key">Delete</span>Clear selected step</div>
+          <div><span class="key">Shift + Delete</span>Clear whole tile loop</div>
+          <div><span class="key">M</span>Write mute step</div>
+          <div><span class="key">← / →</span>Nudge cue time by 0.10s</div>
+          <div><span class="key">Shift + ← / →</span>Nudge cue time by 0.01s</div>
+          <div><span class="key">↑ / ↓</span>Nudge cue time by 10s</div>
+          <div><span class="key">Shift + ↑ / ↓</span>Nudge cue time by 1s</div>
+          <div><span class="key">Option + Arrows</span>Adjust cue volume</div>
           <div><span class="key">Tap</span>Tap tempo into BPM</div>
         </div>
       </div>
     </div>
+
+    <div class="community-panel" id="community-panel" aria-hidden="true">
+      <div class="community-card">
+        <button id="community-close" class="help-close community-close" aria-label="Close community">×</button>
+        <img class="community-logo" src="assets/choptube-logo.png" alt="ChopTube logo" />
+        <div class="help-header">
+          <div>
+            <div class="help-title">Top Choppers Showcase</div>
+            <div class="help-subtitle">See what people are making with ChopTube</div>
+          </div>
+        </div>
+        <p class="help-paragraph">
+          Join our Discord to share your session links, submit your sessions to get featured, and discover new remixes.
+        </p>
+        <a
+          id="community-discord-link"
+          class="community-discord-link"
+          href="https://discord.gg/"
+          target="_blank"
+          rel="noreferrer"
+          >Join ChopTube Discord</a
+        >
+        <div class="community-list" id="community-popup-list"></div>
+      </div>
+    </div>
+
+    <div class="mobile-blocker" id="mobile-blocker" aria-hidden="true">
+      <div class="mobile-blocker-card">
+        <h2>Desktop Only For Now</h2>
+        <p>Sorry, this currently works only on desktop browsers.</p>
+      </div>
+    </div>
+
+    <aside class="showcase-sidebar" id="showcase-sidebar" aria-hidden="true">
+      <div class="showcase-header">
+        <div class="showcase-title">My Sessions</div>
+        <button id="showcase-close" class="showcase-close" aria-label="Close links">×</button>
+      </div>
+      <p class="showcase-subtitle">
+        This list is saved only in your current browser on this computer. To back up sessions, keep your URLs in any note or
+        document you can access later.
+      </p>
+      <div class="showcase-actions">
+        <button id="showcase-add-current" type="button">Add Current Session</button>
+      </div>
+      <div class="showcase-form">
+        <input id="showcase-name" type="text" placeholder="Session name" />
+        <input id="showcase-url" type="url" placeholder="https://..." />
+        <button id="showcase-add" type="button">Add Link</button>
+      </div>
+      <div class="showcase-list" id="showcase-list"></div>
+    </aside>
+    <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="app.js"></script>
