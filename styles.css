@@ -64,9 +64,16 @@ body {
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
-  max-width: 380px;
+  max-width: 420px;
   position: relative;
   z-index: 3;
+}
+
+.global-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
 }
 
 .help-toggle {
@@ -85,15 +92,15 @@ body {
   flex: 1;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 7px;
   align-items: center;
   position: relative;
   z-index: 1;
 }
 
 .edit-switch {
-  width: 210px;
-  height: 44px;
+  width: 150px;
+  height: 50px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -125,10 +132,10 @@ body {
 }
 
 .play-toggle {
-  width: 96px;
-  height: 58px;
+  width: 72px;
+  height: 50px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   background: linear-gradient(135deg, #ffe07a, #ffb347);
   color: #0b0d13;
@@ -144,10 +151,10 @@ body {
 }
 
 .loop-toggle {
-  width: 96px;
-  height: 58px;
+  width: 72px;
+  height: 50px;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   background: linear-gradient(135deg, #ff5b5b, #ff8a5b);
   color: #0b0d13;
@@ -182,14 +189,20 @@ body {
 }
 
 .tap-tempo {
-  width: 76px;
-  height: 58px;
+  width: 50px;
+  height: 50px;
   border-radius: 10px;
   background: linear-gradient(135deg, #3a4765, #2a3348);
   color: #d9e8ff;
   font-size: 12px;
   line-height: 1.1;
   font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2px;
 }
 
 .tap-tempo.flash {
@@ -197,14 +210,15 @@ body {
 }
 
 .metronome-toggle {
-  width: 54px;
-  height: 58px;
+  width: 44px;
+  height: 50px;
   border-radius: 10px;
   background: #202736;
   color: #d9e8ff;
   font-size: 18px;
-  display: inline-grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .metronome-toggle.active {
@@ -216,6 +230,7 @@ body {
   width: 22px;
   height: 22px;
   display: block;
+  object-fit: contain;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 
@@ -254,7 +269,7 @@ body {
 }
 
 .loop-toggle .transport-icon {
-  font-size: 24px;
+  font-size: 20px;
   transform: translateY(1px);
 }
 
@@ -281,8 +296,8 @@ body {
 }
 
 .bpm-field {
-  width: 96px;
-  height: 58px;
+  width: 60px;
+  height: 50px;
   border-radius: 10px;
   justify-content: center;
   align-items: center;
@@ -295,10 +310,10 @@ body {
 }
 
 .bpm-field input {
-  width: 96px;
-  height: 36px;
+  width: 60px;
+  height: 28px;
   text-align: center;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   border-radius: 10px;
   background: #111724;
@@ -389,6 +404,11 @@ button.active {
 
 .tile.selected {
   border-color: var(--accent);
+}
+
+.tile.recording {
+  border-color: #ff4b4b;
+  box-shadow: 0 0 0 2px rgba(255, 75, 75, 0.45), 0 0 18px rgba(255, 75, 75, 0.35);
 }
 
 .player-frame {
@@ -606,7 +626,7 @@ button.active {
 .locked-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(10, 12, 18, 0.92);
+  background: rgba(10, 12, 18, 0.72);
   display: none;
   align-items: center;
   justify-content: center;
@@ -659,9 +679,15 @@ button.active {
   width: 18px;
   height: 18px;
   display: block;
+  object-fit: contain;
 }
 
 #new-session {
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+#showcase-toggle {
   min-height: 40px;
   padding: 0 12px;
 }
@@ -672,13 +698,18 @@ button.active {
 }
 
 .share-hint {
-  width: 100%;
+  width: 260px;
   font-size: 11px;
   color: #8fd7ff;
   opacity: 0;
   min-height: 14px;
   text-align: right;
   transition: opacity 240ms ease;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 6px;
+  pointer-events: none;
 }
 
 .share-hint.show {

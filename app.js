@@ -701,6 +701,12 @@ function handleKeyDown(event) {
     setShowcaseOpen(false);
     return;
   }
+  if (event.key === "Escape" && state.selectedStep !== null) {
+    event.preventDefault();
+    state.selectedStep = null;
+    updateStepIndicators();
+    return;
+  }
   const tileHotkeyIndex = TILE_PLAY_KEYS.indexOf(event.key.toLowerCase());
   if (tileHotkeyIndex !== -1) {
     event.preventDefault();
@@ -1148,6 +1154,7 @@ function updateTileDisplays() {
     }
     const hasLoop = tile.actions.some((step) => step.length > 0);
     entry.clearBtn.classList.toggle("has-content", hasLoop);
+    entry.tile.classList.toggle("recording", state.isRecording && idx === state.selectedIndex);
   });
 
   updateStepIndicators();
@@ -1156,11 +1163,10 @@ function updateTileDisplays() {
 
 function updateTransportButton() {
   playToggleBtn.innerHTML = state.isPlaying
-    ? '<span class="transport-icon">■</span><span class="transport-label">Stop (Space)</span>'
-    : '<span class="transport-icon">▶</span><span class="transport-label">Play (Space)</span>';
+    ? '<span class="transport-icon">■</span><span class="transport-label">Stop</span>'
+    : '<span class="transport-icon">▶</span><span class="transport-label">Play</span>';
   playToggleBtn.classList.toggle("active", state.isPlaying);
-  loopToggleBtn.innerHTML =
-    '<span class="transport-icon">⟲</span><span class="transport-label">Loop (L)</span>';
+  loopToggleBtn.innerHTML = '<span class="transport-icon">⟲</span><span class="transport-label">Loop</span>';
   presentModeBtn.classList.toggle("active", !state.isEditMode);
   editModeBtn.classList.toggle("active", state.isEditMode);
   appEl?.classList.toggle("performance", !state.isEditMode);

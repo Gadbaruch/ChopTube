@@ -25,17 +25,22 @@
             <input id="bpm" type="number" min="40" max="240" value="120" aria-label="BPM" />
             <span>BPM</span>
           </div>
-          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">Tap<br />Tempo</button>
+          <button id="tap-tempo" class="tap-tempo" aria-label="Tap tempo">
+            <span>Tap</span>
+            <span>Tempo</span>
+          </button>
           <button id="metronome-toggle" class="metronome-toggle" aria-label="Metronome">
             <img class="metronome-icon" src="assets/metronome-icon.png" alt="" aria-hidden="true" />
           </button>
         </div>
         <div class="global-controls">
-          <button id="showcase-toggle">My Sessions</button>
-          <button id="new-session">+ New</button>
-          <button id="share" aria-label="Copy share link">
-            <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
-          </button>
+          <div class="global-buttons">
+            <button id="showcase-toggle">My Sessions</button>
+            <button id="new-session">+ New</button>
+            <button id="share" aria-label="Copy share link">
+              <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
+            </button>
+          </div>
           <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
       </header>
