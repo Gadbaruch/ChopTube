@@ -9,6 +9,7 @@
   <body>
     <div class="app">
       <header class="topbar">
+        <img class="collapsed-title-logo" src="assets/choptube-title-logo.png" alt="ChopTube" />
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <div class="brand-actions">
@@ -22,10 +23,6 @@
           </div>
         </div>
         <div class="center-control">
-          <div class="edit-switch" aria-label="View mode">
-            <button id="present-mode" class="edit-side" type="button">Show</button>
-            <button id="edit-mode" class="edit-side" type="button">Edit</button>
-          </div>
           <button id="play-toggle" class="play-toggle" aria-label="Play or stop"></button>
           <button id="loop-toggle" class="loop-toggle" aria-label="Loop toggle"></button>
           <div class="field bpm-field">
@@ -53,13 +50,35 @@
           </div>
           <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
+        <button id="topbar-toggle" class="topbar-toggle" type="button" aria-label="Collapse top bar">
+          <img id="topbar-toggle-icon" src="assets/chevron.up.png" alt="" aria-hidden="true" />
+        </button>
       </header>
 
-      <section class="grid" id="grid"></section>
-
-      <footer class="footer">
-        <div class="status" id="status"></div>
-      </footer>
+      <div class="workspace-scroll" id="workspace-scroll">
+        <div class="workspace-canvas">
+          <section class="grid" id="grid"></section>
+          <section class="arrangement" id="arrangement">
+            <div class="arrangement-controls">
+              <button id="arr-autoplay" type="button">Autoplay</button>
+              <button id="arr-loop" type="button">Loop</button>
+              <div class="arr-length-controls">
+                <span>Part Length</span>
+                <input id="arr-length-value" type="number" min="1" step="1" value="2" />
+                <select id="arr-length-unit">
+                  <option value="bars">bars</option>
+                  <option value="beats">beats</option>
+                  <option value="seconds">seconds</option>
+                </select>
+              </div>
+            </div>
+            <div class="arrangement-parts" id="arrangement-parts"></div>
+          </section>
+        </div>
+        <footer class="footer">
+          <div class="status" id="status"></div>
+        </footer>
+      </div>
     </div>
 
     <div class="help-panel" id="help-panel" aria-hidden="true">
