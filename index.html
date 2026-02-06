@@ -11,10 +11,15 @@
       <header class="topbar">
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
-          <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
-          <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">
-            Featured sessions
-          </button>
+          <div class="brand-actions">
+            <div class="brand-buttons">
+              <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
+              <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">
+                Featured sessions
+              </button>
+            </div>
+            <div class="quick-start-line">Drop videos. Loop cues (0-9). Remix the internet.</div>
+          </div>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
@@ -67,17 +72,19 @@
           <button id="help-close" class="help-close" aria-label="Close help">×</button>
         </div>
         <p class="help-paragraph">
-          ChopTube is a live YouTube clip sequencer. Load a video into a tile, choose cue points, then play or record trigger
-          patterns in sync with the global clock. Use Edit mode to set cues and write steps, then switch to Present mode for a
-          cleaner performance view.
+          ChopTube is a live YouTube chop sequencer. Load videos into tiles, trigger cues with your keyboard, and turn Loop on
+          to write your live cue performance into each tile sequencer. Use Edit mode to set cues and steps, then switch to Show
+          mode for a clean performance view.
         </p>
         <div class="help-grid">
           <div><span class="key">Space</span>Play / Stop</div>
           <div><span class="key">L</span>Loop On / Off</div>
+          <div><span class="key">C</span>Metronome On / Off</div>
+          <div><span class="key">Tab</span>Toggle Show / Edit</div>
           <div><span class="key">Q W E R T Y U I</span>Play / Stop tile 1-8</div>
           <div><span class="key">Shift + Q..I</span>Select tile only</div>
           <div><span class="key">0-9</span>Trigger cue on selected tile</div>
-          <div><span class="key">Shift + 0-9</span>Set cue from current playhead</div>
+          <div><span class="key">Command + 0-9</span>Set cue from current playhead</div>
           <div><span class="key">Click Step</span>Select step for editing</div>
           <div><span class="key">Delete</span>Clear selected step</div>
           <div><span class="key">Shift + Delete</span>Clear whole tile loop</div>
@@ -87,6 +94,8 @@
           <div><span class="key">↑ / ↓</span>Nudge cue time by 10s</div>
           <div><span class="key">Shift + ↑ / ↓</span>Nudge cue time by 1s</div>
           <div><span class="key">Option + Arrows</span>Adjust cue volume</div>
+          <div><span class="key">Sh%</span>Per-cue sequencer timing shift</div>
+          <div><span class="key">x (video hover)</span>Clear tile video</div>
           <div><span class="key">Tap</span>Tap tempo into BPM</div>
         </div>
       </div>
@@ -144,6 +153,20 @@
       <div class="showcase-list" id="showcase-list"></div>
     </aside>
     <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
+    <div id="tile-url-popup" class="tile-url-popup" aria-hidden="true">
+      <div class="tile-url-popup-card">
+        <div class="tile-url-popup-title">Tile URL</div>
+        <input id="tile-url-input" type="text" placeholder="Paste YouTube URL or playlist URL" />
+        <div class="tile-url-popup-actions">
+          <button id="tile-url-cancel" type="button">Cancel</button>
+          <button id="tile-url-save" type="button">Load</button>
+        </div>
+      </div>
+    </div>
+    <div id="tile-context-menu" class="tile-context-menu" aria-hidden="true">
+      <button id="tile-copy-btn" type="button">Copy Tile</button>
+      <button id="tile-paste-btn" type="button">Paste Tile</button>
+    </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="app.js?v=20260205b"></script>
