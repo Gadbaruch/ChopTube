@@ -443,6 +443,8 @@ function init() {
 }
 
 function initGlobalTooltips() {
+  // Global transport tooltips are configured once here; tile-level tooltips
+  // are attached when each tile is built.
   setTooltip(presentModeBtn, "Show mode\nShortcut: Tab toggles Show/Edit");
   setTooltip(editModeBtn, "Edit mode\nShortcut: Tab toggles Show/Edit");
   setTooltip(playToggleBtn, "Global play / stop\nShortcut: Space");
@@ -1677,6 +1679,9 @@ function queueTileAction(tile, action, delayMs) {
 }
 
 function triggerTileStepActions(tile, localStep) {
+  // Cue shift model:
+  //  - Positive shift delays a cue within the current step window.
+  //  - Negative shift pulls a cue from the next step into the end of this one.
   const totalSteps = Math.max(1, tile.steps || 1);
   const stepDuration = getStepDurationMs(tile);
   const actions = tile.actions[localStep] || [];
@@ -2096,6 +2101,8 @@ function setTooltip(element, text) {
 }
 
 function initTooltips() {
+  // Custom tooltip allows controlled delay and multiline shortcut hints;
+  // native title tooltips do not support this behavior consistently.
   tooltipEl = document.createElement("div");
   tooltipEl.className = "app-tooltip";
   tooltipEl.setAttribute("aria-hidden", "true");
