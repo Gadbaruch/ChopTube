@@ -1,5 +1,5 @@
 const TILE_COUNT = 8;
-const FREE_TILES = 4;
+const FREE_TILES = TILE_COUNT;
 const NUDGE_LR = 0.1;
 const NUDGE_UD = 10;
 const NUDGE_LR_FINE = 0.01;
@@ -129,6 +129,220 @@ const RANDOM_VIDEO_IDS = Array.from(
   "fWNaR-rxAic",
 ])
 );
+const RANDOM_VIDEO_POOLS = {
+  top_hits: [
+    "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+    "https://www.youtube.com/watch?v=JGwWNGJdvx8",
+    "https://www.youtube.com/watch?v=fRh_vgS2dFE",
+    "https://www.youtube.com/watch?v=YQHsXMglC9A",
+    "https://www.youtube.com/watch?v=CevxZvSJLk8",
+    "https://www.youtube.com/watch?v=OPf0YbXqDm0",
+    "https://www.youtube.com/watch?v=2Vv-BfVoq4g",
+    "https://www.youtube.com/watch?v=pRpeEdMmmQ0",
+    "https://www.youtube.com/watch?v=uelHwf8o7_U",
+  ],
+  vintage_music: [
+    "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
+    "https://www.youtube.com/watch?v=L_jWHffIx5E",
+    "https://www.youtube.com/watch?v=hTWKbfoikeg",
+    "https://www.youtube.com/watch?v=kXYiU_JCYtU",
+    "https://www.youtube.com/watch?v=tAGnKpE4NCI",
+    "https://www.youtube.com/watch?v=HgzGwKwLmgM",
+  ],
+  classic_meme: [
+    "https://www.youtube.com/watch?v=4v8ek9TEeOU",
+    "https://www.youtube.com/watch?v=zLTZPK8HhFI",
+    "https://www.youtube.com/watch?v=bE4C8a48o1E",
+    "https://www.youtube.com/watch?v=wF1l_KtIUoA",
+    "https://www.youtube.com/watch?v=JNsKvZo6MDs",
+    "https://www.youtube.com/watch?v=Obgnr9pc820",
+    "https://www.youtube.com/watch?v=YCeQLeQiRP4",
+    "https://www.youtube.com/watch?v=5LfeJdpk3K4",
+    "https://www.youtube.com/watch?v=q6EoRBvdVPQ",
+    "https://www.youtube.com/watch?v=ajlkhFnz8eo",
+    "https://www.youtube.com/watch?v=WxrQ3SqSt6Q",
+    "https://www.youtube.com/watch?v=yBLdQ1a4-JI",
+  ],
+  solo_drummers: [
+    "https://www.youtube.com/watch?v=9esWG6A6g-k",
+    "https://www.youtube.com/watch?v=IXK0m1Uq2Io",
+    "https://www.youtube.com/watch?v=4jh4vr6ZxXE",
+    "https://www.youtube.com/watch?v=66TQ4TqiAFs",
+    "https://www.youtube.com/watch?v=7sJ6pFK5DOI",
+    "https://www.youtube.com/watch?v=zW8-mBGpYEc",
+    "https://www.youtube.com/watch?v=NdQ2dIQxcGQ",
+    "https://www.youtube.com/watch?v=17XlFsBT07o",
+    "https://www.youtube.com/watch?v=M9Pb6PF8LXA",
+    "https://www.youtube.com/watch?v=c6q2dRTwp_Q",
+    "https://www.youtube.com/watch?v=jmHPlZHkg6A",
+    "https://www.youtube.com/watch?v=XrnqKriMNtQ",
+    "https://www.youtube.com/watch?v=rH-WBDcttRU",
+    "https://www.youtube.com/watch?v=jHC5Vh07T4k",
+    "https://www.youtube.com/watch?v=h22r2-1BKXk",
+    "https://www.youtube.com/watch?v=ol565BzRUyg",
+    "https://www.youtube.com/watch?v=alF-VK18syo",
+    "https://www.youtube.com/watch?v=fyoxJtQ8vYU",
+    "https://www.youtube.com/watch?v=aAOL_KSr2WM",
+    "https://www.youtube.com/watch?v=f8dD5-mFUgs",
+  ],
+  classic_breaks: [
+    "https://www.youtube.com/watch?v=XRTcQk4A4AE",
+    "https://www.youtube.com/watch?v=DD6IfqoEHmM",
+    "https://www.youtube.com/watch?v=YzaEs2q1gb8",
+    "https://www.youtube.com/watch?v=asMG7xKcRpg",
+    "https://www.youtube.com/watch?v=BbklLMZuOLU",
+    "https://www.youtube.com/watch?v=DlBIfPvKRiY",
+    "https://www.youtube.com/watch?v=rJsrKRfqCBk",
+    "https://www.youtube.com/watch?v=P_P-7Tm588g",
+    "https://www.youtube.com/watch?v=f76DuKeat0Y",
+    "https://www.youtube.com/watch?v=oeoQw6aoNEs",
+  ],
+  world_music: [
+    "https://www.youtube.com/watch?v=lSWCAmlkoNA",
+    "https://www.youtube.com/watch?v=XISyGA6x5uk",
+    "https://www.youtube.com/watch?v=4FAEp9ExSno",
+    "https://www.youtube.com/watch?v=hognzVJdHLE",
+    "https://www.youtube.com/watch?v=IKBVWn3MVr8",
+    "https://www.youtube.com/watch?v=9tzGmDdq6DE",
+    "https://www.youtube.com/watch?v=xB_EEFcM6TE",
+    "https://www.youtube.com/watch?v=RfnaQ9Cuw5k",
+    "https://www.youtube.com/watch?v=voqgr3JFYD4",
+    "https://www.youtube.com/watch?v=QdrPmZwsXiM",
+    "https://www.youtube.com/watch?v=WnjcHNnPLeo",
+    "https://www.youtube.com/watch?v=ZHoRxHRpQbw",
+    "https://www.youtube.com/watch?v=lVPLIuBy9CY",
+    "https://www.youtube.com/watch?v=RFjRJmGYrCg",
+    "https://www.youtube.com/watch?v=IrMTuvsTQeQ",
+    "https://www.youtube.com/watch?v=yh5JTq0iyCc",
+    "https://www.youtube.com/watch?v=RL0rZXzu8Qc",
+    "https://www.youtube.com/watch?v=nms23cFcCZE",
+    "https://www.youtube.com/watch?v=B9FzVhw8_bY",
+    "https://www.youtube.com/watch?v=qP-7GNoDJ5c",
+    "https://www.youtube.com/watch?v=v4xZUr0BEfE",
+    "https://www.youtube.com/watch?v=zOvsyamoEDg",
+    "https://www.youtube.com/watch?v=zPonioDYnoY",
+    "https://www.youtube.com/watch?v=wlaZSx6tqRo",
+    "https://www.youtube.com/watch?v=Ib1WC43g0Zs",
+    "https://www.youtube.com/watch?v=igmpvrRQIkI",
+    "https://www.youtube.com/watch?v=2CPV0_t1sbY",
+    "https://www.youtube.com/watch?v=TIwv3eh4Mq4",
+    "https://www.youtube.com/watch?v=tU3oAyin8W4",
+    "https://www.youtube.com/watch?v=sycoh3fVJ4M",
+    "https://www.youtube.com/watch?v=1jym1kIgqGQ",
+    "https://www.youtube.com/watch?v=drSEfVfnvxY",
+    "https://www.youtube.com/watch?v=12RPjPSklxA",
+    "https://www.youtube.com/watch?v=ug2TrGD7INY",
+  ],
+  accapellas: [
+    "https://www.youtube.com/watch?v=nMCD9_ALvNY",
+    "https://www.youtube.com/watch?v=T-6iL3c2Lb8",
+    "https://www.youtube.com/watch?v=RmBt3s96ymk",
+    "https://www.youtube.com/watch?v=_Gxr2o3-vyE",
+    "https://www.youtube.com/watch?v=_hOsvvFc_8U",
+    "https://www.youtube.com/watch?v=YO9KEKnnlKs",
+    "https://www.youtube.com/watch?v=UoAJS9BnB4s",
+    "https://www.youtube.com/watch?v=sEU67M033H0",
+    "https://www.youtube.com/watch?v=EeXKcxsS3j0",
+    "https://www.youtube.com/watch?v=34juJeZCnKc",
+    "https://www.youtube.com/watch?v=MozRs9RvYhk",
+    "https://www.youtube.com/watch?v=aKQOjCFKX-g",
+  ],
+  loop_samples: [
+    "https://www.youtube.com/watch?v=Mbq6Xuc7U8Q",
+    "https://www.youtube.com/watch?v=VVBeDsuR0CM",
+    "https://www.youtube.com/watch?v=fJykAKESZ_Q",
+    "https://www.youtube.com/watch?v=nFT8_hSpsQE",
+    "https://www.youtube.com/watch?v=2uLzDP7K7IQ",
+    "https://www.youtube.com/watch?v=irMlFscYyZg",
+    "https://www.youtube.com/watch?v=ATiDp9b8Mvs",
+    "https://www.youtube.com/watch?v=BKppsibFNig",
+    "https://www.youtube.com/watch?v=uD93twGoAro",
+    "https://www.youtube.com/watch?v=QmVNCJhtHD4",
+    "https://www.youtube.com/watch?v=Hv0S8bojjiw",
+    "https://www.youtube.com/watch?v=0R6ImFXEs9E",
+  ],
+  drum_loops: [
+    "https://www.youtube.com/watch?v=TP32vjzsyPI",
+    "https://www.youtube.com/watch?v=_2IMFf58z5k",
+    "https://www.youtube.com/watch?v=gjs6zrhY-Ak",
+    "https://www.youtube.com/watch?v=L1kk8xGK6cs",
+    "https://www.youtube.com/watch?v=uD2a7IzXFKs",
+    "https://www.youtube.com/watch?v=nsh_t7c12_4",
+    "https://www.youtube.com/watch?v=Xf9fkxT60OE",
+    "https://www.youtube.com/watch?v=Bz4mK8bmDus",
+    "https://www.youtube.com/watch?v=446UcmML0Qw",
+    "https://www.youtube.com/watch?v=3Uxb3_fJLx4",
+    "https://www.youtube.com/watch?v=wxnnFZ15Mqw",
+    "https://www.youtube.com/watch?v=YQXZeJhMRPE",
+  ],
+  weird_videos: [
+    "https://www.youtube.com/watch?v=i29t-5tEp_o",
+    "https://www.youtube.com/watch?v=uqcyDA2L5L0",
+    "https://www.youtube.com/watch?v=87NHueHBHwY",
+    "https://www.youtube.com/watch?v=cUpJZAk9YAk",
+    "https://www.youtube.com/watch?v=XpdUkZbUbbo",
+    "https://www.youtube.com/watch?v=BvBhWMZQg6g",
+    "https://www.youtube.com/watch?v=018f1iLqRbQ",
+    "https://www.youtube.com/watch?v=g0ZW534Ho-8",
+    "https://www.youtube.com/watch?v=jdRCNM2k42o",
+    "https://www.youtube.com/watch?v=LB871SVYMhI",
+    "https://www.youtube.com/watch?v=9EiinQ1QNXU",
+    "https://www.youtube.com/watch?v=erh2ngRZxs0",
+  ],
+  experimental_sounds: [
+    "https://www.youtube.com/watch?v=_wJPXrO1cdg",
+    "https://www.youtube.com/watch?v=lYeP8a_Y_0A",
+    "https://www.youtube.com/watch?v=Pb42GbADwZM",
+    "https://www.youtube.com/watch?v=c9NCs9EmNRg",
+    "https://www.youtube.com/watch?v=6hIgBEXuQD8",
+    "https://www.youtube.com/watch?v=VhWAAazQuDY",
+    "https://www.youtube.com/watch?v=tblmXoz4Foc",
+    "https://www.youtube.com/watch?v=FDYSSBcsFHI",
+    "https://www.youtube.com/watch?v=P_fIGvP_9MM",
+    "https://www.youtube.com/watch?v=bu3g_olZUcU",
+    "https://www.youtube.com/watch?v=3rdTt3u9h30",
+    "https://www.youtube.com/watch?v=pc1ttO9myWw",
+    "https://www.youtube.com/watch?v=N6roTJFAfEU",
+    "https://www.youtube.com/watch?v=QQL0IkML1Gk",
+    "https://www.youtube.com/watch?v=6llnk9DhiFE",
+    "https://www.youtube.com/watch?v=G3H1FCSi_-M",
+  ],
+  jazzy_girls: [
+    "https://www.youtube.com/watch?v=TEOzIc9LHGg",
+    "https://www.youtube.com/watch?v=hs58v0rKQgY",
+    "https://www.youtube.com/watch?v=keqMSbW1EUk",
+    "https://www.youtube.com/watch?v=KkNnHWWARYY",
+    "https://www.youtube.com/watch?v=CcAn_FYl_y0",
+    "https://www.youtube.com/watch?v=pV61GrA8PME",
+    "https://www.youtube.com/watch?v=Vi2WQkiAw-U",
+    "https://www.youtube.com/watch?v=lJXLqAutql4",
+    "https://www.youtube.com/watch?v=dusavln6Cjw",
+    "https://www.youtube.com/watch?v=uHdvWel-fRg",
+    "https://www.youtube.com/watch?v=x8cFdZyWOOs",
+    "https://www.youtube.com/watch?v=KKIammrhEp4",
+  ],
+  zero_views_videos: [
+    "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+    "https://www.youtube.com/watch?v=RubBzkZzpUA",
+    "https://www.youtube.com/watch?v=J_ub7Etch2U",
+    "https://www.youtube.com/watch?v=7wtfhZwyrcc",
+  ],
+};
+const VIDEO_POOL_OPTIONS = [
+  { key: "top_hits", label: "Top 100 hits" },
+  { key: "vintage_music", label: "Vintage music" },
+  { key: "classic_meme", label: "Classic Meme" },
+  { key: "solo_drummers", label: "Solo drummers" },
+  { key: "classic_breaks", label: "Classic breaks" },
+  { key: "world_music", label: "World music" },
+  { key: "accapellas", label: "Accapellas" },
+  { key: "loop_samples", label: "Loop packs" },
+  { key: "drum_loops", label: "Drum loops" },
+  { key: "weird_videos", label: "Weird videos" },
+  { key: "experimental_sounds", label: "Experimental sounds" },
+  { key: "jazzy_girls", label: "Jazzy girls" },
+  { key: "zero_views_videos", label: "0 views videos" },
+];
 const COMMUNITY_DISCORD_URL = "https://discord.gg/j6D9WKZN";
 const COMMUNITY_SESSIONS = [
   {
@@ -137,6 +351,8 @@ const COMMUNITY_SESSIONS = [
   },
 ];
 
+// Global runtime state for transport, UI mode, selection, and all tile data.
+// This object is the single source of truth for rendering and URL persistence.
 const state = {
   bpm: 120,
   division: BASE_DIVISION,
@@ -147,22 +363,7 @@ const state = {
   selectedIndex: 0,
   selectedCue: 0,
   selectedStep: null,
-  tiles: Array.from({ length: TILE_COUNT }, () => ({
-    videoUrl: "",
-    videoId: "",
-    player: null,
-    cues: Array(10).fill(0),
-    cueVolumes: Array(10).fill(100),
-    masterVolume: 100,
-    playbackRate: 1,
-    isClipPlaying: false,
-    desiredClipPlaying: null,
-    actions: [],
-    muted: false,
-    steps: 16,
-    division: BASE_DIVISION,
-    customCues: false,
-  })),
+  tiles: Array.from({ length: TILE_COUNT }, () => getDefaultTileState()),
 };
 
 const gridEl = document.getElementById("grid");
@@ -197,6 +398,13 @@ const showcaseUrlInput = document.getElementById("showcase-url");
 const showcaseList = document.getElementById("showcase-list");
 const shareHint = document.getElementById("share-hint");
 const statusEl = document.getElementById("status");
+const tileContextMenu = document.getElementById("tile-context-menu");
+const tileCopyBtn = document.getElementById("tile-copy-btn");
+const tilePasteBtn = document.getElementById("tile-paste-btn");
+const tileUrlPopup = document.getElementById("tile-url-popup");
+const tileUrlInput = document.getElementById("tile-url-input");
+const tileUrlSaveBtn = document.getElementById("tile-url-save");
+const tileUrlCancelBtn = document.getElementById("tile-url-cancel");
 
 const tileEls = [];
 const stepEls = [];
@@ -212,6 +420,12 @@ let metronomeVolume = 50;
 let historyPast = [];
 let historyFuture = [];
 let isApplyingHistory = false;
+let tileClipboard = null;
+let contextTileIndex = null;
+let activeUrlTileIndex = null;
+let tooltipEl = null;
+let tooltipTimer = null;
+let tooltipTarget = null;
 
 function init() {
   loadShowcaseLinks();
@@ -219,11 +433,24 @@ function init() {
   buildGrid();
   resetHistory();
   bindGlobalControls();
+  initGlobalTooltips();
+  initTooltips();
   updateTransportButton();
   updateStatus();
   updateMobileBlocker();
   renderShowcaseLinks();
   renderCommunityPanelLinks();
+}
+
+function initGlobalTooltips() {
+  setTooltip(presentModeBtn, "Show mode\nShortcut: Tab toggles Show/Edit");
+  setTooltip(editModeBtn, "Edit mode\nShortcut: Tab toggles Show/Edit");
+  setTooltip(playToggleBtn, "Global play / stop\nShortcut: Space");
+  setTooltip(loopToggleBtn, "Loop record mode\nON: cue performance writes into sequence\nShortcut: L");
+  setTooltip(bpmInput, "Global BPM (40-240)");
+  setTooltip(tapTempoBtn, "Tap tempo\nClick repeatedly to detect BPM");
+  setTooltip(metronomeToggleBtn, "Click metronome on / off\nShortcut: C");
+  setTooltip(metronomeVolumeInput, "Click metronome volume");
 }
 
 function buildGrid() {
@@ -250,28 +477,56 @@ function buildGrid() {
     frame.className = "player-frame";
     const playerSlot = document.createElement("div");
     playerSlot.id = `player-${i}`;
+    const clearVideoBtn = document.createElement("button");
+    clearVideoBtn.className = "video-clear-btn";
+    clearVideoBtn.type = "button";
+    clearVideoBtn.textContent = "×";
+    clearVideoBtn.setAttribute("aria-label", `Clear video from tile ${i + 1}`);
+    setTooltip(clearVideoBtn, "Clear video from tile");
+    const emptyHint = document.createElement("div");
+    emptyHint.className = "video-empty-hint";
+    emptyHint.textContent = "Load URL or click Random to add a video";
     frame.appendChild(playerSlot);
+    frame.appendChild(clearVideoBtn);
+    frame.appendChild(emptyHint);
 
     const controls = document.createElement("div");
     controls.className = "tile-controls";
 
-    const urlRow = document.createElement("div");
-    urlRow.className = "url-row editable-only";
-    const urlInput = document.createElement("input");
-    urlInput.placeholder = "Paste YouTube URL";
-    urlInput.value = state.tiles[i].videoUrl;
-    const loadBtn = document.createElement("button");
-    loadBtn.textContent = "Load";
-    loadBtn.className = "load-btn";
+    const sourceRow = document.createElement("div");
+    sourceRow.className = "url-row editable-only";
+    const poolSelect = document.createElement("select");
+    poolSelect.className = "tile-source-pool";
+    setTooltip(poolSelect, "Style pool for random video selection");
+    VIDEO_POOL_OPTIONS.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.key;
+      option.textContent = item.label;
+      poolSelect.appendChild(option);
+    });
+    poolSelect.value = state.tiles[i].videoPool in RANDOM_VIDEO_POOLS ? state.tiles[i].videoPool : "top_hits";
     const randomBtn = document.createElement("button");
     randomBtn.textContent = "Random";
     randomBtn.className = "load-btn";
-    urlRow.append(urlInput, loadBtn, randomBtn);
+    setTooltip(randomBtn, "Load a random video from selected style pool");
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "Back";
+    backBtn.className = "load-btn";
+    setTooltip(backBtn, "Load previous video for this tile");
+    const urlBtn = document.createElement("button");
+    urlBtn.textContent = "URL";
+    urlBtn.className = "load-btn";
+    setTooltip(urlBtn, "View or replace tile URL");
+    sourceRow.append(poolSelect, randomBtn, backBtn, urlBtn);
 
     const perfRow = document.createElement("div");
     perfRow.className = "status-row cue-row editable-only";
     const perfPlayBtn = document.createElement("button");
     perfPlayBtn.className = "perf-play-btn";
+    setTooltip(
+      perfPlayBtn,
+      `Play / pause tile\nShortcut: ${TILE_PLAY_KEYS[i].toUpperCase()}`
+    );
     perfPlayBtn.innerHTML = `▶ <span class="hotkey">${TILE_PLAY_KEYS[i].toUpperCase()}</span>`;
     const perfVolLabel = document.createElement("div");
     perfVolLabel.className = "mini-label";
@@ -282,9 +537,11 @@ function buildGrid() {
     perfVolInput.min = "0";
     perfVolInput.max = "100";
     perfVolInput.step = "1";
+    setTooltip(perfVolInput, "Tile master volume");
     perfVolInput.value = String(state.tiles[i].masterVolume ?? 100);
     const perfSpeedSelect = document.createElement("select");
     perfSpeedSelect.className = "perf-speed-select";
+    setTooltip(perfSpeedSelect, "Tile playback speed");
     perfSpeedSelect.innerHTML = `
       <option value="0.5">0.5x</option>
       <option value="0.75">0.75x</option>
@@ -306,6 +563,7 @@ function buildGrid() {
     stepsInput.min = "1";
     stepsInput.max = "128";
     stepsInput.value = String(state.tiles[i].steps);
+    setTooltip(stepsInput, "Number of steps in this tile sequence");
     stepsRow.append(stepsLabel, stepsInput);
 
     const divisionRow = document.createElement("div");
@@ -315,6 +573,7 @@ function buildGrid() {
     divisionLabel.textContent = "Time Div";
     const divisionSelect = document.createElement("select");
     divisionSelect.className = "tile-select-input";
+    setTooltip(divisionSelect, "Step time division");
     divisionSelect.innerHTML = `
       <option value="16">16ths</option>
       <option value="8">8ths</option>
@@ -333,6 +592,7 @@ function buildGrid() {
     cueSection.className = "status-row cue-row editable-only";
     const cueSelect = document.createElement("select");
     cueSelect.className = "cue-select tile-select-input";
+    setTooltip(cueSelect, "Currently selected cue index\nShortcut: 0-9");
     for (let c = 0; c <= 9; c += 1) {
       const option = document.createElement("option");
       option.value = String(c);
@@ -344,10 +604,11 @@ function buildGrid() {
     cueSecLabel.className = "mini-label";
     cueSecLabel.textContent = "Sec";
     const cueSecInput = document.createElement("input");
-    cueSecInput.className = "tile-num-input";
+    cueSecInput.className = "tile-num-input cue-sec-input";
     cueSecInput.type = "number";
     cueSecInput.min = "0";
     cueSecInput.step = "0.01";
+    setTooltip(cueSecInput, "Cue video timestamp in seconds\nShortcut: Arrow keys");
 
     const cueVolLabel = document.createElement("div");
     cueVolLabel.className = "mini-label";
@@ -358,8 +619,19 @@ function buildGrid() {
     cueVolInput.min = "0";
     cueVolInput.max = "100";
     cueVolInput.step = "1";
+    setTooltip(cueVolInput, "Cue volume percent\nShortcut: Option + Arrow keys");
+    const cueShiftLabel = document.createElement("div");
+    cueShiftLabel.className = "mini-label";
+    cueShiftLabel.textContent = "Sh%";
+    const cueShiftInput = document.createElement("input");
+    cueShiftInput.className = "tile-num-input cue-shift-input";
+    cueShiftInput.type = "number";
+    cueShiftInput.min = "-100";
+    cueShiftInput.max = "100";
+    cueShiftInput.step = "1";
+    setTooltip(cueShiftInput, "Cue timing shift percent (-100 to 100)");
 
-    cueSection.append(cueSelect, cueSecLabel, cueSecInput, cueVolLabel, cueVolInput);
+    cueSection.append(cueSelect, cueSecLabel, cueSecInput, cueVolLabel, cueVolInput, cueShiftLabel, cueShiftInput);
 
     const seqTitle = document.createElement("div");
     seqTitle.className = "section-title editable-only";
@@ -370,6 +642,7 @@ function buildGrid() {
     const clearBtn = document.createElement("button");
     clearBtn.textContent = "Clear";
     clearBtn.className = "clear-btn";
+    setTooltip(clearBtn, "Clear all steps in this tile sequence\nShortcut: Shift + Delete");
     clearBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       clearActions(i);
@@ -386,6 +659,7 @@ function buildGrid() {
       dot.className = "step";
       if (s % 4 === 0) dot.classList.add("beat-step");
       dot.dataset.step = String(s);
+      setTooltip(dot, `Step ${s + 1}\nShortcut: Click to select`);
       stepIndicator.appendChild(dot);
       stepDots.push(dot);
     }
@@ -403,15 +677,16 @@ function buildGrid() {
       window.alert("We are working on this expansion. Coming soon.");
     });
 
-    controls.append(urlRow, perfRow, liveTitle, cueSection, seqTitle, clearRow, stepIndicator);
+    controls.append(sourceRow, perfRow, liveTitle, cueSection, seqTitle, clearRow, stepIndicator);
     tile.append(frame, controls, lockedOverlay);
     gridEl.appendChild(tile);
 
     tileEls.push({
       tile,
-      urlInput,
-      loadBtn,
+      poolSelect,
       randomBtn,
+      backBtn,
+      urlBtn,
       perfPlayBtn,
       perfVolInput,
       perfSpeedSelect,
@@ -420,6 +695,7 @@ function buildGrid() {
       cueSelect,
       cueSecInput,
       cueVolInput,
+      cueShiftInput,
       clearBtn,
       stepIndicator,
       stepDots,
@@ -427,13 +703,34 @@ function buildGrid() {
     stepEls.push(stepDots);
 
     tile.addEventListener("click", () => selectTile(i));
-    loadBtn.addEventListener("click", (event) => {
+    clearVideoBtn.addEventListener("click", (event) => {
       event.stopPropagation();
-      loadVideo(i, urlInput.value);
+      clearTileVideo(i);
+    });
+    tile.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openTileContextMenu(i, event.clientX, event.clientY);
+    });
+    poolSelect.addEventListener("change", (event) => {
+      event.stopPropagation();
+      const key = poolSelect.value in RANDOM_VIDEO_POOLS ? poolSelect.value : "top_hits";
+      state.tiles[i].videoPool = key;
+      flashControl(poolSelect);
+      saveToUrl();
+      updateStatus();
     });
     randomBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       loadRandomVideo(i);
+    });
+    backBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      loadPreviousVideo(i);
+    });
+    urlBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openTileUrlPopup(i);
     });
     perfPlayBtn.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -441,7 +738,9 @@ function buildGrid() {
     });
     perfVolInput.addEventListener("input", (event) => {
       event.stopPropagation();
-      state.tiles[i].masterVolume = clamp(Number(perfVolInput.value) || 100, 0, 100);
+      const parsed = Number(perfVolInput.value);
+      state.tiles[i].masterVolume = clamp(Number.isFinite(parsed) ? parsed : 100, 0, 100);
+      flashControl(perfVolInput);
       applySelectedCueVolume(i);
       saveToUrl();
     });
@@ -450,19 +749,15 @@ function buildGrid() {
       event.stopPropagation();
       state.tiles[i].playbackRate = Number(perfSpeedSelect.value) || 1;
       state.tiles[i].player?.setPlaybackRate?.(state.tiles[i].playbackRate);
+      flashControl(perfSpeedSelect);
       saveToUrl();
       pushHistorySnapshot();
-    });
-    urlInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        loadVideo(i, urlInput.value);
-      }
     });
     cueSelect.addEventListener("change", (event) => {
       event.stopPropagation();
       selectTile(i);
       selectCue(Number(cueSelect.value));
+      flashControl(cueSelect);
     });
     cueSecInput.addEventListener("input", () => {
       const tile = state.tiles[i];
@@ -471,6 +766,7 @@ function buildGrid() {
       const value = Math.max(0, parsed);
       tile.cues[state.selectedCue] = value;
       tile.customCues = true;
+      flashControl(cueSecInput);
       saveToUrl();
     });
     cueSecInput.addEventListener("change", () => {
@@ -482,11 +778,28 @@ function buildGrid() {
       const parsed = Number(cueVolInput.value);
       if (Number.isNaN(parsed)) return;
       tile.cueVolumes[state.selectedCue] = clamp(parsed, 0, 100);
+      flashControl(cueVolInput);
       applySelectedCueVolume(i);
       saveToUrl();
     });
     cueVolInput.addEventListener("change", () => {
       updateTileDisplays();
+      pushHistorySnapshot();
+    });
+    cueShiftInput.addEventListener("input", () => {
+      const tile = state.tiles[i];
+      const parsed = Number(cueShiftInput.value);
+      if (Number.isNaN(parsed)) return;
+      tile.cueShifts[state.selectedCue] = clamp(parsed, -100, 100);
+      flashControl(cueShiftInput);
+      saveToUrl();
+    });
+    cueShiftInput.addEventListener("change", () => {
+      const tile = state.tiles[i];
+      const parsed = Number(cueShiftInput.value);
+      tile.cueShifts[state.selectedCue] = clamp(Number.isFinite(parsed) ? parsed : 0, -100, 100);
+      cueShiftInput.value = String(Math.round(tile.cueShifts[state.selectedCue] || 0));
+      saveToUrl();
       pushHistorySnapshot();
     });
     stepsInput.addEventListener("change", () => {
@@ -498,6 +811,7 @@ function buildGrid() {
       }
       resizeActions(state.tiles[i]);
       rebuildTileSteps(i);
+      flashControl(stepsInput);
       saveToUrl();
       pushHistorySnapshot();
     });
@@ -505,6 +819,7 @@ function buildGrid() {
       const value = Number(divisionSelect.value) || BASE_DIVISION;
       state.tiles[i].division = value;
       updateStepIndicators();
+      flashControl(divisionSelect);
       saveToUrl();
       pushHistorySnapshot();
     });
@@ -566,7 +881,6 @@ function bindGlobalControls() {
   metronomeVolumeInput?.addEventListener("input", () => {
     metronomeVolume = clamp(Number(metronomeVolumeInput.value) || 0, 0, 100);
   });
-
   newSessionBtn.addEventListener("click", () => {
     newSessionBtn.classList.add("clicked");
     clearTimeout(newBtnResetTimer);
@@ -639,9 +953,35 @@ function bindGlobalControls() {
       showcaseAddBtn?.click();
     }
   });
+  tileCopyBtn?.addEventListener("click", () => {
+    if (contextTileIndex === null) return;
+    tileClipboard = getTileSnapshot(contextTileIndex);
+    hideTileContextMenu();
+    statusEl.textContent = `Copied tile ${contextTileIndex + 1}`;
+  });
+  tilePasteBtn?.addEventListener("click", () => {
+    if (contextTileIndex === null || !tileClipboard) return;
+    applyTileSnapshot(contextTileIndex, tileClipboard);
+    hideTileContextMenu();
+    statusEl.textContent = `Pasted into tile ${contextTileIndex + 1}`;
+  });
+  document.addEventListener("click", (event) => {
+    if (!tileContextMenu?.classList.contains("show")) return;
+    if (tileContextMenu.contains(event.target)) return;
+    hideTileContextMenu();
+  });
+  document.addEventListener("contextmenu", (event) => {
+    if (!tileContextMenu?.classList.contains("show")) return;
+    if (tileContextMenu.contains(event.target)) {
+      event.preventDefault();
+      return;
+    }
+    hideTileContextMenu();
+  });
 
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("resize", updateMobileBlocker);
+  window.addEventListener("resize", hideTileContextMenu);
   appEl?.addEventListener("input", (event) => {
     if (event.target === shareBtn) return;
     hideShareHint();
@@ -654,9 +994,36 @@ function bindGlobalControls() {
     if (event.target === shareBtn) return;
     hideShareHint();
   });
+  tileUrlSaveBtn?.addEventListener("click", () => {
+    if (activeUrlTileIndex === null) return;
+    loadVideo(activeUrlTileIndex, tileUrlInput?.value || "");
+    closeTileUrlPopup();
+  });
+  tileUrlCancelBtn?.addEventListener("click", () => closeTileUrlPopup());
+  tileUrlPopup?.addEventListener("click", (event) => {
+    if (event.target === tileUrlPopup) {
+      closeTileUrlPopup();
+    }
+  });
+  tileUrlInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      tileUrlSaveBtn?.click();
+    }
+  });
 }
 
 function handleKeyDown(event) {
+  if (event.key === "Escape" && tileUrlPopup?.classList.contains("show")) {
+    event.preventDefault();
+    closeTileUrlPopup();
+    return;
+  }
+  if (event.key === "Escape" && tileContextMenu?.classList.contains("show")) {
+    event.preventDefault();
+    hideTileContextMenu();
+    return;
+  }
   if (event.key === "Tab") {
     event.preventDefault();
     state.isEditMode = !state.isEditMode;
@@ -769,7 +1136,7 @@ function handleKeyDown(event) {
   }
   const numberKey = getNumberKey(event);
   if (numberKey !== null) {
-    if (event.shiftKey) {
+    if (event.metaKey) {
       if (state.selectedStep === null) {
         setCue(state.selectedIndex, numberKey);
       } else {
@@ -831,8 +1198,7 @@ function selectTile(index) {
   tileEls.forEach((entry, idx) => {
     entry.tile.classList.toggle("selected", idx === index);
   });
-  updateStepIndicators();
-  updateStatus();
+  updateTileDisplays();
 }
 
 function toggleSelectedStep(stepIdx) {
@@ -881,6 +1247,7 @@ function selectCue(cueIndex) {
   state.selectedCue = cueIndex;
   applySelectedCueVolume(state.selectedIndex);
   updateTileDisplays();
+  flashControl(tileEls[state.selectedIndex]?.cueSelect);
   updateStatus();
 }
 
@@ -893,6 +1260,7 @@ function setCue(index, cueIndex) {
   tile.customCues = true;
   state.selectedCue = cueIndex;
   updateTileDisplays();
+  flashControl(tileEls[index]?.cueSecInput);
   saveToUrl();
   pushHistorySnapshot();
 }
@@ -901,6 +1269,7 @@ function nudgeCue(index, cueIndex, delta) {
   const tile = state.tiles[index];
   tile.cues[cueIndex] = Math.max(0, tile.cues[cueIndex] + delta);
   updateTileDisplays();
+  flashControl(tileEls[index]?.cueSecInput);
   saveToUrl();
   pushHistorySnapshot();
 }
@@ -915,33 +1284,56 @@ function jumpToCue(index, cueIndex) {
   updateTileDisplays();
 }
 
-function loadVideo(index, url) {
-  const videoId = parseVideoId(url.trim());
-  if (!videoId) {
+function loadVideo(index, url, options = {}) {
+  const normalizedUrl = url.trim();
+  const videoId = parseVideoId(normalizedUrl);
+  const playlistId = parsePlaylistId(normalizedUrl);
+  if (!videoId && !playlistId) {
     statusEl.textContent = "Invalid YouTube URL.";
     return;
   }
 
   const tile = state.tiles[index];
-  tile.videoUrl = url.trim();
-  tile.videoId = videoId;
+  const trackHistory = options.trackHistory !== false;
+  if (trackHistory && tile.videoUrl && tile.videoUrl !== normalizedUrl) {
+    tile.videoHistory.push(tile.videoUrl);
+    if (tile.videoHistory.length > 50) tile.videoHistory.shift();
+  }
+  tile.videoUrl = normalizedUrl;
+  tile.videoId = videoId || "";
+  if (options.poolKey && options.poolKey in RANDOM_VIDEO_POOLS) {
+    tile.videoPool = options.poolKey;
+  }
   tile.customCues = false;
   tile.cues = Array(10).fill(0);
   tile.cueVolumes = Array(10).fill(100);
 
   if (tile.player) {
-    tile.player.loadVideoById(videoId);
+    if (videoId) {
+      tile.player.loadVideoById(videoId);
+    } else if (playlistId) {
+      tile.player.loadPlaylist?.({
+        listType: "playlist",
+        list: playlistId,
+        index: 0,
+      });
+    }
     queueDefaultCues(index);
   } else if (window.YT && window.YT.Player) {
+    const playerVars = {
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+      controls: 0,
+      disablekb: 1,
+    };
+    if (playlistId && !videoId) {
+      playerVars.listType = "playlist";
+      playerVars.list = playlistId;
+    }
     tile.player = new window.YT.Player(`player-${index}`, {
-      videoId,
-      playerVars: {
-        rel: 0,
-        modestbranding: 1,
-        playsinline: 1,
-        controls: 0,
-        disablekb: 1,
-      },
+      videoId: videoId || undefined,
+      playerVars,
       events: {
         onReady: () => maybeSetDefaultCues(index),
         onStateChange: (event) => handlePlayerState(index, event),
@@ -953,19 +1345,254 @@ function loadVideo(index, url) {
   saveToUrl();
 }
 
-function loadRandomVideo(index) {
-  if (!RANDOM_VIDEO_IDS.length) return;
-  const current = state.tiles[index].videoId;
-  let nextId = RANDOM_VIDEO_IDS[Math.floor(Math.random() * RANDOM_VIDEO_IDS.length)];
-  if (RANDOM_VIDEO_IDS.length > 1 && nextId === current) {
-    nextId = RANDOM_VIDEO_IDS[(RANDOM_VIDEO_IDS.indexOf(nextId) + 1) % RANDOM_VIDEO_IDS.length];
+function clearTileVideo(index) {
+  const tile = state.tiles[index];
+  if (!tile) return;
+  if (tile.player?.destroy) {
+    tile.player.destroy();
   }
-  const url = `https://www.youtube.com/watch?v=${nextId}`;
-  loadVideo(index, url);
+  tile.player = null;
+  tile.videoUrl = "";
+  tile.videoId = "";
+  tile.videoHistory = [];
+  tile.customCues = false;
+  tile.cues = Array(10).fill(0);
+  tile.cueVolumes = Array(10).fill(100);
+  tile.cueShifts = Array(10).fill(0);
+  tile.isClipPlaying = false;
+  tile.desiredClipPlaying = null;
+  tile.muted = false;
+  if (Array.isArray(tile.pendingActionTimers)) {
+    tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+  }
+  tile.pendingActionTimers = [];
+
   const entry = tileEls[index];
-  if (entry?.urlInput) {
-    entry.urlInput.value = url;
+  const frame = entry?.tile?.querySelector(".player-frame");
+  if (frame) {
+    const iframe = frame.querySelector("iframe");
+    if (iframe) iframe.remove();
+    let slot = frame.querySelector(`#player-${index}`);
+    if (!slot) {
+      slot = document.createElement("div");
+      slot.id = `player-${index}`;
+      frame.prepend(slot);
+    }
+    slot.innerHTML = "";
   }
+
+  updateTileDisplays();
+  saveToUrl();
+  pushHistorySnapshot();
+}
+
+function loadRandomVideo(index) {
+  const tile = state.tiles[index];
+  const poolKey = tile.videoPool in RANDOM_VIDEO_POOLS ? tile.videoPool : "top_hits";
+  const selectedPool = RANDOM_VIDEO_POOLS[poolKey];
+  if (!selectedPool.length) return;
+  const current = tile.videoUrl;
+  let nextUrl = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+  if (selectedPool.length > 1 && nextUrl === current) {
+    nextUrl = selectedPool[(selectedPool.indexOf(nextUrl) + 1) % selectedPool.length];
+  }
+  loadVideo(index, nextUrl, { poolKey });
+  updateTileDisplays();
+  updateStatus();
+}
+
+function loadPreviousVideo(index) {
+  const tile = state.tiles[index];
+  if (!tile.videoHistory.length) {
+    statusEl.textContent = `Tile ${index + 1} has no previous video yet.`;
+    return;
+  }
+  const previousUrl = tile.videoHistory.pop();
+  loadVideo(index, previousUrl, { trackHistory: false });
+}
+
+function openTileUrlPopup(index) {
+  if (!tileUrlPopup || !tileUrlInput) return;
+  selectTile(index);
+  activeUrlTileIndex = index;
+  tileUrlInput.value = state.tiles[index].videoUrl || "";
+  tileUrlPopup.classList.add("show");
+  tileUrlPopup.setAttribute("aria-hidden", "false");
+  setTimeout(() => {
+    tileUrlInput.focus();
+    tileUrlInput.select();
+  }, 0);
+}
+
+function closeTileUrlPopup() {
+  if (!tileUrlPopup) return;
+  tileUrlPopup.classList.remove("show");
+  tileUrlPopup.setAttribute("aria-hidden", "true");
+  activeUrlTileIndex = null;
+}
+
+function getPoolLabel(poolKey) {
+  const item = VIDEO_POOL_OPTIONS.find((option) => option.key === poolKey);
+  return item ? item.label : "Top 100 hits";
+}
+
+function parsePoolKey(value) {
+  return typeof value === "string" && value in RANDOM_VIDEO_POOLS ? value : "top_hits";
+}
+
+function getDefaultTileState() {
+  return {
+    videoUrl: "",
+    videoId: "",
+    videoPool: "top_hits",
+    videoHistory: [],
+    player: null,
+    cues: Array(10).fill(0),
+    cueVolumes: Array(10).fill(100),
+    cueShifts: Array(10).fill(0),
+    masterVolume: 100,
+    playbackRate: 1,
+    isClipPlaying: false,
+    desiredClipPlaying: null,
+    actions: Array.from({ length: 16 }, () => []),
+    muted: false,
+    steps: 16,
+    division: BASE_DIVISION,
+    customCues: false,
+    pendingActionTimers: [],
+  };
+}
+
+function normalizeTileState(rawTile, fallbackPool = "top_hits") {
+  const tile = getDefaultTileState();
+  const videoUrl = rawTile?.videoUrl || "";
+  tile.videoUrl = videoUrl;
+  tile.videoId = parseVideoId(videoUrl) || "";
+  tile.videoPool = parsePoolKey(rawTile?.videoPool || fallbackPool);
+  tile.videoHistory = Array.isArray(rawTile?.videoHistory)
+    ? rawTile.videoHistory.filter((item) => typeof item === "string").slice(-50)
+    : [];
+  tile.cues = Array.isArray(rawTile?.cues) ? rawTile.cues.slice(0, 10) : tile.cues;
+  while (tile.cues.length < 10) tile.cues.push(0);
+  tile.cueVolumes = Array.isArray(rawTile?.cueVolumes) ? rawTile.cueVolumes.slice(0, 10) : tile.cueVolumes;
+  while (tile.cueVolumes.length < 10) tile.cueVolumes.push(100);
+  tile.cueShifts = Array.isArray(rawTile?.cueShifts) ? rawTile.cueShifts.slice(0, 10) : tile.cueShifts;
+  while (tile.cueShifts.length < 10) tile.cueShifts.push(0);
+  tile.masterVolume = clamp(Number(rawTile?.masterVolume ?? 100), 0, 100);
+  tile.playbackRate = Number(rawTile?.playbackRate) || 1;
+  tile.steps = clamp(Number(rawTile?.steps) || 16, 1, 128);
+  tile.division = Number(rawTile?.division) || BASE_DIVISION;
+  tile.customCues = Boolean(rawTile?.customCues);
+  tile.pendingActionTimers = [];
+  tile.actions = Array.from({ length: tile.steps }, (_, idx) => {
+    const row = (rawTile?.actions && rawTile.actions[idx]) || [];
+    return row.map((action) => ({ ...action }));
+  });
+  return tile;
+}
+function getTileSnapshot(index) {
+  const tile = state.tiles[index];
+  return {
+    videoUrl: tile.videoUrl || "",
+    videoId: parseVideoId(tile.videoUrl || ""),
+    videoPool: parsePoolKey(tile.videoPool),
+    videoHistory: Array.isArray(tile.videoHistory) ? tile.videoHistory.slice(-50) : [],
+    cues: tile.cues.slice(0, 10),
+    cueVolumes: tile.cueVolumes.slice(0, 10),
+    cueShifts: tile.cueShifts.slice(0, 10),
+    masterVolume: clamp(tile.masterVolume ?? 100, 0, 100),
+    playbackRate: Number(tile.playbackRate) || 1,
+    actions: (tile.actions || []).map((step) => (step || []).map((action) => ({ ...action }))),
+    steps: clamp(Number(tile.steps) || 16, 1, 128),
+    division: Number(tile.division) || BASE_DIVISION,
+    customCues: Boolean(tile.customCues),
+  };
+}
+
+function applyTileSnapshot(index, snapshot) {
+  if (!snapshot) return;
+  const tile = state.tiles[index];
+  if (tile.player?.destroy) tile.player.destroy();
+
+  tile.videoUrl = snapshot.videoUrl || "";
+  tile.videoId = parseVideoId(tile.videoUrl || "");
+  tile.videoPool = parsePoolKey(snapshot.videoPool);
+  tile.videoHistory = Array.isArray(snapshot.videoHistory)
+    ? snapshot.videoHistory.filter((item) => typeof item === "string").slice(-50)
+    : [];
+  tile.player = null;
+  tile.cues = Array.isArray(snapshot.cues) ? snapshot.cues.slice(0, 10) : Array(10).fill(0);
+  while (tile.cues.length < 10) tile.cues.push(0);
+  tile.cueVolumes = Array.isArray(snapshot.cueVolumes) ? snapshot.cueVolumes.slice(0, 10) : Array(10).fill(100);
+  while (tile.cueVolumes.length < 10) tile.cueVolumes.push(100);
+  tile.cueShifts = Array.isArray(snapshot.cueShifts) ? snapshot.cueShifts.slice(0, 10) : Array(10).fill(0);
+  while (tile.cueShifts.length < 10) tile.cueShifts.push(0);
+  tile.masterVolume = clamp(Number(snapshot.masterVolume) || 100, 0, 100);
+  tile.playbackRate = Number(snapshot.playbackRate) || 1;
+  tile.steps = clamp(Number(snapshot.steps) || 16, 1, 128);
+  tile.division = Number(snapshot.division) || BASE_DIVISION;
+  tile.customCues = Boolean(snapshot.customCues);
+  tile.pendingActionTimers = [];
+  tile.actions = (snapshot.actions || []).map((step) => (step || []).map((action) => ({ ...action })));
+  resizeActions(tile);
+  tile.isClipPlaying = false;
+  tile.desiredClipPlaying = null;
+  tile.muted = false;
+
+  if (tileEls[index]?.stepDots?.length !== tile.steps) {
+    rebuildTileSteps(index);
+  }
+
+  const videoId = tile.videoId || parseVideoId(tile.videoUrl || "");
+  const playlistId = parsePlaylistId(tile.videoUrl || "");
+  if (window.YT && window.YT.Player && (videoId || playlistId)) {
+    const playerVars = {
+      rel: 0,
+      modestbranding: 1,
+      playsinline: 1,
+      controls: 0,
+      disablekb: 1,
+    };
+    if (playlistId && !videoId) {
+      playerVars.listType = "playlist";
+      playerVars.list = playlistId;
+    }
+    tile.player = new window.YT.Player(`player-${index}`, {
+      videoId: videoId || undefined,
+      playerVars,
+      events: {
+        onReady: () => maybeSetDefaultCues(index),
+        onStateChange: (event) => handlePlayerState(index, event),
+      },
+    });
+  }
+
+  updateTileDisplays();
+  saveToUrl();
+  pushHistorySnapshot();
+}
+
+function hideTileContextMenu() {
+  if (!tileContextMenu) return;
+  tileContextMenu.classList.remove("show");
+  tileContextMenu.setAttribute("aria-hidden", "true");
+  contextTileIndex = null;
+}
+
+function openTileContextMenu(index, clientX, clientY) {
+  if (!tileContextMenu || index >= FREE_TILES) return;
+  selectTile(index);
+  contextTileIndex = index;
+  tileCopyBtn.disabled = false;
+  tilePasteBtn.disabled = !tileClipboard;
+  tileContextMenu.classList.add("show");
+  tileContextMenu.setAttribute("aria-hidden", "false");
+  const menuW = tileContextMenu.offsetWidth || 160;
+  const menuH = tileContextMenu.offsetHeight || 84;
+  const left = Math.min(clientX, window.innerWidth - menuW - 8);
+  const top = Math.min(clientY, window.innerHeight - menuH - 8);
+  tileContextMenu.style.left = `${Math.max(8, left)}px`;
+  tileContextMenu.style.top = `${Math.max(8, top)}px`;
 }
 
 function triggerAction(index, action, addToLoop) {
@@ -973,6 +1600,8 @@ function triggerAction(index, action, addToLoop) {
   const player = tile.player;
   if (!player) return;
 
+  // Always execute immediately for responsive performance.
+  // Recording mode additionally writes the action into the current local step.
   performAction(tile, action);
 
   if (state.isRecording && addToLoop) {
@@ -988,6 +1617,8 @@ function performAction(tile, action) {
   const player = tile.player;
   if (!player) return;
 
+  // Action payloads are intentionally small and serializable because they are
+  // stored directly in URL session state and in undo/redo snapshots.
   switch (action.type) {
     case "play":
       player.playVideo();
@@ -1031,6 +1662,45 @@ function performAction(tile, action) {
   }
 }
 
+function queueTileAction(tile, action, delayMs) {
+  if (!Number.isFinite(delayMs) || delayMs <= 0) {
+    performAction(tile, action);
+    return;
+  }
+  const timerId = setTimeout(() => {
+    if (!state.isPlaying) return;
+    performAction(tile, action);
+    tile.pendingActionTimers = (tile.pendingActionTimers || []).filter((id) => id !== timerId);
+  }, delayMs);
+  tile.pendingActionTimers = tile.pendingActionTimers || [];
+  tile.pendingActionTimers.push(timerId);
+}
+
+function triggerTileStepActions(tile, localStep) {
+  const totalSteps = Math.max(1, tile.steps || 1);
+  const stepDuration = getStepDurationMs(tile);
+  const actions = tile.actions[localStep] || [];
+  actions.forEach((action) => {
+    if (action.type !== "seek") {
+      performAction(tile, action);
+      return;
+    }
+    const shiftPercent = clamp(tile.cueShifts?.[action.cueIndex] ?? 0, -100, 100);
+    if (shiftPercent < 0) return;
+    queueTileAction(tile, action, (stepDuration * shiftPercent) / 100);
+  });
+
+  const nextStep = (localStep + 1) % totalSteps;
+  const nextActions = tile.actions[nextStep] || [];
+  nextActions.forEach((action) => {
+    if (action.type !== "seek") return;
+    const shiftPercent = clamp(tile.cueShifts?.[action.cueIndex] ?? 0, -100, 100);
+    if (shiftPercent >= 0) return;
+    const delayMs = (stepDuration * (100 + shiftPercent)) / 100;
+    queueTileAction(tile, action, delayMs);
+  });
+}
+
 function clearActions(index) {
   const tile = state.tiles[index];
   tile.actions = Array.from({ length: tile.steps }, () => []);
@@ -1068,6 +1738,14 @@ function toggleMuteStep(index, stepIdx) {
 function startTransport() {
   if (transportTimer) clearInterval(transportTimer);
   state.globalStep = -1;
+  state.tiles.forEach((tile) => {
+    if (Array.isArray(tile.pendingActionTimers)) {
+      tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+    }
+    tile.pendingActionTimers = [];
+  });
+  // The master clock always runs at 16th-note resolution (BASE_DIVISION).
+  // Per-tile divisions derive from this clock via getStepAdvance().
   const interval = (60 / state.bpm) * (4 / BASE_DIVISION) * 1000;
   transportTimer = setInterval(tick, interval);
   updateStatus();
@@ -1085,6 +1763,12 @@ function stopTransport(pauseVideos = true) {
     transportTimer = null;
   }
   stopMetronome();
+  state.tiles.forEach((tile) => {
+    if (Array.isArray(tile.pendingActionTimers)) {
+      tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+    }
+    tile.pendingActionTimers = [];
+  });
   if (pauseVideos) pauseAllVideos();
   updateStatus();
 }
@@ -1106,8 +1790,7 @@ function tick() {
     const stepAdvance = getStepAdvance(tile);
     const localStep = getLocalStep(tile);
     if (state.globalStep % stepAdvance === 0) {
-      const actions = tile.actions[localStep] || [];
-      actions.forEach((action) => performAction(tile, action));
+      triggerTileStepActions(tile, localStep);
     }
   });
   updateStepIndicators();
@@ -1134,6 +1817,13 @@ function updateStepIndicators() {
       );
       if (cueAction) dot.textContent = String(cueAction.cueIndex);
       if (muteAction) dot.textContent = "M";
+      if (cueAction) {
+        setTooltip(dot, `Step ${stepIdx + 1}: Cue ${cueAction.cueIndex}\nShortcut: Delete clears step`);
+      } else if (muteAction) {
+        setTooltip(dot, `Step ${stepIdx + 1}: Mute\nShortcut: Delete clears step`);
+      } else {
+        setTooltip(dot, `Step ${stepIdx + 1}\nShortcut: Click to select`);
+      }
       dot.classList.toggle(
         "selected-step",
         idx === state.selectedIndex && stepIdx === state.selectedStep
@@ -1145,9 +1835,7 @@ function updateStepIndicators() {
 function updateTileDisplays() {
   tileEls.forEach((entry, idx) => {
     const tile = state.tiles[idx];
-    if (document.activeElement !== entry.urlInput) {
-      entry.urlInput.value = tile.videoUrl;
-    }
+    entry.poolSelect.value = parsePoolKey(tile.videoPool);
     entry.stepsInput.value = String(tile.steps);
     entry.divisionSelect.value = String(tile.division || BASE_DIVISION);
     entry.perfVolInput.value = String(clamp(tile.masterVolume ?? 100, 0, 100));
@@ -1164,9 +1852,14 @@ function updateTileDisplays() {
     if (document.activeElement !== entry.cueVolInput) {
       entry.cueVolInput.value = String(clamp(tile.cueVolumes[cueIndex] ?? 100, 0, 100));
     }
+    if (document.activeElement !== entry.cueShiftInput) {
+      entry.cueShiftInput.value = String(Math.round(clamp(tile.cueShifts[cueIndex] ?? 0, -100, 100)));
+    }
     const hasLoop = tile.actions.some((step) => step.length > 0);
     entry.clearBtn.classList.toggle("has-content", hasLoop);
     entry.tile.classList.toggle("recording", state.isRecording && idx === state.selectedIndex);
+    entry.backBtn.disabled = tile.videoHistory.length === 0;
+    entry.tile.classList.toggle("has-video", Boolean((tile.videoUrl || "").trim()));
   });
 
   updateStepIndicators();
@@ -1175,10 +1868,10 @@ function updateTileDisplays() {
 
 function updateTransportButton() {
   playToggleBtn.innerHTML = state.isPlaying
-    ? '<span class="transport-icon">■</span><span class="transport-label">Stop</span>'
-    : '<span class="transport-icon">▶</span><span class="transport-label">Play</span>';
+    ? '<span class="transport-icon stop-icon">■</span><span class="transport-label">Stop</span>'
+    : '<span class="transport-icon play-icon">▶</span><span class="transport-label">Play</span>';
   playToggleBtn.classList.toggle("active", state.isPlaying);
-  loopToggleBtn.innerHTML = '<span class="transport-icon">⟲</span><span class="transport-label">Loop</span>';
+  loopToggleBtn.innerHTML = '<span class="transport-icon loop-dot">●</span><span class="transport-label">Loop</span>';
   presentModeBtn.classList.toggle("active", !state.isEditMode);
   editModeBtn.classList.toggle("active", state.isEditMode);
   appEl?.classList.toggle("performance", !state.isEditMode);
@@ -1188,7 +1881,8 @@ function updateStatus() {
   const tile = state.tiles[state.selectedIndex];
   const loopLabel = state.isRecording ? "Loop On" : "Loop Off";
   const playLabel = state.isPlaying ? "Playing" : "Stopped";
-  statusEl.textContent = `Selected tile ${state.selectedIndex + 1} • Cue ${state.selectedCue} • BPM ${state.bpm} • ${playLabel} • ${loopLabel}`;
+  const poolLabel = getPoolLabel(tile.videoPool);
+  statusEl.textContent = `Selected tile ${state.selectedIndex + 1} • Cue ${state.selectedCue} • BPM ${state.bpm} • ${playLabel} • ${loopLabel} • Style ${poolLabel}`;
   loopToggleBtn.classList.toggle("active", state.isRecording);
 }
 
@@ -1214,6 +1908,7 @@ function toggleTilePlayPause(index, shouldRecord) {
   const tile = state.tiles[index];
   const player = tile?.player;
   if (!player) return;
+  flashControl(tileEls[index]?.perfPlayBtn);
   const current =
     typeof tile.desiredClipPlaying === "boolean" ? tile.desiredClipPlaying : Boolean(tile.isClipPlaying);
   const next = !current;
@@ -1259,6 +1954,8 @@ function playAllVideos() {
 }
 
 function saveToUrl() {
+  // Session persistence is hash-based so a single URL fully reproduces state
+  // without requiring a backend.
   const payload = {
     bpm: state.bpm,
     isEditMode: state.isEditMode,
@@ -1266,8 +1963,11 @@ function saveToUrl() {
     selectedCue: state.selectedCue,
     tiles: state.tiles.map((tile) => ({
       videoUrl: tile.videoUrl,
+      videoPool: parsePoolKey(tile.videoPool),
+      videoHistory: Array.isArray(tile.videoHistory) ? tile.videoHistory.slice(-50) : [],
       cues: tile.cues,
       cueVolumes: tile.cueVolumes,
+      cueShifts: tile.cueShifts,
       masterVolume: tile.masterVolume,
       playbackRate: tile.playbackRate,
       actions: tile.actions,
@@ -1284,6 +1984,7 @@ function loadFromUrl() {
   const hash = window.location.hash.replace("#", "");
   if (!hash) return;
   try {
+    // Backward-compatible parse: tolerate missing fields and fill defaults.
     const decoded = decodeURIComponent(atob(hash));
     const payload = JSON.parse(decoded);
     if (payload && payload.tiles) {
@@ -1291,39 +1992,10 @@ function loadFromUrl() {
       state.isEditMode = payload.isEditMode !== false;
       state.selectedIndex = payload.selectedIndex || 0;
       state.selectedCue = payload.selectedCue || 0;
-      state.tiles = payload.tiles.map((tile) => ({
-        videoUrl: tile.videoUrl || "",
-        videoId: parseVideoId(tile.videoUrl || "") || "",
-        player: null,
-        cues: tile.cues || Array(10).fill(0),
-        cueVolumes: tile.cueVolumes || Array(10).fill(100),
-        masterVolume: tile.masterVolume ?? 100,
-        playbackRate: tile.playbackRate ?? 1,
-        isClipPlaying: false,
-        desiredClipPlaying: null,
-        actions: tile.actions || Array.from({ length: tile.steps || 16 }, () => []),
-        muted: false,
-        steps: tile.steps || 16,
-        division: tile.division || BASE_DIVISION,
-        customCues: tile.customCues || false,
-      }));
+      const legacyPool = parsePoolKey(payload.videoPool);
+      state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
       state.tiles = state.tiles.concat(
-        Array.from({ length: TILE_COUNT - state.tiles.length }, () => ({
-          videoUrl: "",
-          videoId: "",
-          player: null,
-          cues: Array(10).fill(0),
-          cueVolumes: Array(10).fill(100),
-          masterVolume: 100,
-          playbackRate: 1,
-          isClipPlaying: false,
-          desiredClipPlaying: null,
-          actions: Array.from({ length: 16 }, () => []),
-          muted: false,
-          steps: 16,
-          division: BASE_DIVISION,
-          customCues: false,
-        }))
+        Array.from({ length: TILE_COUNT - state.tiles.length }, () => getDefaultTileState())
       );
       const hasComposition = state.tiles.some(
         (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
@@ -1346,6 +2018,12 @@ function parseVideoId(url) {
   return match ? match[1] : "";
 }
 
+function parsePlaylistId(url) {
+  if (!url) return "";
+  const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : "";
+}
+
 function adjustCueVolumeFromArrow(key) {
   const tile = state.tiles[state.selectedIndex];
   const cueIndex = state.selectedCue;
@@ -1357,6 +2035,7 @@ function adjustCueVolumeFromArrow(key) {
   if (key === "ArrowDown") delta = -10;
   tile.cueVolumes[cueIndex] = clamp(current + delta, 0, 100);
   updateTileDisplays();
+  flashControl(tileEls[state.selectedIndex]?.cueVolInput);
   saveToUrl();
   pushHistorySnapshot();
 }
@@ -1376,22 +2055,11 @@ function startNewSession() {
   metronomeVolume = 50;
   if (metronomeVolumeInput) metronomeVolumeInput.value = "50";
   stopMetronome();
-  state.tiles = Array.from({ length: TILE_COUNT }, () => ({
-    videoUrl: "",
-    videoId: "",
-    player: null,
-    cues: Array(10).fill(0),
-    cueVolumes: Array(10).fill(100),
-    masterVolume: 100,
-    playbackRate: 1,
-    isClipPlaying: false,
-    desiredClipPlaying: null,
-    actions: Array.from({ length: 16 }, () => []),
-    muted: false,
-    steps: 16,
-    division: BASE_DIVISION,
-    customCues: false,
-  }));
+  state.tiles = Array.from({ length: TILE_COUNT }, () => {
+    const tile = getDefaultTileState();
+    tile.videoPool = getRandomPoolKey();
+    return tile;
+  });
   bpmInput.value = "120";
   window.history.pushState({}, "", `?s=${Math.random().toString(36).slice(2, 10)}`);
   buildGrid();
@@ -1400,8 +2068,91 @@ function startNewSession() {
   resetHistory();
 }
 
+function getRandomPoolKey() {
+  if (!VIDEO_POOL_OPTIONS.length) return "top_hits";
+  const idx = Math.floor(Math.random() * VIDEO_POOL_OPTIONS.length);
+  const key = VIDEO_POOL_OPTIONS[idx]?.key;
+  return key in RANDOM_VIDEO_POOLS ? key : "top_hits";
+}
+
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function flashControl(element) {
+  if (!element) return;
+  element.classList.remove("value-flash");
+  void element.offsetWidth;
+  element.classList.add("value-flash");
+  setTimeout(() => {
+    element.classList.remove("value-flash");
+  }, 240);
+}
+
+function setTooltip(element, text) {
+  if (!element) return;
+  element.dataset.tooltip = text;
+  element.removeAttribute("title");
+}
+
+function initTooltips() {
+  tooltipEl = document.createElement("div");
+  tooltipEl.className = "app-tooltip";
+  tooltipEl.setAttribute("aria-hidden", "true");
+  document.body.appendChild(tooltipEl);
+
+  document.addEventListener("mouseover", handleTooltipOver);
+  document.addEventListener("mouseout", handleTooltipOut);
+  document.addEventListener("scroll", hideTooltip, true);
+  document.addEventListener("keydown", hideTooltip, true);
+  document.addEventListener("mousedown", hideTooltip, true);
+  window.addEventListener("resize", hideTooltip);
+}
+
+function handleTooltipOver(event) {
+  const target = event.target?.closest?.("[data-tooltip]");
+  if (!target) {
+    hideTooltip();
+    return;
+  }
+  if (tooltipTarget === target) return;
+  hideTooltip();
+  tooltipTarget = target;
+  tooltipTimer = setTimeout(() => {
+    if (!tooltipTarget || !tooltipEl) return;
+    tooltipEl.textContent = tooltipTarget.dataset.tooltip || "";
+    tooltipEl.classList.add("show");
+    tooltipEl.setAttribute("aria-hidden", "false");
+    positionTooltip(tooltipTarget);
+  }, 500);
+}
+
+function handleTooltipOut(event) {
+  if (!tooltipTarget) return;
+  if (tooltipTarget.contains(event.relatedTarget)) return;
+  hideTooltip();
+}
+
+function positionTooltip(target) {
+  if (!tooltipEl || !target) return;
+  const rect = target.getBoundingClientRect();
+  const tipRect = tooltipEl.getBoundingClientRect();
+  const top = Math.min(window.innerHeight - tipRect.height - 8, rect.bottom + 8);
+  const centeredLeft = rect.left + rect.width / 2 - tipRect.width / 2;
+  const left = Math.max(8, Math.min(centeredLeft, window.innerWidth - tipRect.width - 8));
+  tooltipEl.style.top = `${top}px`;
+  tooltipEl.style.left = `${left}px`;
+}
+
+function hideTooltip() {
+  if (tooltipTimer) {
+    clearTimeout(tooltipTimer);
+    tooltipTimer = null;
+  }
+  tooltipTarget = null;
+  if (!tooltipEl) return;
+  tooltipEl.classList.remove("show");
+  tooltipEl.setAttribute("aria-hidden", "true");
 }
 
 window.onYouTubeIframeAPIReady = () => {
@@ -1413,16 +2164,23 @@ init();
 function recreatePlayers() {
   if (!window.YT || !window.YT.Player) return;
   state.tiles.forEach((tile, idx) => {
-    if (tile.videoId) {
+    const videoId = tile.videoId || parseVideoId(tile.videoUrl || "");
+    const playlistId = parsePlaylistId(tile.videoUrl || "");
+    if (videoId || playlistId) {
+      const playerVars = {
+        rel: 0,
+        modestbranding: 1,
+        playsinline: 1,
+        controls: 0,
+        disablekb: 1,
+      };
+      if (playlistId && !videoId) {
+        playerVars.listType = "playlist";
+        playerVars.list = playlistId;
+      }
       tile.player = new window.YT.Player(`player-${idx}`, {
-        videoId: tile.videoId,
-        playerVars: {
-          rel: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          controls: 0,
-          disablekb: 1,
-        },
+        videoId: videoId || undefined,
+        playerVars,
         events: {
           onReady: () => maybeSetDefaultCues(idx),
           onStateChange: (event) => handlePlayerState(idx, event),
@@ -1450,6 +2208,7 @@ function queueDefaultCues(index, triesLeft = 30) {
 
   const duration = player.getDuration?.() || 0;
   if (duration > 0) {
+    // Default cue strategy: 10 evenly spaced points from start to near end.
     const slice = duration / 10;
     for (let i = 0; i < 10; i += 1) {
       tile.cues[i] = slice * i;
@@ -1495,7 +2254,11 @@ function tapTempo() {
   if (!Number.isFinite(avg) || avg <= 0) return;
   state.bpm = clamp(Math.round(60000 / avg), 40, 240);
   bpmInput.value = String(state.bpm);
-  if (state.isPlaying) restartTransport(false);
+  if (state.isPlaying) {
+    const interval = getBaseTickMs();
+    if (transportTimer) clearInterval(transportTimer);
+    transportTimer = setInterval(tick, interval);
+  }
   saveToUrl();
   updateStatus();
 }
@@ -1541,7 +2304,7 @@ function getLocalStep(tile) {
 }
 
 function getStepDurationMs(tile) {
-  const baseInterval = (60 / state.bpm) * (4 / BASE_DIVISION) * 1000;
+  const baseInterval = getBaseTickMs();
   const stepAdvance = getStepAdvance(tile);
   return baseInterval * stepAdvance;
 }
@@ -1583,7 +2346,13 @@ function getStepAdvance(tile) {
   return BASE_DIVISION / (tile.division || BASE_DIVISION);
 }
 
+function getBaseTickMs() {
+  return (60 / state.bpm) * (4 / BASE_DIVISION) * 1000;
+}
+
 function getHistorySnapshot() {
+  // Undo/redo snapshots intentionally exclude player objects and URLs.
+  // They only capture editable musical state and selection context.
   return {
     bpm: state.bpm,
     selectedIndex: state.selectedIndex,
@@ -1592,6 +2361,7 @@ function getHistorySnapshot() {
     tiles: state.tiles.map((tile) => ({
       cues: tile.cues.slice(),
       cueVolumes: tile.cueVolumes.slice(),
+      cueShifts: tile.cueShifts.slice(),
       masterVolume: tile.masterVolume,
       playbackRate: tile.playbackRate,
       actions: tile.actions.map((step) => (step || []).map((action) => ({ ...action }))),
@@ -1623,6 +2393,7 @@ function resetHistory() {
 
 function applyHistorySnapshot(snapshot) {
   if (!snapshot) return;
+  // Guard re-entrant writes so applying history does not create new snapshots.
   isApplyingHistory = true;
   state.bpm = clamp(Number(snapshot.bpm) || 120, 40, 240);
   bpmInput.value = String(state.bpm);
@@ -1642,11 +2413,14 @@ function applyHistorySnapshot(snapshot) {
     while (tile.cues.length < 10) tile.cues.push(0);
     tile.cueVolumes = Array.isArray(tileSnap.cueVolumes) ? tileSnap.cueVolumes.slice(0, 10) : tile.cueVolumes;
     while (tile.cueVolumes.length < 10) tile.cueVolumes.push(100);
+    tile.cueShifts = Array.isArray(tileSnap.cueShifts) ? tileSnap.cueShifts.slice(0, 10) : tile.cueShifts;
+    while (tile.cueShifts.length < 10) tile.cueShifts.push(0);
     tile.masterVolume = clamp(Number(tileSnap.masterVolume) || 100, 0, 100);
     tile.playbackRate = Number(tileSnap.playbackRate) || 1;
     tile.steps = clamp(Number(tileSnap.steps) || 16, 1, 128);
     tile.division = Number(tileSnap.division) || BASE_DIVISION;
     tile.customCues = Boolean(tileSnap.customCues);
+    tile.pendingActionTimers = [];
     tile.actions = Array.from({ length: tile.steps }, (_, stepIdx) => {
       const row = (tileSnap.actions && tileSnap.actions[stepIdx]) || [];
       return row.map((action) => ({ ...action }));
