@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChopTube</title>
-    <link rel="stylesheet" href="styles.css?v=20260205c" />
+    <link rel="stylesheet" href="styles.css?v=20260205b" />
   </head>
   <body>
     <div class="app">
@@ -12,7 +12,9 @@
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
-          <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">Featured sessions</button>
+          <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">
+            Featured sessions
+          </button>
         </div>
         <div class="center-control">
           <div class="edit-switch" aria-label="View mode">
@@ -32,21 +34,15 @@
           <button id="metronome-toggle" class="metronome-toggle" aria-label="Metronome">
             <img class="metronome-icon" src="assets/metronome-icon.png" alt="" aria-hidden="true" />
           </button>
-          <input
-            id="metronome-volume"
-            class="metronome-volume"
-            type="range"
-            min="0"
-            max="100"
-            value="50"
-            aria-label="Metronome volume"
-          />
+          <div class="metronome-volume">
+            <input id="metronome-volume" type="range" min="0" max="100" value="50" />
+          </div>
         </div>
         <div class="global-controls">
           <div class="global-buttons">
             <button id="showcase-toggle">My Sessions</button>
             <button id="new-session">+ New</button>
-            <button id="share" aria-label="Copy share link">
+            <button id="share" class="share-button" aria-label="Copy share link">
               <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
             </button>
           </div>
@@ -112,7 +108,7 @@
         <a
           id="community-discord-link"
           class="community-discord-link"
-          href="https://discord.gg/j6D9WKZN"
+          href="https://discord.gg/"
           target="_blank"
           rel="noreferrer"
           >Join ChopTube Discord</a
@@ -150,6 +146,6 @@
     <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="app.js?v=20260205c"></script>
+    <script src="app.js?v=20260205b"></script>
   </body>
 </html>
