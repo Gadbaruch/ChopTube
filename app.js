@@ -324,12 +324,6 @@ const RANDOM_VIDEO_POOLS = {
     "https://www.youtube.com/watch?v=x8cFdZyWOOs",
     "https://www.youtube.com/watch?v=KKIammrhEp4",
   ],
-  zero_views_videos: [
-    "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
-    "https://www.youtube.com/watch?v=RubBzkZzpUA",
-    "https://www.youtube.com/watch?v=J_ub7Etch2U",
-    "https://www.youtube.com/watch?v=7wtfhZwyrcc",
-  ],
 };
 const VIDEO_POOL_OPTIONS = [
   { key: "top_hits", label: "Top 100 hits" },
@@ -344,13 +338,16 @@ const VIDEO_POOL_OPTIONS = [
   { key: "weird_videos", label: "Weird videos" },
   { key: "experimental_sounds", label: "Experimental sounds" },
   { key: "jazzy_girls", label: "Jazzy girls" },
-  { key: "zero_views_videos", label: "0 views videos" },
 ];
 const COMMUNITY_DISCORD_URL = "https://discord.gg/j6D9WKZN";
 const COMMUNITY_SESSIONS = [
   {
     name: "Peppa Beat",
     url: "https://gadbaruch.github.io/ChopTube/#JTdCJTIyYnBtJTIyJTNBMTE3JTJDJTIyc2VsZWN0ZWRJbmRleCUyMiUzQTAlMkMlMjJzZWxlY3RlZEN1ZSUyMiUzQTUlMkMlMjJ0aWxlcyUyMiUzQSU1QiU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RLVmVFN3NFVGx2QSUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDOC41NCUyQzE1Ljc3Nzc3Nzc3Nzc3Nzc3OSUyQzIzLjY2NjY2NjY2NjY2NjY2OCUyQzMxLjU1NTU1NTU1NTU1NTU1NyUyQzMwLjY0JTJDNDcuMzMzMzMzMzMzMzMzMzM2JTJDNTUuMjIyMjIyMjIyMjIyMjMlMkM2My4xMTExMTExMTExMTExMTQlMkM3MSU1RCUyQyUyMmFjdGlvbnMlMjIlM0ElNUIlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMSU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E1JTdEJTVEJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkNudWxsJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNSU3RCU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQXRydWUlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNESnAyQ2VkVTNCa0klMjIlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzMwMCUyQzYwMCUyQzkwMCUyQzEyMDAlMkMxNTAwJTJDMTgwMCUyQzIxMDEuNSUyQzI0MDAlMkMyNzAwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0ExJTdEJTVEJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNyU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E0JTdEJTVEJTJDbnVsbCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTJDJTdCJTIydmlkZW9VcmwlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRC1EcmE1UjYtMUxFJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMxNDYuODg4ODg4ODg4ODg4ODklMkMyOTMuNzc3Nzc3Nzc3Nzc3NzclMkM0NDAuNjY2NjY2NjY2NjY2NjMlMkM1ODcuNTU1NTU1NTU1NTU1NSUyQzczNi42OTQ0NDQ0NDQ0NDQ1JTJDODgxLjMzMzMzMzMzMzMzMzMlMkMxMDI4LjIyMjIyMjIyMjIyMjIlMkMxMTc1LjExMTExMTExMTExMSUyQzEzMjIlNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMSU3RCU1RCUyQyU1QiU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0EyJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTYlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNSU3RCU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E1JTdEJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTUlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlNUQlMkMlMjJzdGVwcyUyMiUzQTMyJTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RfR1psSkdFUmJ2RSUyNmxpc3QlM0RSRF9HWmxKR0VSYnZFJTI2c3RhcnRfcmFkaW8lM0QxJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMyNC41NTU1NTU1NTU1NTU1NTclMkM0OS4xMTExMTExMTExMTExMTQlMkM3My42NjY2NjY2NjY2NjY2NyUyQzk0Ljk3MjIyMjIyMjIyMjIzJTJDMTIyLjc3Nzc3Nzc3Nzc3Nzc5JTJDMTQ3LjMzMzMzMzMzMzMzMzM0JTJDMTcxLjg4ODg4ODg4ODg4ODklMkMxOTYuNDQ0NDQ0NDQ0NDQ0NDYlMkMyMjElNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkMlNUIlNUQlMkNudWxsJTJDbnVsbCUyQyU1QiU1RCUyQyU1QiU1RCUyQ251bGwlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E0JTdEJTVEJTJDJTVCJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTJDJTdCJTIydmlkZW9VcmwlMjIlM0ElMjIlMjIlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMmFjdGlvbnMlMjIlM0ElNUIlNUQlMkMlMjJzdGVwcyUyMiUzQTE2JTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyJTIyJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlNUQlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTVEJTdE",
+  },
+  {
+    name: "Ayla44bv",
+    url: "https://gadbaruch.github.io/ChopTube/?s=ayla44bv#JTdCJTIyYnBtJTIyJTNBMTI1JTJDJTIyaXNFZGl0TW9kZSUyMiUzQXRydWUlMkMlMjJsYXlvdXRNb2RlJTIyJTNBJTIyZ3JpZCUyMiUyQyUyMnRvcGJhckNvbGxhcHNlZCUyMiUzQWZhbHNlJTJDJTIyc2VsZWN0ZWRJbmRleCUyMiUzQTQlMkMlMjJzZWxlY3RlZEN1ZSUyMiUzQTQlMkMlMjJhcnJhbmdlbWVudCUyMiUzQSU3QiUyMnBhcnRzJTIyJTNBJTVCJTdCJTIyYWN0aXZlVGlsZXMlMjIlM0ElNUJ0cnVlJTJDdHJ1ZSUyQ3RydWUlMkNmYWxzZSUyQ2ZhbHNlJTJDZmFsc2UlMkNmYWxzZSUyQ2ZhbHNlJTVEJTJDJTIybGVuZ3RoVmFsdWUlMjIlM0E0JTJDJTIybGVuZ3RoVW5pdCUyMiUzQSUyMmJhcnMlMjIlN0QlMkMlN0IlMjJhY3RpdmVUaWxlcyUyMiUzQSU1QmZhbHNlJTJDZmFsc2UlMkNmYWxzZSUyQ3RydWUlMkNmYWxzZSUyQ2ZhbHNlJTJDZmFsc2UlMkNmYWxzZSU1RCUyQyUyMmxlbmd0aFZhbHVlJTIyJTNBMyUyQyUyMmxlbmd0aFVuaXQlMjIlM0ElMjJiZWF0cyUyMiU3RCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTJDbnVsbCUyQ251bGwlMkNudWxsJTVEJTJDJTIyc2VsZWN0ZWRQYXJ0JTIyJTNBbnVsbCUyQyUyMmFjdGl2ZVBhcnRJbmRleCUyMiUzQTAlMkMlMjJhdXRvcGxheSUyMiUzQXRydWUlMkMlMjJsb29wJTIyJTNBdHJ1ZSUyQyUyMmRlZmF1bHRMZW5ndGhWYWx1ZSUyMiUzQTIlMkMlMjJkZWZhdWx0TGVuZ3RoVW5pdCUyMiUzQSUyMmJhcnMlMjIlN0QlMkMlMjJ0aWxlcyUyMiUzQSU1QiU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RZQ2VRTGVRaVJQNCUyMiUyQyUyMnZpZGVvUG9vbCUyMiUzQSUyMmNsYXNzaWNfbWVtZSUyMiUyQyUyMnZpZGVvSGlzdG9yeSUyMiUzQSU1QiU1RCUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDOC43JTJDOS4yMDAwMDAwMDAwMDAwMTclMkMyNi4wOTk5OTk5OTk5OTk5OTglMkMyNC43OTk5OTk5OTk5OTk5OTclMkM0My41JTJDNTIuMTk5OTk5OTk5OTk5OTk2JTJDNjAuODk5OTk5OTk5OTk5OTklMkM2OS42JTJDNzguMyU1RCUyQyUyMmN1ZVZvbHVtZXMlMjIlM0ElNUIxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlNUQlMkMlMjJjdWVTaGlmdHMlMjIlM0ElNUIwJTJDMCUyQzAlMkM0NCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMm1hc3RlclZvbHVtZSUyMiUzQTUxJTJDJTIycGxheWJhY2tSYXRlJTIyJTNBMSUyQyUyMmRlc2lyZWRDbGlwUGxheWluZyUyMiUzQXRydWUlMkMlMjJzZXF1ZW5jZVN0YXJ0U3RlcCUyMiUzQTAlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTElN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0EyJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEWGY5Zmt4VDYwT0UlMjIlMkMlMjJ2aWRlb1Bvb2wlMjIlM0ElMjJkcnVtX2xvb3BzJTIyJTJDJTIydmlkZW9IaXN0b3J5JTIyJTNBJTVCJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RhcXotS0UtYnBLUSUyMiUyQyUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNESl91YjdFdGNoMlUlMjIlMkMlMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRHVEMmE3SXpYRktzJTIyJTVEJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkM1NC42NjYxMDAwMDAwMDAwMTQlMkM0OC44NjIxOTk5OTk5OTk5OCUyQzcyLjYyODMwMDAwMDAwMDAyJTJDOTcuNTA0NCUyQzEyMS44ODA1MDAwMDAwMDAwMSUyQzE0Ni4yNTY2JTJDMTcwLjYzMjclMkMxOTUuMDA4OCUyQzIxOS4zODQ5MDAwMDAwMDAwMiU1RCUyQyUyMmN1ZVZvbHVtZXMlMjIlM0ElNUIxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlNUQlMkMlMjJjdWVTaGlmdHMlMjIlM0ElNUIwJTJDMCUyQy0zJTJDMCUyQy0zNyUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIybWFzdGVyVm9sdW1lJTIyJTNBMTAwJTJDJTIycGxheWJhY2tSYXRlJTIyJTNBMS4yNSUyQyUyMmRlc2lyZWRDbGlwUGxheWluZyUyMiUzQXRydWUlMkMlMjJzZXF1ZW5jZVN0YXJ0U3RlcCUyMiUzQTAlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTIlN0QlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIybXV0ZS1zdGVwJTIyJTdEJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMm11dGUtc3RlcCUyMiU3RCU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0ExJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMm11dGUtc3RlcCUyMiU3RCU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0EyJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMm11dGUtc3RlcCUyMiU3RCU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJtdXRlLXN0ZXAlMjIlN0QlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMSU3RCU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0EzJTdEJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEUW1WTkNKaHRIRDQlMjIlMkMlMjJ2aWRlb1Bvb2wlMjIlM0ElMjJsb29wX3NhbXBsZXMlMjIlMkMlMjJ2aWRlb0hpc3RvcnklMjIlM0ElNUIlNUQlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzk0LjI5OTk5OTk5OTk5OTk0JTJDMTg2LjQlMkMyNzkuNiUyQzM3Mi44JTJDNDY2JTJDNTU5LjIlMkM2NTIuNCUyQzc0NS42JTJDODM4LjgwMDAwMDAwMDAwMDElNUQlMkMlMjJjdWVWb2x1bWVzJTIyJTNBJTVCMTAwJTJDNDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlNUQlMkMlMjJjdWVTaGlmdHMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzM4JTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMm1hc3RlclZvbHVtZSUyMiUzQTEwMCUyQyUyMnBsYXliYWNrUmF0ZSUyMiUzQTElMkMlMjJkZXNpcmVkQ2xpcFBsYXlpbmclMjIlM0F0cnVlJTJDJTIyc2VxdWVuY2VTdGFydFN0ZXAlMjIlM0EwJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0ExJTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTMlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBNCU3RCU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E1JTdEJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTQlN0QlNUQlMkMlNUIlNUQlNUQlMkMlMjJzdGVwcyUyMiUzQTE2JTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RqZFJDTk0yazQybyUyMiUyQyUyMnZpZGVvUG9vbCUyMiUzQSUyMndlaXJkX3ZpZGVvcyUyMiUyQyUyMnZpZGVvSGlzdG9yeSUyMiUzQSU1QiUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEYWxGLVZLMThzeW8lMjIlMkMlMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRHJILVdCRGN0dFJVJTIyJTJDJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0Q0amg0dnI2WnhYRSUyMiUyQyUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEakhDNVZoMDdUNGslMjIlMkMlMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRGkyOXQtNXRFcF9vJTIyJTJDJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RMQjg3MVNWWU1oSSUyMiUyQyUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEODdOSHVlSEJId1klMjIlMkMlMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRDlFaWluUTFRTlhVJTIyJTJDJTIyaHR0cHMlM0ElMkYlMkZ3d3cueW91dHViZS5jb20lMkZ3YXRjaCUzRnYlM0RpMjl0LTV0RXBfbyUyMiUyQyUyMmh0dHBzJTNBJTJGJTJGd3d3LnlvdXR1YmUuY29tJTJGd2F0Y2glM0Z2JTNEY1VwSlpBazlZQWslMjIlMkMlMjJodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRGkyOXQtNXRFcF9vJTIyJTVEJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkM0LjA0MDEwMDAwMDAwMDAwMSUyQzguMDgwMjAwMDAwMDAwMDAxJTJDMTIuNDIwMzAwMDAwMDAwMDAxJTJDMTYuMjYwNDAwMDAwMDAwMDA0JTJDMjAuMjAwNTAwMDAwMDAwMDA1JTJDMjQuMjQwNjAwMDAwMDAwMDA0JTJDMjguMjgwNzAwMDAwMDAwMDAzJTJDMzIuMzIwODAwMDAwMDAwMDA2JTJDMzYuMzYwOTAwMDAwMDAwMDElNUQlMkMlMjJjdWVWb2x1bWVzJTIyJTNBJTVCMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTVEJTJDJTIyY3VlU2hpZnRzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMm1hc3RlclZvbHVtZSUyMiUzQTUzJTJDJTIycGxheWJhY2tSYXRlJTIyJTNBMSUyQyUyMmRlc2lyZWRDbGlwUGxheWluZyUyMiUzQWZhbHNlJTJDJTIyc2VxdWVuY2VTdGFydFN0ZXAlMjIlM0EwJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1QiU3QiUyMnR5cGUlMjIlM0ElMjJzZWVrJTIyJTJDJTIyY3VlSW5kZXglMjIlM0E0JTdEJTVEJTJDJTVCJTdCJTIydHlwZSUyMiUzQSUyMnNlZWslMjIlMkMlMjJjdWVJbmRleCUyMiUzQTQlN0QlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlN0IlMjJ0eXBlJTIyJTNBJTIyc2VlayUyMiUyQyUyMmN1ZUluZGV4JTIyJTNBMyU3RCU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBOCUyQyUyMmRpdmlzaW9uJTIyJTNBOCUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyJTIyJTJDJTIydmlkZW9Qb29sJTIyJTNBJTIyemVyb192aWV3c192aWRlb3MlMjIlMkMlMjJ2aWRlb0hpc3RvcnklMjIlM0ElNUIlNUQlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyY3VlVm9sdW1lcyUyMiUzQSU1QjEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCU1RCUyQyUyMmN1ZVNoaWZ0cyUyMiUzQSU1QjAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlNUQlMkMlMjJtYXN0ZXJWb2x1bWUlMjIlM0ExMDAlMkMlMjJwbGF5YmFja1JhdGUlMjIlM0ExJTJDJTIyZGVzaXJlZENsaXBQbGF5aW5nJTIyJTNBZmFsc2UlMkMlMjJzZXF1ZW5jZVN0YXJ0U3RlcCUyMiUzQTAlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMnZpZGVvUG9vbCUyMiUzQSUyMnplcm9fdmlld3NfdmlkZW9zJTIyJTJDJTIydmlkZW9IaXN0b3J5JTIyJTNBJTVCJTVEJTJDJTIyY3VlcyUyMiUzQSU1QjAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlNUQlMkMlMjJjdWVWb2x1bWVzJTIyJTNBJTVCMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTJDMTAwJTVEJTJDJTIyY3VlU2hpZnRzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMm1hc3RlclZvbHVtZSUyMiUzQTEwMCUyQyUyMnBsYXliYWNrUmF0ZSUyMiUzQTElMkMlMjJkZXNpcmVkQ2xpcFBsYXlpbmclMjIlM0FmYWxzZSUyQyUyMnNlcXVlbmNlU3RhcnRTdGVwJTIyJTNBMCUyQyUyMmFjdGlvbnMlMjIlM0ElNUIlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlMkMlNUIlNUQlNUQlMkMlMjJzdGVwcyUyMiUzQTE2JTJDJTIyZGl2aXNpb24lMjIlM0ExNiUyQyUyMmN1c3RvbUN1ZXMlMjIlM0FmYWxzZSU3RCUyQyU3QiUyMnZpZGVvVXJsJTIyJTNBJTIyJTIyJTJDJTIydmlkZW9Qb29sJTIyJTNBJTIyZXhwZXJpbWVudGFsX3NvdW5kcyUyMiUyQyUyMnZpZGVvSGlzdG9yeSUyMiUzQSU1QiU1RCUyQyUyMmN1ZXMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIyY3VlVm9sdW1lcyUyMiUzQSU1QjEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCUyQzEwMCU1RCUyQyUyMmN1ZVNoaWZ0cyUyMiUzQSU1QjAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlNUQlMkMlMjJtYXN0ZXJWb2x1bWUlMjIlM0ExMDAlMkMlMjJwbGF5YmFja1JhdGUlMjIlM0ExJTJDJTIyZGVzaXJlZENsaXBQbGF5aW5nJTIyJTNBZmFsc2UlMkMlMjJzZXF1ZW5jZVN0YXJ0U3RlcCUyMiUzQTAlMkMlMjJhY3Rpb25zJTIyJTNBJTVCJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTJDJTVCJTVEJTVEJTJDJTIyc3RlcHMlMjIlM0ExNiUyQyUyMmRpdmlzaW9uJTIyJTNBMTYlMkMlMjJjdXN0b21DdWVzJTIyJTNBZmFsc2UlN0QlMkMlN0IlMjJ2aWRlb1VybCUyMiUzQSUyMiUyMiUyQyUyMnZpZGVvUG9vbCUyMiUzQSUyMnNvbG9fZHJ1bW1lcnMlMjIlMkMlMjJ2aWRlb0hpc3RvcnklMjIlM0ElNUIlNUQlMkMlMjJjdWVzJTIyJTNBJTVCMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCU1RCUyQyUyMmN1ZVZvbHVtZXMlMjIlM0ElNUIxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlMkMxMDAlNUQlMkMlMjJjdWVTaGlmdHMlMjIlM0ElNUIwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTJDMCUyQzAlMkMwJTVEJTJDJTIybWFzdGVyVm9sdW1lJTIyJTNBMTAwJTJDJTIycGxheWJhY2tSYXRlJTIyJTNBMSUyQyUyMmRlc2lyZWRDbGlwUGxheWluZyUyMiUzQWZhbHNlJTJDJTIyc2VxdWVuY2VTdGFydFN0ZXAlMjIlM0EwJTJDJTIyYWN0aW9ucyUyMiUzQSU1QiU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCUyQyU1QiU1RCU1RCUyQyUyMnN0ZXBzJTIyJTNBMTYlMkMlMjJkaXZpc2lvbiUyMiUzQTE2JTJDJTIyY3VzdG9tQ3VlcyUyMiUzQWZhbHNlJTdEJTVEJTdE",
   },
 ];
 
@@ -375,8 +372,6 @@ const state = {
 const gridEl = document.getElementById("grid");
 const appEl = document.querySelector(".app");
 const bpmInput = document.getElementById("bpm");
-const presentModeBtn = document.getElementById("present-mode");
-const editModeBtn = document.getElementById("edit-mode");
 const playToggleBtn = document.getElementById("play-toggle");
 const loopToggleBtn = document.getElementById("loop-toggle");
 const tapTempoBtn = document.getElementById("tap-tempo");
@@ -421,6 +416,7 @@ const arrangementLoopBtn = document.getElementById("arr-loop");
 const arrangementLengthValueInput = document.getElementById("arr-length-value");
 const arrangementLengthUnitSelect = document.getElementById("arr-length-unit");
 const topbarToggleBtn = document.getElementById("topbar-toggle");
+const topbarToggleIcon = document.getElementById("topbar-toggle-icon");
 
 const tileEls = [];
 const stepEls = [];
@@ -466,12 +462,10 @@ function init() {
 function initGlobalTooltips() {
   // Global transport tooltips are configured once here; tile-level tooltips
   // are attached when each tile is built.
-  setTooltip(presentModeBtn, "Show mode\nShortcut: Tab toggles Show/Edit");
-  setTooltip(editModeBtn, "Edit mode\nShortcut: Tab toggles Show/Edit");
   setTooltip(playToggleBtn, "Global play / stop\nShortcut: Space");
   setTooltip(loopToggleBtn, "Loop record mode\nON: cue performance writes into sequence\nShortcut: L");
   setTooltip(bpmInput, "Global BPM (40-240)");
-  setTooltip(topbarToggleBtn, "Collapse/expand top bar");
+  setTooltip(topbarToggleBtn, "Toggle Show/Edit + collapse/expand top bar\nShortcut: Tab");
   setTooltip(tapTempoBtn, "Tap tempo\nClick repeatedly to detect BPM");
   setTooltip(metronomeToggleBtn, "Click metronome on / off\nShortcut: C");
   setTooltip(metronomeVolumeInput, "Click metronome volume");
@@ -827,7 +821,9 @@ function buildGrid() {
       pushHistorySnapshot();
     });
     stepsInput.addEventListener("change", () => {
-      const value = clamp(Number(stepsInput.value) || 16, 1, 128);
+      const parsed = Number(stepsInput.value);
+      const fallback = clamp(Number(state.tiles[i].steps) || 16, 1, 128);
+      const value = clamp(Number.isFinite(parsed) ? parsed : fallback, 1, 128);
       stepsInput.value = String(value);
       state.tiles[i].steps = value;
       if (state.selectedStep !== null && state.selectedStep >= value) {
@@ -866,10 +862,10 @@ function bindGlobalControls() {
     bpmInput.value = state.bpm;
     if (state.isPlaying) {
       skipNextMetronome = true;
-      restartTransport(false);
+      resetTransportIntervalPreservePhase();
     }
     if (state.arrangement.autoplay && state.isPlaying) {
-      scheduleArrangementAdvance(performance.now());
+      scheduleArrangementAdvance();
     }
     saveToUrl();
     pushHistorySnapshot();
@@ -877,23 +873,9 @@ function bindGlobalControls() {
 
   playToggleBtn.addEventListener("click", () => togglePlay());
 
-  presentModeBtn.addEventListener("click", () => {
-    state.isEditMode = false;
-    tileEls.forEach((entry) => entry.tile.classList.add("collapsed"));
-    updateTransportButton();
-  });
-
-  editModeBtn.addEventListener("click", () => {
-    state.isEditMode = true;
-    tileEls.forEach((entry) => entry.tile.classList.remove("collapsed"));
-    updateTransportButton();
-  });
-
   loopToggleBtn.addEventListener("click", () => toggleLoop());
   topbarToggleBtn?.addEventListener("click", () => {
-    state.topbarCollapsed = !state.topbarCollapsed;
-    updateTopbarCollapse();
-    updateShowLayout();
+    setCollapsedMode(!state.topbarCollapsed);
     saveToUrl();
   });
   tapTempoBtn?.addEventListener("click", () => {
@@ -918,7 +900,7 @@ function bindGlobalControls() {
     state.arrangement.autoplay = !state.arrangement.autoplay;
     if (state.arrangement.autoplay) {
       ensureArrangementActivePart();
-      scheduleArrangementAdvance(performance.now());
+      scheduleArrangementAdvance();
     }
     updateArrangementControls();
     renderArrangement();
@@ -931,13 +913,17 @@ function bindGlobalControls() {
     saveToUrl();
   });
   arrangementLengthValueInput?.addEventListener("change", () => {
-    const parsed = clamp(Number(arrangementLengthValueInput.value) || 2, 1, 128);
+    const parsedValue = Number(arrangementLengthValueInput.value);
+    const fallbackSource = getSelectedArrangementPart()
+      ? getSelectedArrangementPart().lengthValue
+      : state.arrangement.defaultLengthValue;
+    const parsed = clamp(Number.isFinite(parsedValue) ? parsedValue : Number(fallbackSource) || 2, 1, 128);
     arrangementLengthValueInput.value = String(parsed);
     const selectedPart = getSelectedArrangementPart();
     if (selectedPart) {
       selectedPart.lengthValue = parsed;
       if (state.arrangement.activePartIndex === state.arrangement.selectedPart) {
-        scheduleArrangementAdvance(performance.now());
+        scheduleArrangementAdvance();
       }
     } else {
       state.arrangement.defaultLengthValue = parsed;
@@ -953,7 +939,7 @@ function bindGlobalControls() {
     if (selectedPart) {
       selectedPart.lengthUnit = unit;
       if (state.arrangement.activePartIndex === state.arrangement.selectedPart) {
-        scheduleArrangementAdvance(performance.now());
+        scheduleArrangementAdvance();
       }
     } else {
       state.arrangement.defaultLengthUnit = unit;
@@ -1077,6 +1063,14 @@ function bindGlobalControls() {
     if (event.target === shareBtn) return;
     hideShareHint();
   });
+  document.addEventListener("pointerdown", (event) => {
+    if (state.arrangement.selectedPart === null) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest(".arr-part-slot")) return;
+    if (target.closest(".arrangement-controls")) return;
+    clearSelectedArrangementPart();
+  });
   tileUrlSaveBtn?.addEventListener("click", () => {
     if (activeUrlTileIndex === null) return;
     loadVideo(activeUrlTileIndex, tileUrlInput?.value || "");
@@ -1110,9 +1104,8 @@ function handleKeyDown(event) {
   }
   if (event.key === "Tab") {
     event.preventDefault();
-    state.isEditMode = !state.isEditMode;
-    tileEls.forEach((entry) => entry.tile.classList.toggle("collapsed", !state.isEditMode));
-    updateTransportButton();
+    setCollapsedMode(!state.topbarCollapsed);
+    saveToUrl();
     return;
   }
   if (event.key === "Escape") {
@@ -1170,6 +1163,11 @@ function handleKeyDown(event) {
     updateStepIndicators();
     return;
   }
+  if (event.key === "Escape" && state.arrangement.selectedPart !== null) {
+    event.preventDefault();
+    clearSelectedArrangementPart();
+    return;
+  }
   const tileHotkeyIndex = TILE_PLAY_KEYS.indexOf(event.key.toLowerCase());
   if (tileHotkeyIndex !== -1) {
     if (!event.shiftKey && state.arrangement.selectedPart !== null) {
@@ -1221,6 +1219,11 @@ function handleKeyDown(event) {
     event.preventDefault();
     state.selectedStep = null;
     updateStepIndicators();
+    return;
+  }
+  if (event.key === "ArrowUp" && state.arrangement.selectedPart !== null) {
+    event.preventDefault();
+    clearSelectedArrangementPart();
     return;
   }
   const numberKey = getNumberKey(event);
@@ -1449,7 +1452,7 @@ function clearTileVideo(index) {
   tile.cueVolumes = Array(10).fill(100);
   tile.cueShifts = Array(10).fill(0);
   tile.isClipPlaying = false;
-  tile.desiredClipPlaying = null;
+  tile.desiredClipPlaying = false;
   tile.muted = false;
   if (Array.isArray(tile.pendingActionTimers)) {
     tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
@@ -1529,6 +1532,13 @@ function parsePoolKey(value) {
   return typeof value === "string" && value in RANDOM_VIDEO_POOLS ? value : "top_hits";
 }
 
+function isSequencerAction(action) {
+  if (!action || typeof action !== "object") return false;
+  if (action.type === "mute-step") return true;
+  if (action.type !== "seek") return false;
+  return Number.isInteger(action.cueIndex) && action.cueIndex >= 0 && action.cueIndex <= 9;
+}
+
 function getDefaultTileState() {
   return {
     videoUrl: "",
@@ -1542,13 +1552,15 @@ function getDefaultTileState() {
     masterVolume: 100,
     playbackRate: 1,
     isClipPlaying: false,
-    desiredClipPlaying: null,
+    desiredClipPlaying: false,
+    sequenceStartStep: 0,
     actions: Array.from({ length: 16 }, () => []),
     muted: false,
     steps: 16,
     division: BASE_DIVISION,
     customCues: false,
     pendingActionTimers: [],
+    lastSeekAt: 0,
   };
 }
 
@@ -1569,13 +1581,18 @@ function normalizeTileState(rawTile, fallbackPool = "top_hits") {
   while (tile.cueShifts.length < 10) tile.cueShifts.push(0);
   tile.masterVolume = clamp(Number(rawTile?.masterVolume ?? 100), 0, 100);
   tile.playbackRate = Number(rawTile?.playbackRate) || 1;
+  tile.desiredClipPlaying = Boolean(rawTile?.desiredClipPlaying);
+  tile.sequenceStartStep = Math.max(0, Number(rawTile?.sequenceStartStep) || 0);
   tile.steps = clamp(Number(rawTile?.steps) || 16, 1, 128);
   tile.division = Number(rawTile?.division) || BASE_DIVISION;
   tile.customCues = Boolean(rawTile?.customCues);
   tile.pendingActionTimers = [];
+  tile.lastSeekAt = 0;
   tile.actions = Array.from({ length: tile.steps }, (_, idx) => {
     const row = (rawTile?.actions && rawTile.actions[idx]) || [];
-    return row.map((action) => ({ ...action }));
+    return row
+      .filter((action) => isSequencerAction(action))
+      .map((action) => ({ ...action }));
   });
   return tile;
 }
@@ -1591,6 +1608,8 @@ function getTileSnapshot(index) {
     cueShifts: tile.cueShifts.slice(0, 10),
     masterVolume: clamp(tile.masterVolume ?? 100, 0, 100),
     playbackRate: Number(tile.playbackRate) || 1,
+    desiredClipPlaying: Boolean(tile.desiredClipPlaying),
+    sequenceStartStep: Math.max(0, Number(tile.sequenceStartStep) || 0),
     actions: (tile.actions || []).map((step) => (step || []).map((action) => ({ ...action }))),
     steps: clamp(Number(tile.steps) || 16, 1, 128),
     division: Number(tile.division) || BASE_DIVISION,
@@ -1618,14 +1637,19 @@ function applyTileSnapshot(index, snapshot) {
   while (tile.cueShifts.length < 10) tile.cueShifts.push(0);
   tile.masterVolume = clamp(Number(snapshot.masterVolume) || 100, 0, 100);
   tile.playbackRate = Number(snapshot.playbackRate) || 1;
+  tile.desiredClipPlaying = Boolean(snapshot.desiredClipPlaying);
+  tile.sequenceStartStep = Math.max(0, Number(snapshot.sequenceStartStep) || 0);
   tile.steps = clamp(Number(snapshot.steps) || 16, 1, 128);
   tile.division = Number(snapshot.division) || BASE_DIVISION;
   tile.customCues = Boolean(snapshot.customCues);
   tile.pendingActionTimers = [];
-  tile.actions = (snapshot.actions || []).map((step) => (step || []).map((action) => ({ ...action })));
+  tile.lastSeekAt = 0;
+  tile.actions = (snapshot.actions || []).map((step) =>
+    (step || []).filter((action) => isSequencerAction(action)).map((action) => ({ ...action }))
+  );
   resizeActions(tile);
   tile.isClipPlaying = false;
-  tile.desiredClipPlaying = null;
+  tile.desiredClipPlaying = false;
   tile.muted = false;
 
   if (tileEls[index]?.stepDots?.length !== tile.steps) {
@@ -1693,9 +1717,13 @@ function triggerAction(index, action, addToLoop) {
   // Recording mode additionally writes the action into the current local step.
   performAction(tile, action);
 
-  if (state.isRecording && addToLoop) {
+  if (state.isRecording && addToLoop && isSequencerAction(action)) {
     const localStep = getLocalStep(tile);
-    tile.actions[localStep] = [action];
+    const targetStep =
+      action.type === "mute-step"
+        ? (localStep + 1) % Math.max(1, tile.steps || 1)
+        : localStep;
+    tile.actions[targetStep] = [action];
     updateTileDisplays();
     saveToUrl();
     pushHistorySnapshot();
@@ -1743,7 +1771,13 @@ function performAction(tile, action) {
       const cueVolume = clamp(tile.cueVolumes[action.cueIndex] ?? 100, 0, 100);
       const master = clamp(tile.masterVolume ?? 100, 0, 100);
       player.setVolume?.(clamp((cueVolume * master) / 100, 0, 100));
+      const shouldStayPlaying = state.isPlaying && tile.desiredClipPlaying === true;
+      tile.lastSeekAt = performance.now();
       player.seekTo(time, true);
+      if (shouldStayPlaying) {
+        player.playVideo?.();
+        tile.isClipPlaying = true;
+      }
       break;
     }
     default:
@@ -1758,6 +1792,7 @@ function queueTileAction(tile, action, delayMs) {
   }
   const timerId = setTimeout(() => {
     if (!state.isPlaying) return;
+    if (tile.desiredClipPlaying !== true) return;
     performAction(tile, action);
     tile.pendingActionTimers = (tile.pendingActionTimers || []).filter((id) => id !== timerId);
   }, delayMs);
@@ -1766,6 +1801,7 @@ function queueTileAction(tile, action, delayMs) {
 }
 
 function triggerTileStepActions(tile, localStep) {
+  if (tile.desiredClipPlaying !== true) return;
   // Cue shift model:
   //  - Positive shift delays a cue within the current step window.
   //  - Negative shift pulls a cue from the next step into the end of this one.
@@ -1773,6 +1809,7 @@ function triggerTileStepActions(tile, localStep) {
   const stepDuration = getStepDurationMs(tile);
   const actions = tile.actions[localStep] || [];
   actions.forEach((action) => {
+    if (!isSequencerAction(action)) return;
     if (action.type !== "seek") {
       performAction(tile, action);
       return;
@@ -1785,7 +1822,7 @@ function triggerTileStepActions(tile, localStep) {
   const nextStep = (localStep + 1) % totalSteps;
   const nextActions = tile.actions[nextStep] || [];
   nextActions.forEach((action) => {
-    if (action.type !== "seek") return;
+    if (!isSequencerAction(action) || action.type !== "seek") return;
     const shiftPercent = clamp(tile.cueShifts?.[action.cueIndex] ?? 0, -100, 100);
     if (shiftPercent >= 0) return;
     const delayMs = (stepDuration * (100 + shiftPercent)) / 100;
@@ -1835,6 +1872,7 @@ function startTransport() {
       tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
     }
     tile.pendingActionTimers = [];
+    tile.sequenceStartStep = 0;
   });
   // The master clock always runs at 16th-note resolution (BASE_DIVISION).
   // Per-tile divisions derive from this clock via getStepAdvance().
@@ -1844,7 +1882,7 @@ function startTransport() {
     ensureArrangementActivePart();
     if (state.arrangement.activePartIndex !== null) {
       applyArrangementPart(state.arrangement.activePartIndex, true);
-      scheduleArrangementAdvance(performance.now());
+      scheduleArrangementAdvance();
     }
   }
   updateStatus();
@@ -1869,12 +1907,20 @@ function stopTransport(pauseVideos = true) {
     tile.pendingActionTimers = [];
   });
   if (pauseVideos) pauseAllVideos();
-  state.arrangement.nextAdvanceAt = null;
+  state.arrangement.nextAdvanceStep = null;
   updateStatus();
+}
+
+function resetTransportIntervalPreservePhase() {
+  if (!state.isPlaying) return;
+  const interval = getBaseTickMs();
+  if (transportTimer) clearInterval(transportTimer);
+  transportTimer = setInterval(tick, interval);
 }
 
 function tick() {
   state.globalStep += 1;
+  updateArrangementPlayback();
   if (metronomeEnabled && state.isPlaying) {
     const beatStep = BASE_DIVISION / 4;
     if (state.globalStep % beatStep === 0) {
@@ -1893,8 +1939,7 @@ function tick() {
       triggerTileStepActions(tile, localStep);
     }
   });
-  updateArrangementPlayback(performance.now());
-  updateArrangementProgressVisuals(performance.now());
+  updateArrangementProgressVisuals();
   updateStepIndicators();
 }
 
@@ -2024,8 +2069,8 @@ function getDefaultArrangementState() {
     loop: false,
     defaultLengthValue: 2,
     defaultLengthUnit: "bars",
-    partStartedAt: null,
-    nextAdvanceAt: null,
+    partStartedStep: null,
+    nextAdvanceStep: null,
   };
 }
 
@@ -2049,8 +2094,8 @@ function normalizeArrangementState(raw) {
   arrangement.loop = Boolean(raw.loop);
   arrangement.defaultLengthValue = clamp(Number(raw.defaultLengthValue) || 2, 1, 128);
   arrangement.defaultLengthUnit = parsePartLengthUnit(raw.defaultLengthUnit);
-  arrangement.partStartedAt = null;
-  arrangement.nextAdvanceAt = null;
+  arrangement.partStartedStep = null;
+  arrangement.nextAdvanceStep = null;
 
   if (Array.isArray(raw.parts)) {
     arrangement.parts = Array.from({ length: ARRANGEMENT_PART_COUNT }, (_, idx) => {
@@ -2077,8 +2122,8 @@ function ensureArrangementActivePart() {
   const filled = getArrangementFilledIndices();
   if (!filled.length) {
     state.arrangement.activePartIndex = null;
-    state.arrangement.partStartedAt = null;
-    state.arrangement.nextAdvanceAt = null;
+    state.arrangement.partStartedStep = null;
+    state.arrangement.nextAdvanceStep = null;
     return;
   }
   if (!filled.includes(state.arrangement.activePartIndex)) {
@@ -2100,21 +2145,32 @@ function getPartDurationMs(part) {
   return value * 4 * beatMs;
 }
 
-function scheduleArrangementAdvance(now = performance.now()) {
+function getPartDurationSteps(part) {
+  if (!part) return 1;
+  const value = clamp(Number(part.lengthValue) || 2, 1, 128);
+  if (part.lengthUnit === "bars") return Math.max(1, Math.round(value * BASE_DIVISION));
+  if (part.lengthUnit === "beats") return Math.max(1, Math.round(value * (BASE_DIVISION / 4)));
+  const ms = value * 1000;
+  const baseTickMs = getBaseTickMs();
+  return Math.max(1, Math.round(ms / baseTickMs));
+}
+
+function scheduleArrangementAdvance() {
   const idx = state.arrangement.activePartIndex;
   if (idx === null) {
-    state.arrangement.partStartedAt = null;
-    state.arrangement.nextAdvanceAt = null;
+    state.arrangement.partStartedStep = null;
+    state.arrangement.nextAdvanceStep = null;
     return;
   }
   const part = state.arrangement.parts[idx];
   if (!part) {
-    state.arrangement.partStartedAt = null;
-    state.arrangement.nextAdvanceAt = null;
+    state.arrangement.partStartedStep = null;
+    state.arrangement.nextAdvanceStep = null;
     return;
   }
-  state.arrangement.partStartedAt = now;
-  state.arrangement.nextAdvanceAt = now + getPartDurationMs(part);
+  const startedStep = state.globalStep;
+  state.arrangement.partStartedStep = startedStep;
+  state.arrangement.nextAdvanceStep = startedStep + getPartDurationSteps(part);
 }
 
 function applyArrangementPart(index, activatePart = true) {
@@ -2123,24 +2179,45 @@ function applyArrangementPart(index, activatePart = true) {
   if (activatePart) {
     state.arrangement.activePartIndex = index;
   }
+  const sequenceStart = Math.max(0, state.globalStep);
   part.activeTiles.forEach((shouldPlay, tileIdx) => {
     const tile = state.tiles[tileIdx];
     if (!tile?.player) return;
-    if (shouldPlay && !tile.isClipPlaying) {
+    const desiredState =
+      typeof tile.desiredClipPlaying === "boolean"
+        ? tile.desiredClipPlaying
+        : Boolean(tile.isClipPlaying);
+    if (shouldPlay && desiredState !== true) {
+      tile.sequenceStartStep = sequenceStart;
+      if (Array.isArray(tile.pendingActionTimers)) {
+        tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+      }
+      tile.pendingActionTimers = [];
       triggerAction(tileIdx, { type: "play" }, false);
-    } else if (!shouldPlay && tile.isClipPlaying) {
+    } else if (!shouldPlay) {
+      if (Array.isArray(tile.pendingActionTimers)) {
+        tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+      }
+      tile.pendingActionTimers = [];
+      tile.desiredClipPlaying = false;
       triggerAction(tileIdx, { type: "pause" }, false);
+    } else if (shouldPlay && desiredState === true) {
+      tile.sequenceStartStep = sequenceStart;
+      if (Array.isArray(tile.pendingActionTimers)) {
+        tile.pendingActionTimers.forEach((timerId) => clearTimeout(timerId));
+      }
+      tile.pendingActionTimers = [];
     }
   });
   if (state.arrangement.autoplay && state.isPlaying) {
-    scheduleArrangementAdvance(performance.now());
+    scheduleArrangementAdvance();
   }
   updateTileDisplays();
 }
 
 function createArrangementPartFromCurrent() {
   return {
-    activeTiles: state.tiles.map((tile) => Boolean(tile.isClipPlaying)),
+    activeTiles: state.tiles.map((tile) => Boolean(tile.desiredClipPlaying)),
     lengthValue: state.arrangement.defaultLengthValue,
     lengthUnit: state.arrangement.defaultLengthUnit,
   };
@@ -2152,6 +2229,14 @@ function selectArrangementPart(index) {
   renderArrangement();
 }
 
+function clearSelectedArrangementPart() {
+  if (state.arrangement.selectedPart === null) return;
+  state.arrangement.selectedPart = null;
+  updateArrangementControls();
+  renderArrangement();
+  saveToUrl();
+}
+
 function upsertArrangementPart(index) {
   const target = clamp(index, 0, ARRANGEMENT_PART_COUNT - 1);
   if (!state.arrangement.parts[target]) {
@@ -2160,7 +2245,7 @@ function upsertArrangementPart(index) {
   state.arrangement.selectedPart = target;
   applyArrangementPart(target, true);
   if (state.arrangement.autoplay && state.isPlaying) {
-    scheduleArrangementAdvance(performance.now());
+    scheduleArrangementAdvance();
   }
   updateArrangementControls();
   renderArrangement();
@@ -2198,7 +2283,7 @@ function advanceArrangementPart() {
   const atLast = currentPos >= filled.length - 1;
   if (atLast && !state.arrangement.loop) {
     state.arrangement.autoplay = false;
-    state.arrangement.nextAdvanceAt = null;
+    state.arrangement.nextAdvanceStep = null;
     updateArrangementControls();
     renderArrangement();
     saveToUrl();
@@ -2208,21 +2293,21 @@ function advanceArrangementPart() {
   const nextIndex = filled[nextPos];
   state.arrangement.selectedPart = nextIndex;
   applyArrangementPart(nextIndex, true);
-  scheduleArrangementAdvance(performance.now());
+  scheduleArrangementAdvance();
   updateArrangementControls();
   renderArrangement();
   saveToUrl();
 }
 
-function updateArrangementPlayback(now = performance.now()) {
+function updateArrangementPlayback() {
   if (!state.arrangement.autoplay || !state.isPlaying) return;
   ensureArrangementActivePart();
   if (state.arrangement.activePartIndex === null) return;
-  if (state.arrangement.nextAdvanceAt === null) {
-    scheduleArrangementAdvance(now);
+  if (state.arrangement.nextAdvanceStep === null) {
+    scheduleArrangementAdvance();
     return;
   }
-  if (now >= state.arrangement.nextAdvanceAt) {
+  if (state.globalStep >= state.arrangement.nextAdvanceStep) {
     advanceArrangementPart();
   }
 }
@@ -2296,22 +2381,25 @@ function renderArrangement() {
     arrangementPartsEl.appendChild(slot);
     arrangementPartEls.push(slot);
   }
-  updateArrangementProgressVisuals(performance.now());
+  updateArrangementProgressVisuals();
 }
 
-function getArrangementPartProgress(index, now = performance.now()) {
+function getArrangementPartProgress(index) {
   if (!state.arrangement.autoplay || !state.isPlaying) return 0;
   if (index !== state.arrangement.activePartIndex) return 0;
-  if (!Number.isFinite(state.arrangement.partStartedAt) || !Number.isFinite(state.arrangement.nextAdvanceAt)) return 0;
-  const duration = state.arrangement.nextAdvanceAt - state.arrangement.partStartedAt;
+  if (
+    !Number.isFinite(state.arrangement.partStartedStep) ||
+    !Number.isFinite(state.arrangement.nextAdvanceStep)
+  ) return 0;
+  const duration = state.arrangement.nextAdvanceStep - state.arrangement.partStartedStep;
   if (!Number.isFinite(duration) || duration <= 0) return 0;
-  return clamp((now - state.arrangement.partStartedAt) / duration, 0, 1);
+  return clamp((state.globalStep - state.arrangement.partStartedStep) / duration, 0, 1);
 }
 
-function updateArrangementProgressVisuals(now = performance.now()) {
+function updateArrangementProgressVisuals() {
   arrangementPartEls.forEach((slot) => {
     const idx = Number(slot.dataset.index);
-    const progress = getArrangementPartProgress(idx, now);
+    const progress = getArrangementPartProgress(idx);
     slot.style.setProperty("--part-progress", String(progress));
     slot.classList.toggle("playing", progress > 0 && progress < 1);
   });
@@ -2323,8 +2411,6 @@ function updateTransportButton() {
     : '<span class="transport-icon play-icon">▶</span><span class="transport-label">Play</span>';
   playToggleBtn.classList.toggle("active", state.isPlaying);
   loopToggleBtn.innerHTML = '<span class="transport-icon loop-dot">●</span><span class="transport-label">Loop</span>';
-  presentModeBtn.classList.toggle("active", !state.isEditMode);
-  editModeBtn.classList.toggle("active", state.isEditMode);
   appEl?.classList.toggle("performance", !state.isEditMode);
   applyLayoutMode();
   updateTopbarCollapse();
@@ -2344,7 +2430,7 @@ function togglePlay() {
   state.isPlaying = !state.isPlaying;
   if (state.isPlaying) {
     startTransport();
-    playAllVideos();
+    playDesiredVideos();
   } else {
     stopTransport();
   }
@@ -2389,18 +2475,22 @@ function pauseAllVideos() {
     if (tile.player && tile.player.pauseVideo) {
       tile.player.pauseVideo();
       tile.isClipPlaying = false;
-      tile.desiredClipPlaying = false;
     }
   });
   updateTileDisplays();
 }
 
-function playAllVideos() {
+function playDesiredVideos() {
   state.tiles.forEach((tile, idx) => {
-    if (tile.player && tile.player.playVideo) {
+    if (!tile.player) return;
+    if (tile.desiredClipPlaying === false) {
+      tile.player.pauseVideo?.();
+      tile.isClipPlaying = false;
+      return;
+    }
+    if (tile.player.playVideo) {
       tile.player.playVideo();
       tile.isClipPlaying = true;
-      tile.desiredClipPlaying = true;
       ensureTilePlaying(idx, PLAY_RETRY_COUNT);
     }
   });
@@ -2443,6 +2533,8 @@ function saveToUrl() {
       cueShifts: tile.cueShifts,
       masterVolume: tile.masterVolume,
       playbackRate: tile.playbackRate,
+      desiredClipPlaying: Boolean(tile.desiredClipPlaying),
+      sequenceStartStep: Math.max(0, Number(tile.sequenceStartStep) || 0),
       actions: tile.actions,
       steps: tile.steps,
       division: tile.division,
@@ -2455,7 +2547,12 @@ function saveToUrl() {
 
 function loadFromUrl() {
   const hash = window.location.hash.replace("#", "");
-  if (!hash) return;
+  if (!hash) {
+    state.tiles.forEach((tile) => {
+      tile.videoPool = getRandomPoolKey();
+    });
+    return;
+  }
   try {
     // Backward-compatible parse: tolerate missing fields and fill defaults.
     const decoded = decodeURIComponent(atob(hash));
@@ -2465,6 +2562,7 @@ function loadFromUrl() {
       state.isEditMode = payload.isEditMode !== false;
       state.layoutMode = "grid";
       state.topbarCollapsed = Boolean(payload.topbarCollapsed);
+      state.isEditMode = !state.topbarCollapsed;
       state.selectedIndex = payload.selectedIndex || 0;
       state.selectedCue = payload.selectedCue || 0;
       state.arrangement = normalizeArrangementState(payload.arrangement);
@@ -2477,6 +2575,7 @@ function loadFromUrl() {
         (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
       );
       if (hasComposition) {
+        state.topbarCollapsed = true;
         state.isEditMode = false;
       }
     }
@@ -2522,6 +2621,7 @@ function startNewSession() {
   state.isPlaying = false;
   state.isRecording = false;
   state.isEditMode = true;
+  state.topbarCollapsed = false;
   state.globalStep = 0;
   state.selectedIndex = 0;
   state.selectedCue = 0;
@@ -2559,12 +2659,24 @@ function applyLayoutMode() {
 function updateTopbarCollapse() {
   appEl?.classList.toggle("topbar-collapsed", state.topbarCollapsed);
   if (topbarToggleBtn) {
-    topbarToggleBtn.textContent = state.topbarCollapsed ? "▾" : "▴";
+    topbarToggleBtn.classList.toggle("collapsed", state.topbarCollapsed);
+    if (topbarToggleIcon) {
+      topbarToggleIcon.src = state.topbarCollapsed
+        ? "assets/chevron.down.png"
+        : "assets/chevron.up.png";
+    }
     topbarToggleBtn.setAttribute(
       "aria-label",
       state.topbarCollapsed ? "Expand top bar" : "Collapse top bar"
     );
   }
+}
+
+function setCollapsedMode(collapsed) {
+  state.topbarCollapsed = Boolean(collapsed);
+  state.isEditMode = !state.topbarCollapsed;
+  tileEls.forEach((entry) => entry.tile.classList.toggle("collapsed", !state.isEditMode));
+  updateTransportButton();
 }
 
 function getRandomPoolKey() {
@@ -2730,14 +2842,25 @@ function handlePlayerState(index, event) {
   const ytState = event?.data;
   if (ytState === window.YT?.PlayerState?.PLAYING) {
     tile.isClipPlaying = true;
-    if (tile.desiredClipPlaying === true) tile.desiredClipPlaying = null;
     tile.player?.setPlaybackRate?.(tile.playbackRate ?? 1);
   } else if (
     ytState === window.YT?.PlayerState?.PAUSED ||
     ytState === window.YT?.PlayerState?.ENDED
   ) {
+    const seekAgeMs = performance.now() - (tile.lastSeekAt || 0);
+    if (
+      ytState === window.YT?.PlayerState?.PAUSED &&
+      seekAgeMs >= 0 &&
+      seekAgeMs < 350 &&
+      state.isPlaying &&
+      (tile.desiredClipPlaying === true || tile.isClipPlaying)
+    ) {
+      tile.player?.playVideo?.();
+      tile.isClipPlaying = true;
+      updateTileDisplays();
+      return;
+    }
     tile.isClipPlaying = false;
-    if (tile.desiredClipPlaying === false) tile.desiredClipPlaying = null;
   }
   updateTileDisplays();
 }
@@ -2756,12 +2879,10 @@ function tapTempo() {
   state.bpm = clamp(Math.round(60000 / avg), 40, 240);
   bpmInput.value = String(state.bpm);
   if (state.isPlaying) {
-    const interval = getBaseTickMs();
-    if (transportTimer) clearInterval(transportTimer);
-    transportTimer = setInterval(tick, interval);
+    resetTransportIntervalPreservePhase();
   }
   if (state.arrangement.autoplay && state.isPlaying) {
-    scheduleArrangementAdvance(performance.now());
+    scheduleArrangementAdvance();
   }
   saveToUrl();
   updateStatus();
@@ -2804,7 +2925,9 @@ function getLocalStep(tile) {
   const totalSteps = tile.steps;
   const stepAdvance = getStepAdvance(tile);
   if (totalSteps <= 0) return 0;
-  return Math.floor(state.globalStep / stepAdvance) % totalSteps;
+  const offset = Math.max(0, Number(tile.sequenceStartStep) || 0);
+  const effectiveStep = Math.max(0, state.globalStep - offset);
+  return Math.floor(effectiveStep / stepAdvance) % totalSteps;
 }
 
 function getStepDurationMs(tile) {

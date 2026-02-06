@@ -9,6 +9,7 @@
   <body>
     <div class="app">
       <header class="topbar">
+        <img class="collapsed-title-logo" src="assets/choptube-title-logo.png" alt="ChopTube" />
         <div class="brand">
           <img class="brand-image" src="assets/choptube-logo.png" alt="ChopTube logo" />
           <div class="brand-actions">
@@ -22,10 +23,6 @@
           </div>
         </div>
         <div class="center-control">
-          <div class="edit-switch" aria-label="View mode">
-            <button id="present-mode" class="edit-side" type="button">Show</button>
-            <button id="edit-mode" class="edit-side" type="button">Edit</button>
-          </div>
           <button id="play-toggle" class="play-toggle" aria-label="Play or stop"></button>
           <button id="loop-toggle" class="loop-toggle" aria-label="Loop toggle"></button>
           <div class="field bpm-field">
@@ -53,7 +50,9 @@
           </div>
           <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
-        <button id="topbar-toggle" class="topbar-toggle" type="button" aria-label="Collapse top bar">▴</button>
+        <button id="topbar-toggle" class="topbar-toggle" type="button" aria-label="Collapse top bar">
+          <img id="topbar-toggle-icon" src="assets/chevron.up.png" alt="" aria-hidden="true" />
+        </button>
       </header>
 
       <div class="workspace-scroll" id="workspace-scroll">
