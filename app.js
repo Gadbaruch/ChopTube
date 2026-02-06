@@ -8,6 +8,9 @@ const BASE_DIVISION = 16;
 const TILE_PLAY_KEYS = ["q", "w", "e", "r", "t", "y", "u", "i"];
 const PLAY_RETRY_DELAY_MS = 250;
 const PLAY_RETRY_COUNT = 8;
+const ARRANGEMENT_PART_COUNT = 16;
+const PART_LENGTH_UNITS = ["bars", "beats", "seconds"];
+const LAYOUT_MODES = ["grid"];
 const RANDOM_VIDEO_IDS = Array.from(
   new Set([
   "dQw4w9WgXcQ",
@@ -363,7 +366,10 @@ const state = {
   selectedIndex: 0,
   selectedCue: 0,
   selectedStep: null,
+  layoutMode: "grid",
+  topbarCollapsed: false,
   tiles: Array.from({ length: TILE_COUNT }, () => getDefaultTileState()),
+  arrangement: getDefaultArrangementState(),
 };
 
 const gridEl = document.getElementById("grid");
@@ -405,9 +411,20 @@ const tileUrlPopup = document.getElementById("tile-url-popup");
 const tileUrlInput = document.getElementById("tile-url-input");
 const tileUrlSaveBtn = document.getElementById("tile-url-save");
 const tileUrlCancelBtn = document.getElementById("tile-url-cancel");
+const workspaceScrollEl = document.getElementById("workspace-scroll");
+const arrangementEl = document.getElementById("arrangement");
+const topbarEl = document.querySelector(".topbar");
+const footerEl = document.querySelector(".footer");
+const arrangementPartsEl = document.getElementById("arrangement-parts");
+const arrangementAutoplayBtn = document.getElementById("arr-autoplay");
+const arrangementLoopBtn = document.getElementById("arr-loop");
+const arrangementLengthValueInput = document.getElementById("arr-length-value");
+const arrangementLengthUnitSelect = document.getElementById("arr-length-unit");
+const topbarToggleBtn = document.getElementById("topbar-toggle");
 
 const tileEls = [];
 const stepEls = [];
+const arrangementPartEls = [];
 let transportTimer = null;
 let shareResetTimer = null;
 let tapTimes = [];
@@ -440,6 +457,10 @@ function init() {
   updateMobileBlocker();
   renderShowcaseLinks();
   renderCommunityPanelLinks();
+  renderArrangement();
+  updateArrangementControls();
+  applyLayoutMode();
+  updateTopbarCollapse();
 }
 
 function initGlobalTooltips() {
@@ -450,6 +471,7 @@ function initGlobalTooltips() {
   setTooltip(playToggleBtn, "Global play / stop\nShortcut: Space");
   setTooltip(loopToggleBtn, "Loop record mode\nON: cue performance writes into sequence\nShortcut: L");
   setTooltip(bpmInput, "Global BPM (40-240)");
+  setTooltip(topbarToggleBtn, "Collapse/expand top bar");
   setTooltip(tapTempoBtn, "Tap tempo\nClick repeatedly to detect BPM");
   setTooltip(metronomeToggleBtn, "Click metronome on / off\nShortcut: C");
   setTooltip(metronomeVolumeInput, "Click metronome volume");
@@ -846,6 +868,9 @@ function bindGlobalControls() {
       skipNextMetronome = true;
       restartTransport(false);
     }
+    if (state.arrangement.autoplay && state.isPlaying) {
+      scheduleArrangementAdvance(performance.now());
+    }
     saveToUrl();
     pushHistorySnapshot();
   });
@@ -865,6 +890,12 @@ function bindGlobalControls() {
   });
 
   loopToggleBtn.addEventListener("click", () => toggleLoop());
+  topbarToggleBtn?.addEventListener("click", () => {
+    state.topbarCollapsed = !state.topbarCollapsed;
+    updateTopbarCollapse();
+    updateShowLayout();
+    saveToUrl();
+  });
   tapTempoBtn?.addEventListener("click", () => {
     tapTempoBtn.classList.remove("flash");
     void tapTempoBtn.offsetWidth;
@@ -882,6 +913,55 @@ function bindGlobalControls() {
   });
   metronomeVolumeInput?.addEventListener("input", () => {
     metronomeVolume = clamp(Number(metronomeVolumeInput.value) || 0, 0, 100);
+  });
+  arrangementAutoplayBtn?.addEventListener("click", () => {
+    state.arrangement.autoplay = !state.arrangement.autoplay;
+    if (state.arrangement.autoplay) {
+      ensureArrangementActivePart();
+      scheduleArrangementAdvance(performance.now());
+    }
+    updateArrangementControls();
+    renderArrangement();
+    saveToUrl();
+  });
+  arrangementLoopBtn?.addEventListener("click", () => {
+    state.arrangement.loop = !state.arrangement.loop;
+    updateArrangementControls();
+    renderArrangement();
+    saveToUrl();
+  });
+  arrangementLengthValueInput?.addEventListener("change", () => {
+    const parsed = clamp(Number(arrangementLengthValueInput.value) || 2, 1, 128);
+    arrangementLengthValueInput.value = String(parsed);
+    const selectedPart = getSelectedArrangementPart();
+    if (selectedPart) {
+      selectedPart.lengthValue = parsed;
+      if (state.arrangement.activePartIndex === state.arrangement.selectedPart) {
+        scheduleArrangementAdvance(performance.now());
+      }
+    } else {
+      state.arrangement.defaultLengthValue = parsed;
+    }
+    flashControl(arrangementLengthValueInput);
+    renderArrangement();
+    saveToUrl();
+    pushHistorySnapshot();
+  });
+  arrangementLengthUnitSelect?.addEventListener("change", () => {
+    const unit = parsePartLengthUnit(arrangementLengthUnitSelect.value);
+    const selectedPart = getSelectedArrangementPart();
+    if (selectedPart) {
+      selectedPart.lengthUnit = unit;
+      if (state.arrangement.activePartIndex === state.arrangement.selectedPart) {
+        scheduleArrangementAdvance(performance.now());
+      }
+    } else {
+      state.arrangement.defaultLengthUnit = unit;
+    }
+    flashControl(arrangementLengthUnitSelect);
+    renderArrangement();
+    saveToUrl();
+    pushHistorySnapshot();
   });
   newSessionBtn.addEventListener("click", () => {
     newSessionBtn.classList.add("clicked");
@@ -983,6 +1063,7 @@ function bindGlobalControls() {
 
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("resize", updateMobileBlocker);
+  window.addEventListener("resize", updateShowLayout);
   window.addEventListener("resize", hideTileContextMenu);
   appEl?.addEventListener("input", (event) => {
     if (event.target === shareBtn) return;
@@ -1013,6 +1094,7 @@ function bindGlobalControls() {
       tileUrlSaveBtn?.click();
     }
   });
+  updateShowLayout();
 }
 
 function handleKeyDown(event) {
@@ -1090,6 +1172,11 @@ function handleKeyDown(event) {
   }
   const tileHotkeyIndex = TILE_PLAY_KEYS.indexOf(event.key.toLowerCase());
   if (tileHotkeyIndex !== -1) {
+    if (!event.shiftKey && state.arrangement.selectedPart !== null) {
+      event.preventDefault();
+      toggleArrangementPartTile(state.arrangement.selectedPart, tileHotkeyIndex);
+      return;
+    }
     event.preventDefault();
     if (event.repeat) return;
     selectTile(tileHotkeyIndex);
@@ -1753,6 +1840,13 @@ function startTransport() {
   // Per-tile divisions derive from this clock via getStepAdvance().
   const interval = (60 / state.bpm) * (4 / BASE_DIVISION) * 1000;
   transportTimer = setInterval(tick, interval);
+  if (state.arrangement.autoplay) {
+    ensureArrangementActivePart();
+    if (state.arrangement.activePartIndex !== null) {
+      applyArrangementPart(state.arrangement.activePartIndex, true);
+      scheduleArrangementAdvance(performance.now());
+    }
+  }
   updateStatus();
   if (metronomeEnabled) startMetronome();
 }
@@ -1775,6 +1869,7 @@ function stopTransport(pauseVideos = true) {
     tile.pendingActionTimers = [];
   });
   if (pauseVideos) pauseAllVideos();
+  state.arrangement.nextAdvanceAt = null;
   updateStatus();
 }
 
@@ -1798,6 +1893,8 @@ function tick() {
       triggerTileStepActions(tile, localStep);
     }
   });
+  updateArrangementPlayback(performance.now());
+  updateArrangementProgressVisuals(performance.now());
   updateStepIndicators();
 }
 
@@ -1867,8 +1964,357 @@ function updateTileDisplays() {
     entry.tile.classList.toggle("has-video", Boolean((tile.videoUrl || "").trim()));
   });
 
+  updateShowLayout();
   updateStepIndicators();
+  renderArrangement();
+  updateArrangementControls();
   updateStatus();
+}
+
+function updateShowLayout() {
+  if (!gridEl) return;
+  if (state.isEditMode) {
+    gridEl.style.removeProperty("--show-cols");
+    gridEl.style.removeProperty("--show-fit-width");
+    return;
+  }
+
+  const visibleCount = state.tiles.filter((tile) => Boolean((tile.videoUrl || "").trim())).length;
+  if (!visibleCount) {
+    gridEl.style.removeProperty("--show-cols");
+    gridEl.style.removeProperty("--show-fit-width");
+    return;
+  }
+
+  const viewportWidth = workspaceScrollEl?.clientWidth || window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const topbarHeight = topbarEl?.offsetHeight || 0;
+  const arrangementHeight = arrangementEl?.offsetHeight || 0;
+  const footerHeight = footerEl?.offsetHeight || 0;
+  const verticalPadding = 12;
+  const availableHeight = Math.max(
+    140,
+    viewportHeight - topbarHeight - arrangementHeight - footerHeight - verticalPadding
+  );
+  const timelineHeight = 26;
+
+  let bestCols = Math.min(visibleCount, 4);
+  let bestWidth = 180;
+  for (let cols = 1; cols <= visibleCount; cols += 1) {
+    const rows = Math.ceil(visibleCount / cols);
+    const widthByRow = Math.floor(viewportWidth / cols);
+    const widthByHeight = Math.floor(((availableHeight / rows) - timelineHeight) * (16 / 9));
+    const width = Math.floor(Math.max(120, Math.min(widthByRow, widthByHeight)));
+    if (width > bestWidth) {
+      bestWidth = width;
+      bestCols = cols;
+    }
+  }
+
+  gridEl.style.setProperty("--show-cols", String(bestCols));
+  gridEl.style.setProperty("--show-fit-width", `${bestWidth}px`);
+}
+
+function getDefaultArrangementState() {
+  return {
+    parts: Array.from({ length: ARRANGEMENT_PART_COUNT }, () => null),
+    selectedPart: null,
+    activePartIndex: null,
+    autoplay: false,
+    loop: false,
+    defaultLengthValue: 2,
+    defaultLengthUnit: "bars",
+    partStartedAt: null,
+    nextAdvanceAt: null,
+  };
+}
+
+function parsePartLengthUnit(value) {
+  return PART_LENGTH_UNITS.includes(value) ? value : "bars";
+}
+
+function normalizeArrangementState(raw) {
+  const arrangement = getDefaultArrangementState();
+  if (!raw || typeof raw !== "object") return arrangement;
+
+  arrangement.selectedPart =
+    raw.selectedPart === null || raw.selectedPart === undefined
+      ? null
+      : clamp(Number(raw.selectedPart) || 0, 0, ARRANGEMENT_PART_COUNT - 1);
+  arrangement.activePartIndex =
+    raw.activePartIndex === null || raw.activePartIndex === undefined
+      ? null
+      : clamp(Number(raw.activePartIndex) || 0, 0, ARRANGEMENT_PART_COUNT - 1);
+  arrangement.autoplay = Boolean(raw.autoplay);
+  arrangement.loop = Boolean(raw.loop);
+  arrangement.defaultLengthValue = clamp(Number(raw.defaultLengthValue) || 2, 1, 128);
+  arrangement.defaultLengthUnit = parsePartLengthUnit(raw.defaultLengthUnit);
+  arrangement.partStartedAt = null;
+  arrangement.nextAdvanceAt = null;
+
+  if (Array.isArray(raw.parts)) {
+    arrangement.parts = Array.from({ length: ARRANGEMENT_PART_COUNT }, (_, idx) => {
+      const item = raw.parts[idx];
+      if (!item || typeof item !== "object") return null;
+      const activeTiles = Array.from({ length: TILE_COUNT }, (_, tileIdx) => Boolean(item.activeTiles?.[tileIdx]));
+      return {
+        activeTiles,
+        lengthValue: clamp(Number(item.lengthValue) || arrangement.defaultLengthValue, 1, 128),
+        lengthUnit: parsePartLengthUnit(item.lengthUnit || arrangement.defaultLengthUnit),
+      };
+    });
+  }
+  return arrangement;
+}
+
+function getArrangementFilledIndices() {
+  return state.arrangement.parts
+    .map((part, idx) => (part ? idx : -1))
+    .filter((idx) => idx >= 0);
+}
+
+function ensureArrangementActivePart() {
+  const filled = getArrangementFilledIndices();
+  if (!filled.length) {
+    state.arrangement.activePartIndex = null;
+    state.arrangement.partStartedAt = null;
+    state.arrangement.nextAdvanceAt = null;
+    return;
+  }
+  if (!filled.includes(state.arrangement.activePartIndex)) {
+    state.arrangement.activePartIndex = filled[0];
+  }
+}
+
+function getSelectedArrangementPart() {
+  if (state.arrangement.selectedPart === null) return null;
+  return state.arrangement.parts[state.arrangement.selectedPart] || null;
+}
+
+function getPartDurationMs(part) {
+  if (!part) return 0;
+  const value = clamp(Number(part.lengthValue) || 2, 1, 128);
+  const beatMs = (60 / state.bpm) * 1000;
+  if (part.lengthUnit === "seconds") return value * 1000;
+  if (part.lengthUnit === "beats") return value * beatMs;
+  return value * 4 * beatMs;
+}
+
+function scheduleArrangementAdvance(now = performance.now()) {
+  const idx = state.arrangement.activePartIndex;
+  if (idx === null) {
+    state.arrangement.partStartedAt = null;
+    state.arrangement.nextAdvanceAt = null;
+    return;
+  }
+  const part = state.arrangement.parts[idx];
+  if (!part) {
+    state.arrangement.partStartedAt = null;
+    state.arrangement.nextAdvanceAt = null;
+    return;
+  }
+  state.arrangement.partStartedAt = now;
+  state.arrangement.nextAdvanceAt = now + getPartDurationMs(part);
+}
+
+function applyArrangementPart(index, activatePart = true) {
+  const part = state.arrangement.parts[index];
+  if (!part) return;
+  if (activatePart) {
+    state.arrangement.activePartIndex = index;
+  }
+  part.activeTiles.forEach((shouldPlay, tileIdx) => {
+    const tile = state.tiles[tileIdx];
+    if (!tile?.player) return;
+    if (shouldPlay && !tile.isClipPlaying) {
+      triggerAction(tileIdx, { type: "play" }, false);
+    } else if (!shouldPlay && tile.isClipPlaying) {
+      triggerAction(tileIdx, { type: "pause" }, false);
+    }
+  });
+  if (state.arrangement.autoplay && state.isPlaying) {
+    scheduleArrangementAdvance(performance.now());
+  }
+  updateTileDisplays();
+}
+
+function createArrangementPartFromCurrent() {
+  return {
+    activeTiles: state.tiles.map((tile) => Boolean(tile.isClipPlaying)),
+    lengthValue: state.arrangement.defaultLengthValue,
+    lengthUnit: state.arrangement.defaultLengthUnit,
+  };
+}
+
+function selectArrangementPart(index) {
+  state.arrangement.selectedPart = clamp(index, 0, ARRANGEMENT_PART_COUNT - 1);
+  updateArrangementControls();
+  renderArrangement();
+}
+
+function upsertArrangementPart(index) {
+  const target = clamp(index, 0, ARRANGEMENT_PART_COUNT - 1);
+  if (!state.arrangement.parts[target]) {
+    state.arrangement.parts[target] = createArrangementPartFromCurrent();
+  }
+  state.arrangement.selectedPart = target;
+  applyArrangementPart(target, true);
+  if (state.arrangement.autoplay && state.isPlaying) {
+    scheduleArrangementAdvance(performance.now());
+  }
+  updateArrangementControls();
+  renderArrangement();
+  saveToUrl();
+  pushHistorySnapshot();
+}
+
+function toggleArrangementPartTile(partIndex, tileIndex) {
+  const idx = clamp(partIndex, 0, ARRANGEMENT_PART_COUNT - 1);
+  let part = state.arrangement.parts[idx];
+  if (!part) {
+    part = {
+      activeTiles: Array.from({ length: TILE_COUNT }, () => false),
+      lengthValue: state.arrangement.defaultLengthValue,
+      lengthUnit: state.arrangement.defaultLengthUnit,
+    };
+    state.arrangement.parts[idx] = part;
+  }
+  part.activeTiles[tileIndex] = !part.activeTiles[tileIndex];
+  state.arrangement.selectedPart = idx;
+  applyArrangementPart(idx, true);
+  updateArrangementControls();
+  renderArrangement();
+  saveToUrl();
+  pushHistorySnapshot();
+}
+
+function advanceArrangementPart() {
+  const filled = getArrangementFilledIndices();
+  if (!filled.length) return;
+  ensureArrangementActivePart();
+  const currentIdx = state.arrangement.activePartIndex;
+  const currentPos = filled.indexOf(currentIdx);
+  if (currentPos === -1) return;
+  const atLast = currentPos >= filled.length - 1;
+  if (atLast && !state.arrangement.loop) {
+    state.arrangement.autoplay = false;
+    state.arrangement.nextAdvanceAt = null;
+    updateArrangementControls();
+    renderArrangement();
+    saveToUrl();
+    return;
+  }
+  const nextPos = atLast ? 0 : currentPos + 1;
+  const nextIndex = filled[nextPos];
+  state.arrangement.selectedPart = nextIndex;
+  applyArrangementPart(nextIndex, true);
+  scheduleArrangementAdvance(performance.now());
+  updateArrangementControls();
+  renderArrangement();
+  saveToUrl();
+}
+
+function updateArrangementPlayback(now = performance.now()) {
+  if (!state.arrangement.autoplay || !state.isPlaying) return;
+  ensureArrangementActivePart();
+  if (state.arrangement.activePartIndex === null) return;
+  if (state.arrangement.nextAdvanceAt === null) {
+    scheduleArrangementAdvance(now);
+    return;
+  }
+  if (now >= state.arrangement.nextAdvanceAt) {
+    advanceArrangementPart();
+  }
+}
+
+function updateArrangementControls() {
+  arrangementAutoplayBtn?.classList.toggle("active", state.arrangement.autoplay);
+  arrangementLoopBtn?.classList.toggle("active", state.arrangement.loop);
+  if (arrangementLoopBtn) {
+    arrangementLoopBtn.disabled = !state.arrangement.autoplay;
+    arrangementLoopBtn.classList.toggle("disabled", !state.arrangement.autoplay);
+  }
+  const selectedPart = getSelectedArrangementPart();
+  const value = selectedPart ? selectedPart.lengthValue : state.arrangement.defaultLengthValue;
+  const unit = selectedPart ? selectedPart.lengthUnit : state.arrangement.defaultLengthUnit;
+  if (arrangementLengthValueInput) arrangementLengthValueInput.value = String(value);
+  if (arrangementLengthUnitSelect) arrangementLengthUnitSelect.value = unit;
+}
+
+function renderArrangement() {
+  if (!arrangementPartsEl) return;
+  arrangementPartsEl.innerHTML = "";
+  arrangementPartEls.length = 0;
+
+  for (let idx = 0; idx < ARRANGEMENT_PART_COUNT; idx += 1) {
+    const slot = document.createElement("button");
+    slot.type = "button";
+    slot.className = "arr-part-slot";
+    slot.dataset.index = String(idx);
+
+    const part = state.arrangement.parts[idx];
+    const content = document.createElement("div");
+    content.className = "arr-slot-content";
+    if (part) {
+      const label = document.createElement("div");
+      label.className = "arr-slot-label";
+      label.textContent = `Part ${idx + 1}`;
+      const activeKeys = part.activeTiles
+        .map((active, tileIdx) => (active ? TILE_PLAY_KEYS[tileIdx].toUpperCase() : ""))
+        .filter(Boolean);
+      content.textContent = activeKeys.length ? activeKeys.join(" ") : "None";
+      const length = document.createElement("div");
+      length.className = "arr-slot-length";
+      length.textContent = `${part.lengthValue} ${part.lengthUnit}`;
+      slot.append(label, content, length);
+    } else {
+      slot.classList.add("empty");
+      const plus = document.createElement("div");
+      plus.className = "arr-slot-plus";
+      plus.textContent = "+";
+      const makePart = document.createElement("div");
+      makePart.className = "arr-slot-make";
+      makePart.textContent = "Make part";
+      slot.append(content, plus, makePart);
+    }
+
+    slot.classList.toggle("selected", idx === state.arrangement.selectedPart);
+    slot.classList.toggle("active", idx === state.arrangement.activePartIndex);
+    slot.addEventListener("click", () => {
+      const existing = state.arrangement.parts[idx];
+      if (!existing) {
+        upsertArrangementPart(idx);
+        return;
+      }
+      state.arrangement.selectedPart = idx;
+      applyArrangementPart(idx, true);
+      updateArrangementControls();
+      renderArrangement();
+      saveToUrl();
+    });
+
+    arrangementPartsEl.appendChild(slot);
+    arrangementPartEls.push(slot);
+  }
+  updateArrangementProgressVisuals(performance.now());
+}
+
+function getArrangementPartProgress(index, now = performance.now()) {
+  if (!state.arrangement.autoplay || !state.isPlaying) return 0;
+  if (index !== state.arrangement.activePartIndex) return 0;
+  if (!Number.isFinite(state.arrangement.partStartedAt) || !Number.isFinite(state.arrangement.nextAdvanceAt)) return 0;
+  const duration = state.arrangement.nextAdvanceAt - state.arrangement.partStartedAt;
+  if (!Number.isFinite(duration) || duration <= 0) return 0;
+  return clamp((now - state.arrangement.partStartedAt) / duration, 0, 1);
+}
+
+function updateArrangementProgressVisuals(now = performance.now()) {
+  arrangementPartEls.forEach((slot) => {
+    const idx = Number(slot.dataset.index);
+    const progress = getArrangementPartProgress(idx, now);
+    slot.style.setProperty("--part-progress", String(progress));
+    slot.classList.toggle("playing", progress > 0 && progress < 1);
+  });
 }
 
 function updateTransportButton() {
@@ -1880,6 +2326,9 @@ function updateTransportButton() {
   presentModeBtn.classList.toggle("active", !state.isEditMode);
   editModeBtn.classList.toggle("active", state.isEditMode);
   appEl?.classList.toggle("performance", !state.isEditMode);
+  applyLayoutMode();
+  updateTopbarCollapse();
+  updateShowLayout();
 }
 
 function updateStatus() {
@@ -1964,8 +2413,27 @@ function saveToUrl() {
   const payload = {
     bpm: state.bpm,
     isEditMode: state.isEditMode,
+    layoutMode: "grid",
+    topbarCollapsed: state.topbarCollapsed,
     selectedIndex: state.selectedIndex,
     selectedCue: state.selectedCue,
+    arrangement: {
+      parts: state.arrangement.parts.map((part) =>
+        part
+          ? {
+              activeTiles: part.activeTiles.map((value) => Boolean(value)),
+              lengthValue: clamp(Number(part.lengthValue) || 2, 1, 128),
+              lengthUnit: parsePartLengthUnit(part.lengthUnit),
+            }
+          : null
+      ),
+      selectedPart: state.arrangement.selectedPart,
+      activePartIndex: state.arrangement.activePartIndex,
+      autoplay: state.arrangement.autoplay,
+      loop: state.arrangement.loop,
+      defaultLengthValue: state.arrangement.defaultLengthValue,
+      defaultLengthUnit: state.arrangement.defaultLengthUnit,
+    },
     tiles: state.tiles.map((tile) => ({
       videoUrl: tile.videoUrl,
       videoPool: parsePoolKey(tile.videoPool),
@@ -1995,8 +2463,11 @@ function loadFromUrl() {
     if (payload && payload.tiles) {
       state.bpm = payload.bpm || 120;
       state.isEditMode = payload.isEditMode !== false;
+      state.layoutMode = "grid";
+      state.topbarCollapsed = Boolean(payload.topbarCollapsed);
       state.selectedIndex = payload.selectedIndex || 0;
       state.selectedCue = payload.selectedCue || 0;
+      state.arrangement = normalizeArrangementState(payload.arrangement);
       const legacyPool = parsePoolKey(payload.videoPool);
       state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
       state.tiles = state.tiles.concat(
@@ -2055,6 +2526,7 @@ function startNewSession() {
   state.selectedIndex = 0;
   state.selectedCue = 0;
   state.selectedStep = null;
+  state.arrangement = getDefaultArrangementState();
   metronomeEnabled = false;
   metronomeToggleBtn?.classList.remove("active");
   metronomeVolume = 50;
@@ -2071,6 +2543,28 @@ function startNewSession() {
   updateTransportButton();
   saveToUrl();
   resetHistory();
+}
+
+function parseLayoutMode(value) {
+  return LAYOUT_MODES.includes(value) ? value : "grid";
+}
+
+function applyLayoutMode() {
+  state.layoutMode = "grid";
+  appEl?.classList.remove("layout-horizontal");
+  appEl?.classList.remove("layout-vertical");
+  appEl?.classList.add("layout-grid");
+}
+
+function updateTopbarCollapse() {
+  appEl?.classList.toggle("topbar-collapsed", state.topbarCollapsed);
+  if (topbarToggleBtn) {
+    topbarToggleBtn.textContent = state.topbarCollapsed ? "▾" : "▴";
+    topbarToggleBtn.setAttribute(
+      "aria-label",
+      state.topbarCollapsed ? "Expand top bar" : "Collapse top bar"
+    );
+  }
 }
 
 function getRandomPoolKey() {
@@ -2266,6 +2760,9 @@ function tapTempo() {
     if (transportTimer) clearInterval(transportTimer);
     transportTimer = setInterval(tick, interval);
   }
+  if (state.arrangement.autoplay && state.isPlaying) {
+    scheduleArrangementAdvance(performance.now());
+  }
   saveToUrl();
   updateStatus();
 }
@@ -2365,6 +2862,23 @@ function getHistorySnapshot() {
     selectedIndex: state.selectedIndex,
     selectedCue: state.selectedCue,
     selectedStep: state.selectedStep,
+    arrangement: {
+      parts: state.arrangement.parts.map((part) =>
+        part
+          ? {
+              activeTiles: part.activeTiles.map((value) => Boolean(value)),
+              lengthValue: clamp(Number(part.lengthValue) || 2, 1, 128),
+              lengthUnit: parsePartLengthUnit(part.lengthUnit),
+            }
+          : null
+      ),
+      selectedPart: state.arrangement.selectedPart,
+      activePartIndex: state.arrangement.activePartIndex,
+      autoplay: state.arrangement.autoplay,
+      loop: state.arrangement.loop,
+      defaultLengthValue: state.arrangement.defaultLengthValue,
+      defaultLengthUnit: state.arrangement.defaultLengthUnit,
+    },
     tiles: state.tiles.map((tile) => ({
       cues: tile.cues.slice(),
       cueVolumes: tile.cueVolumes.slice(),
@@ -2412,6 +2926,7 @@ function applyHistorySnapshot(snapshot) {
       : Number.isNaN(Number(snapshot.selectedStep))
         ? null
         : Number(snapshot.selectedStep);
+  state.arrangement = normalizeArrangementState(snapshot.arrangement);
 
   snapshot.tiles.forEach((tileSnap, idx) => {
     const tile = state.tiles[idx];
