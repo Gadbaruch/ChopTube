@@ -1,56 +1,110 @@
 # ChopTube
 
-ChopTube is a browser-based live YouTube chop sequencer.
+ChopTube is a browser-based YouTube chop sequencer.
 
-You load videos into a 2x4 tile grid, trigger cues (`0-9`), and record those cue triggers into a step sequencer synced to a global transport.
+Load videos into 8 tiles, trigger cues (`0-9`), record cue performance into per-tile step sequencers, and arrange playback across multi-part song sections.
 
-## What It Does
+## Current Product State
 
-- 8-tile performance grid (all tiles currently free)
-- Per-tile video loading with:
-  - style pool dropdown
-  - random video from selected style
-  - back to previous video
+- Frontend-only app (no backend)
+- 8 tiles active (no locked tiles)
+- Session persistence in URL hash
+- Desktop-focused UX (mobile is blocked)
+- Branch workflow:
+  - `dev-flow` = active development
+  - `main` = live (GitHub Pages)
+
+## Core Features
+
+### Tile Engine
+
+- Per tile:
+  - Video source pool dropdown
+  - Random video picker
+  - Back to previous video
   - URL popup editor
-  - video clear (`x`) on hover
-- Per-tile cue system (`0-9`), each cue has:
-  - timestamp (seconds)
-  - volume (%)
-  - shift (%) for micro-timing feel in sequencer playback
-- Per-tile sequencer:
-  - steps
-  - time division (`16ths`, `8ths`, `beats`)
-  - clear loop
-  - step click/edit
-- Global transport:
-  - play/stop
-  - loop record on/off
-  - BPM + tap tempo
-  - metronome click + volume
-  - show/edit mode toggle
-- URL-based session persistence (no backend required)
-- Local "My Sessions" panel (saved in browser storage)
-- Featured sessions modal
-- Undo/redo for sequencer/cue edits
+  - Hover `x` clear button on videos
+- Cue system (`0-9`) per tile:
+  - Time in seconds
+  - Cue volume
+  - Cue shift (%) for timing offset in sequencer
+- Tile controls:
+  - Play/pause
+  - Master volume
+  - Playback rate
 
-## Current Model
+### Sequencer
 
-- Grid: `2 x 4`
-- Access: all 8 tiles enabled
-- Sharing: full session state stored in URL hash
-- Backend: none (static-site friendly)
+- Per tile step sequencer:
+  - Steps (`1..128`)
+  - Division (`16ths`, `8ths`, `beats`)
+  - Step click-to-edit
+  - Clear loop
+- Sequencer action types:
+  - `seek` cue trigger
+  - `mute-step`
 
-## Stack
+### Arrangement
 
-- HTML
-- CSS
-- Vanilla JavaScript
-- YouTube IFrame API
+- Bottom arrangement row of parts
+- Each part stores active tile play-state snapshot
+- Part length units: `bars`, `beats`, `seconds`
+- Autoplay + arrangement loop
+- Step-quantized part transitions synced to global transport
 
-## Run Locally
+### Global Transport
+
+- Global play/stop
+- Loop record toggle
+- BPM input
+- Tap tempo
+- Metronome toggle + volume
+- Top bar collapse/expand (also drives compact tile view)
+
+### Session / Sharing
+
+- URL hash stores full session state
+- `Share` copies current URL
+- `+ New` creates fresh random-style session
+- "My Sessions" is local browser storage
+- "Featured sessions" is hardcoded list in code
+
+## Keyboard Shortcuts
+
+### Global
+
+- `Space`: play/stop transport
+- `L`: loop record toggle
+- `C`: metronome on/off
+- `Tab`: collapse/expand top bar + compact/expanded tile mode
+- `Cmd+Z`: undo
+- `Cmd+Shift+Z`: redo
+
+### Tile Select / Playback
+
+- `Q W E R T Y U I`: toggle tile play/pause
+- `Shift + Q..I`: select tile only
+
+### Cue + Sequencer
+
+- `0-9`: trigger selected cue
+- `Cmd + 0-9`: set cue at current playhead
+- `Delete`: clear selected step
+- `Shift + Delete`: clear selected tile loop
+- `M`: toggle mute-step (selected step or live record)
+
+### Cue Nudge
+
+- `Left/Right`: `±0.10s`
+- `Shift + Left/Right`: `±0.01s`
+- `Up/Down`: `±10s`
+- `Shift + Up/Down`: `±1s`
+- `Option + arrows`: cue volume adjust
+
+## Local Development
 
 ```bash
-cd "/Users/gadbaruchhinkis/Documents/New project"
+cd "/Users/gadbaruchhinkis/Documents/New Project"
 git switch dev-flow
 python3 -m http.server 8011
 ```
@@ -59,91 +113,91 @@ Open:
 
 - [http://localhost:8011](http://localhost:8011)
 
-If port is busy, use another:
+If the port is busy:
 
 ```bash
 python3 -m http.server 8012
 ```
 
-If UI looks stale, hard refresh:
+Hard refresh on macOS browsers:
 
-- macOS browsers: `Cmd+Shift+R`
+- `Cmd+Shift+R`
 
-## Branch Workflow
+## Release Workflow
 
-- `main`: production/live branch
-- `dev-flow`: active development branch
-
-Useful commands:
+### Push dev changes
 
 ```bash
-git branch --show-current
-git pull origin dev-flow
+git switch dev-flow
+git add app.js index.html styles.css README.md assets/*
+git commit -m "Your change summary"
 git push origin dev-flow
 ```
 
-## Keyboard Shortcuts
+### Merge to live
 
-### Global
+Option A (GitHub UI):
 
-- `Space`: global play/stop
-- `L`: loop record on/off
-- `C`: metronome click on/off
-- `Tab`: toggle Show/Edit
-- `Cmd+Z`: undo
-- `Cmd+Shift+Z`: redo
+1. Open PR: `dev-flow` -> `main`
+2. Merge PR
 
-### Tile Playback / Selection
+Option B (local git):
 
-- `Q W E R T Y U I`: play/pause tiles 1-8
-- `Shift + Q..I`: select tile only
+```bash
+git switch main
+git pull --ff-only origin main
+git merge --no-ff dev-flow
+git push origin main
+```
 
-### Cue / Sequencer
+GitHub Pages updates shortly after `main` push.
 
-- `0-9`: trigger cue on selected tile
-- `Cmd + 0-9`: set cue from current playhead
-- `Delete`: clear selected step
-- `Shift + Delete`: clear selected tile loop
-- `M`: toggle mute step (selected step or recording mode)
+## Architecture Notes
 
-### Cue Nudging
+- Main logic is in `app.js`:
+  - Transport clock
+  - Tile playback
+  - Sequencer action execution
+  - Arrangement transitions
+  - URL serialization/hydration
+- UI is static HTML + CSS (`index.html`, `styles.css`)
+- YouTube playback via IFrame API
 
-- `Left/Right`: ±0.10s
-- `Shift + Left/Right`: ±0.01s
-- `Up/Down`: ±10s
-- `Shift + Up/Down`: ±1s
-- `Option + Arrows`: cue volume adjustment
+## Session Data Notes
 
-## Session Data (URL)
+Persisted (URL hash):
 
-ChopTube stores composition state in the URL hash.
-
-Persisted fields include:
-
-- BPM
-- show/edit mode
-- selected tile/cue
-- per-tile video URL + style + history
-- cue timestamps, cue volumes, cue shift (%)
-- tile master volume and playback rate
-- sequencer actions, steps, division
+- BPM, topbar mode, selection state
+- Arrangement parts + autoplay/loop + length defaults
+- Per-tile video URL, pool, cue config, actions, steps/division
+- Desired tile play state and sequence phase anchor
 
 Not persisted:
 
-- live player object references
-- temporary runtime timers/flags
+- Runtime player objects
+- Runtime timers/timeouts
 
-## Notes
+## Troubleshooting
 
-- Mobile is currently blocked (desktop-focused UX).
-- YouTube autoplay behavior can vary by browser policy.
-- "My Sessions" is local to that browser/device only.
+### `OSError: [Errno 48] Address already in use`
 
-## Deployment (GitHub Pages)
+Your local server port is taken. Start with a different port:
 
-1. Push branch (`main` for live)
-2. In GitHub repo, open **Settings -> Pages**
-3. Source: **Deploy from a branch**
-4. Pick branch + root
-5. Save and wait for publish
+```bash
+python3 -m http.server 8012
+```
 
+### UI looks stale after pull
+
+Hard refresh (`Cmd+Shift+R`) to clear cached JS/CSS.
+
+### Live differs from local
+
+Check branch and commit:
+
+```bash
+git branch --show-current
+git log --oneline -n 5
+```
+
+Make sure you pushed `main` for live updates.
