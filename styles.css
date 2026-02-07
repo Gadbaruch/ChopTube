@@ -1368,7 +1368,8 @@ button.active {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  z-index: 110;
+  z-index: 2600;
+  overflow-y: auto;
 }
 
 .community-panel.show {
@@ -1423,6 +1424,9 @@ button.active {
 
 .community-list {
   overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 46vh;
   display: flex;
   flex-direction: column;
   gap: 8px;
