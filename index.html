@@ -155,7 +155,31 @@
           rel="noreferrer"
           >Join ChopTube Discord</a
         >
-        <button id="community-publish-current" class="community-publish-btn" type="button">Publish Current Session</button>
+        <button id="community-publish-toggle" class="community-publish-btn" type="button">Publish Current Session</button>
+        <div id="community-publish-form" class="community-publish-form" aria-hidden="true">
+          <input id="community-publish-title" type="text" maxlength="120" placeholder="Session title" />
+          <textarea
+            id="community-publish-description"
+            maxlength="280"
+            rows="3"
+            placeholder="Short description (optional)"
+          ></textarea>
+          <input
+            id="community-publish-tags"
+            type="text"
+            maxlength="120"
+            placeholder="Tags (comma separated, optional)"
+          />
+          <div class="community-publish-preview-row">
+            <span>Share URL preview</span>
+            <code id="community-publish-preview">https://gadbaruch.github.io/ChopTube/?s=&lt;generated&gt;</code>
+          </div>
+          <div class="community-publish-actions">
+            <button id="community-publish-submit" class="community-publish-submit" type="button">Publish</button>
+            <button id="community-publish-cancel" class="community-publish-cancel" type="button">Cancel</button>
+          </div>
+          <div id="community-publish-feedback" class="community-publish-feedback" aria-live="polite"></div>
+        </div>
         <div class="community-list" id="community-popup-list"></div>
       </div>
     </div>

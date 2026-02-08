@@ -397,7 +397,15 @@ const communityPanel = document.getElementById("community-panel");
 const communityCloseBtn = document.getElementById("community-close");
 const communityDiscordLink = document.getElementById("community-discord-link");
 const communityPopupList = document.getElementById("community-popup-list");
-const communityPublishBtn = document.getElementById("community-publish-current");
+const communityPublishToggleBtn = document.getElementById("community-publish-toggle");
+const communityPublishForm = document.getElementById("community-publish-form");
+const communityPublishTitleInput = document.getElementById("community-publish-title");
+const communityPublishDescriptionInput = document.getElementById("community-publish-description");
+const communityPublishTagsInput = document.getElementById("community-publish-tags");
+const communityPublishPreview = document.getElementById("community-publish-preview");
+const communityPublishSubmitBtn = document.getElementById("community-publish-submit");
+const communityPublishCancelBtn = document.getElementById("community-publish-cancel");
+const communityPublishFeedback = document.getElementById("community-publish-feedback");
 const mobileBlocker = document.getElementById("mobile-blocker");
 const showcaseToggleBtn = document.getElementById("showcase-toggle");
 const showcaseSidebar = document.getElementById("showcase-sidebar");
@@ -499,8 +507,8 @@ async function loadShortSessionPayload(shortId) {
   return result.payload;
 }
 
-async function publishCurrentSession(name, payload) {
-  const body = JSON.stringify({ name, payload });
+async function publishCurrentSession(name, payload, description = "", tags = []) {
+  const body = JSON.stringify({ name, payload, description, tags });
   return apiRequest("/api/published", { method: "POST", body });
 }
 
@@ -516,9 +524,10 @@ function buildShareUrlFromShortId(id) {
 async function init() {
   loadShowcaseLinks();
   await loadFromUrl();
-  if (communityPublishBtn && !hasBackendApi()) {
-    communityPublishBtn.disabled = true;
-    communityPublishBtn.title = "Backend is not configured.";
+  if (communityPublishToggleBtn && !hasBackendApi()) {
+    communityPublishToggleBtn.disabled = true;
+    communityPublishToggleBtn.title = "Backend is not configured.";
+    if (communityPublishSubmitBtn) communityPublishSubmitBtn.disabled = true;
   }
   buildGrid();
   resetHistory();
@@ -1099,20 +1108,54 @@ function bindGlobalControls() {
       setCommunityOpen(false);
     }
   });
-  communityPublishBtn?.addEventListener("click", async () => {
+  communityPublishToggleBtn?.addEventListener("click", () => {
     if (!hasBackendApi()) {
       statusEl.textContent = "Backend API is not configured for publishing yet.";
       return;
     }
-    const defaultName = generateSessionName();
-    const name = (window.prompt("Publish session as:", defaultName) || "").trim();
-    if (!name) return;
+    const isOpen = communityPublishForm?.classList.contains("show");
+    setCommunityPublishFormOpen(!isOpen);
+  });
+  communityPublishCancelBtn?.addEventListener("click", () => {
+    setCommunityPublishFormOpen(false);
+  });
+  communityPublishTitleInput?.addEventListener("input", () => {
+    if (communityPublishSubmitBtn?.classList.contains("error")) {
+      setPublishUiState("idle");
+    }
+  });
+  communityPublishDescriptionInput?.addEventListener("input", () => {
+    if (communityPublishSubmitBtn?.classList.contains("error")) {
+      setPublishUiState("idle");
+    }
+  });
+  communityPublishTagsInput?.addEventListener("input", () => {
+    if (communityPublishSubmitBtn?.classList.contains("error")) {
+      setPublishUiState("idle");
+    }
+  });
+  communityPublishSubmitBtn?.addEventListener("click", async () => {
+    if (!hasBackendApi()) {
+      setPublishUiState("error", "Backend is not configured.");
+      return;
+    }
+    const name = (communityPublishTitleInput?.value || "").trim();
+    if (!name) {
+      setPublishUiState("error", "Title is required.");
+      return;
+    }
+    const description = (communityPublishDescriptionInput?.value || "").trim();
+    const tags = parsePublishTags(communityPublishTagsInput?.value || "");
     const payload = buildSessionPayload();
-    const published = await publishCurrentSession(name, payload);
+    setPublishUiState("publishing", "Publishing to community...");
+    const published = await publishCurrentSession(name, payload, description, tags);
     if (!published?.id) {
+      setPublishUiState("error", "Publish failed. Try again.");
       statusEl.textContent = "Publishing failed. Try again.";
       return;
     }
+    updateCommunityPublishPreview(published.id);
+    setPublishUiState("success", "Published successfully.");
     await refreshCommunitySessions();
     renderCommunityPanelLinks();
     statusEl.textContent = `Published: ${name}`;
@@ -3308,7 +3351,66 @@ function setCommunityOpen(open) {
   communityPanel?.classList.toggle("show", open);
   communityPanel?.setAttribute("aria-hidden", open ? "false" : "true");
   if (open) {
+    setCommunityPublishFormOpen(false);
     refreshCommunitySessions().then(renderCommunityPanelLinks);
+  }
+}
+
+function setCommunityPublishFormOpen(open) {
+  communityPublishForm?.classList.toggle("show", open);
+  communityPublishForm?.setAttribute("aria-hidden", open ? "false" : "true");
+  if (!open) {
+    if (communityPublishFeedback) communityPublishFeedback.textContent = "";
+    if (communityPublishSubmitBtn) {
+      communityPublishSubmitBtn.textContent = "Publish";
+      communityPublishSubmitBtn.disabled = !hasBackendApi();
+      communityPublishSubmitBtn.classList.remove("success", "error");
+    }
+  } else {
+    if (communityPublishTitleInput && !communityPublishTitleInput.value.trim()) {
+      communityPublishTitleInput.value = generateSessionName();
+    }
+    updateCommunityPublishPreview();
+  }
+}
+
+function parsePublishTags(value) {
+  if (!value) return [];
+  return String(value)
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0)
+    .slice(0, 12);
+}
+
+function updateCommunityPublishPreview(publishedId = "") {
+  if (!communityPublishPreview) return;
+  const url = publishedId
+    ? buildShareUrlFromShortId(publishedId)
+    : `${window.location.origin}${window.location.pathname}?s=<generated>`;
+  communityPublishPreview.textContent = url;
+}
+
+function setPublishUiState(stateName, message = "") {
+  if (!communityPublishSubmitBtn) return;
+  communityPublishSubmitBtn.classList.remove("success", "error");
+  if (stateName === "idle") {
+    communityPublishSubmitBtn.disabled = !hasBackendApi();
+    communityPublishSubmitBtn.textContent = "Publish";
+  } else if (stateName === "publishing") {
+    communityPublishSubmitBtn.disabled = true;
+    communityPublishSubmitBtn.textContent = "Publishing...";
+  } else if (stateName === "success") {
+    communityPublishSubmitBtn.disabled = false;
+    communityPublishSubmitBtn.textContent = "Published";
+    communityPublishSubmitBtn.classList.add("success");
+  } else if (stateName === "error") {
+    communityPublishSubmitBtn.disabled = false;
+    communityPublishSubmitBtn.textContent = "Failed";
+    communityPublishSubmitBtn.classList.add("error");
+  }
+  if (communityPublishFeedback) {
+    communityPublishFeedback.textContent = message || "";
   }
 }
 
@@ -3422,6 +3524,8 @@ async function refreshCommunitySessions() {
     .map((item, index) => ({
       name: String(item.name || `Published ${index + 1}`),
       url: buildShareUrlFromShortId(item.id),
+      description: String(item.description || ""),
+      tags: Array.isArray(item.tags) ? item.tags.map((tag) => String(tag)) : [],
     }))
     .concat(runtimeCommunitySessions);
   const dedup = new Map();
@@ -3451,6 +3555,20 @@ function renderCommunityPanelLinks() {
     title.className = "showcase-item-title";
     title.textContent = item.name || `Community ${index + 1}`;
 
+    if (item.description) {
+      const description = document.createElement("div");
+      description.className = "showcase-item-url";
+      description.textContent = item.description;
+      row.appendChild(description);
+    }
+
+    if (Array.isArray(item.tags) && item.tags.length) {
+      const tags = document.createElement("div");
+      tags.className = "showcase-item-url";
+      tags.textContent = item.tags.slice(0, 6).map((tag) => `#${tag}`).join(" ");
+      row.appendChild(tags);
+    }
+
     const actions = document.createElement("div");
     actions.className = "showcase-item-row";
     const loadBtn = document.createElement("button");
@@ -3467,7 +3585,8 @@ function renderCommunityPanelLinks() {
     });
     actions.append(loadBtn, openNewTabBtn);
 
-    row.append(title, actions);
+    row.prepend(title);
+    row.append(actions);
     communityPopupList.appendChild(row);
   });
 }

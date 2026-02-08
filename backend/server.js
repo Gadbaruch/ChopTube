@@ -86,6 +86,10 @@ function normalizePublishedItem(item) {
   return {
     id: String(item.id || ''),
     name: String(item.name || 'Untitled Session'),
+    description: String(item.description || '').slice(0, 280),
+    tags: Array.isArray(item.tags)
+      ? item.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
+      : [],
     createdAt: Number(item.createdAt) || Date.now(),
   };
 }
@@ -173,12 +177,22 @@ const server = http.createServer(async (req, res) => {
     }
 
     const name = String(body.name || 'Untitled Session').slice(0, 120).trim() || 'Untitled Session';
+    const description = String(body.description || '').slice(0, 280).trim();
+    const tags = Array.isArray(body.tags)
+      ? body.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
+      : [];
     const now = Date.now();
     const existingIndex = store.published.findIndex((item) => item && item.id === id);
     if (existingIndex >= 0) {
-      store.published[existingIndex] = { ...store.published[existingIndex], name, createdAt: now };
+      store.published[existingIndex] = {
+        ...store.published[existingIndex],
+        name,
+        description,
+        tags,
+        createdAt: now,
+      };
     } else {
-      store.published.unshift({ id, name, createdAt: now });
+      store.published.unshift({ id, name, description, tags, createdAt: now });
     }
     store.published = store.published.slice(0, 400);
     writeStore(store);
@@ -186,6 +200,8 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, {
       id,
       name,
+      description,
+      tags,
       url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(id)}` : undefined,
     });
   }
