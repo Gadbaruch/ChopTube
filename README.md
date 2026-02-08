@@ -4,12 +4,12 @@ ChopTube is a browser-based YouTube chop sequencer.
 
 Load videos into 8 tiles, trigger cues (`0-9`), record cue performance into per-tile step sequencers, and arrange playback across multi-part song sections.
 
-## Current Product State
+## Product State
 
-- Frontend-only app (no backend)
 - 8 tiles active (no locked tiles)
-- Session persistence in URL hash
 - Desktop-focused UX (mobile is blocked)
+- Session persistence fallback in URL hash
+- Optional backend for short URLs + published sessions
 - Branch workflow:
   - `dev-flow` = active development
   - `main` = live (GitHub Pages)
@@ -19,7 +19,7 @@ Load videos into 8 tiles, trigger cues (`0-9`), record cue performance into per-
 ### Tile Engine
 
 - Per tile:
-  - Video source pool dropdown
+  - Video style dropdown
   - Random video picker
   - Back to previous video
   - URL popup editor
@@ -61,13 +61,15 @@ Load videos into 8 tiles, trigger cues (`0-9`), record cue performance into per-
 - Metronome toggle + volume
 - Top bar collapse/expand (also drives compact tile view)
 
-### Session / Sharing
+### Sessions + Community
 
-- URL hash stores full session state
-- `Share` copies current URL
+- `Share` copies URL for the current session
+- With backend enabled: share URL is short (`?s=<id>`)
+- Without backend: full session is stored in URL hash
 - `+ New` creates fresh random-style session
-- "My Sessions" is local browser storage
-- "Featured sessions" is hardcoded list in code
+- `My Sessions` is local browser storage
+- `Featured sessions` shows hardcoded showcases plus backend-published sessions
+- `Publish Current Session` appears in featured popup when backend is configured
 
 ## Keyboard Shortcuts
 
@@ -103,6 +105,8 @@ Load videos into 8 tiles, trigger cues (`0-9`), record cue performance into per-
 
 ## Local Development
 
+### 1) Frontend only
+
 ```bash
 cd "/Users/gadbaruchhinkis/Documents/New Project"
 git switch dev-flow
@@ -113,15 +117,56 @@ Open:
 
 - [http://localhost:8011](http://localhost:8011)
 
-If the port is busy:
+### 2) Frontend + backend (short links + publish)
+
+Terminal A:
 
 ```bash
-python3 -m http.server 8012
+cd "/Users/gadbaruchhinkis/Documents/New Project"
+node backend/server.js
 ```
 
-Hard refresh on macOS browsers:
+Terminal B:
 
-- `Cmd+Shift+R`
+```bash
+cd "/Users/gadbaruchhinkis/Documents/New Project"
+python3 -m http.server 8011
+```
+
+Then open:
+
+- [http://localhost:8011](http://localhost:8011)
+
+The frontend auto-detects backend at `http://localhost:8787` when running on localhost.
+
+## Backend API (MVP)
+
+Base URL default (local): `http://localhost:8787`
+
+- `GET /api/health`
+- `POST /api/sessions`
+  - body: `{ "payload": <sessionState> }`
+  - returns: `{ id, payload, createdAt, updatedAt, url? }`
+- `GET /api/sessions/:id`
+  - returns session payload for short link loading
+- `GET /api/published`
+  - returns `{ items: [{ id, name, createdAt, url? }] }`
+- `POST /api/published`
+  - body: `{ "name": "My Session", "payload": <sessionState> }` OR `{ "id": "abc123", "name": "My Session" }`
+
+Data is stored in:
+
+- `backend/data/sessions.json`
+
+## Config
+
+You can force a backend URL by editing `index.html`:
+
+```html
+<meta name="choptube-api" content="https://your-backend-domain" />
+```
+
+If this meta tag is empty, the app uses `http://localhost:8787` only on localhost.
 
 ## Release Workflow
 
@@ -129,7 +174,7 @@ Hard refresh on macOS browsers:
 
 ```bash
 git switch dev-flow
-git add app.js index.html styles.css README.md assets/*
+git add app.js index.html styles.css README.md backend/*
 git commit -m "Your change summary"
 git push origin dev-flow
 ```
@@ -151,31 +196,6 @@ git push origin main
 ```
 
 GitHub Pages updates shortly after `main` push.
-
-## Architecture Notes
-
-- Main logic is in `app.js`:
-  - Transport clock
-  - Tile playback
-  - Sequencer action execution
-  - Arrangement transitions
-  - URL serialization/hydration
-- UI is static HTML + CSS (`index.html`, `styles.css`)
-- YouTube playback via IFrame API
-
-## Session Data Notes
-
-Persisted (URL hash):
-
-- BPM, topbar mode, selection state
-- Arrangement parts + autoplay/loop + length defaults
-- Per-tile video URL, pool, cue config, actions, steps/division
-- Desired tile play state and sequence phase anchor
-
-Not persisted:
-
-- Runtime player objects
-- Runtime timers/timeouts
 
 ## Troubleshooting
 

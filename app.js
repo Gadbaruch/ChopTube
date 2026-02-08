@@ -397,6 +397,7 @@ const communityPanel = document.getElementById("community-panel");
 const communityCloseBtn = document.getElementById("community-close");
 const communityDiscordLink = document.getElementById("community-discord-link");
 const communityPopupList = document.getElementById("community-popup-list");
+const communityPublishBtn = document.getElementById("community-publish-current");
 const mobileBlocker = document.getElementById("mobile-blocker");
 const showcaseToggleBtn = document.getElementById("showcase-toggle");
 const showcaseSidebar = document.getElementById("showcase-sidebar");
@@ -450,10 +451,75 @@ let tooltipEl = null;
 let tooltipTimer = null;
 let tooltipTarget = null;
 let pendingAutoplayFromLoadedSession = false;
+let runtimeCommunitySessions = [];
 
-function init() {
+const API_BASE_URL = detectApiBaseUrl();
+
+function detectApiBaseUrl() {
+  const meta = document.querySelector('meta[name="choptube-api"]')?.getAttribute("content")?.trim();
+  if (meta) return meta.replace(/\/+$/, "");
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `${window.location.protocol}//${window.location.hostname}:8787`;
+  }
+  return "";
+}
+
+function hasBackendApi() {
+  return Boolean(API_BASE_URL);
+}
+
+async function apiRequest(path, options = {}) {
+  if (!hasBackendApi()) return null;
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+      ...options,
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
+
+function getCurrentShortId() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("s");
+  return id && /^[a-zA-Z0-9_-]{4,24}$/.test(id) ? id : "";
+}
+
+async function createShortSession(payload) {
+  const body = JSON.stringify({ payload });
+  return apiRequest("/api/sessions", { method: "POST", body });
+}
+
+async function loadShortSessionPayload(shortId) {
+  const result = await apiRequest(`/api/sessions/${encodeURIComponent(shortId)}`);
+  if (!result || !result.payload || typeof result.payload !== "object") return null;
+  return result.payload;
+}
+
+async function publishCurrentSession(name, payload) {
+  const body = JSON.stringify({ name, payload });
+  return apiRequest("/api/published", { method: "POST", body });
+}
+
+async function fetchPublishedSessions() {
+  const result = await apiRequest("/api/published");
+  return Array.isArray(result?.items) ? result.items : [];
+}
+
+function buildShareUrlFromShortId(id) {
+  return `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(id)}`;
+}
+
+async function init() {
   loadShowcaseLinks();
-  loadFromUrl();
+  await loadFromUrl();
+  if (communityPublishBtn && !hasBackendApi()) {
+    communityPublishBtn.disabled = true;
+    communityPublishBtn.title = "Backend is not configured.";
+  }
   buildGrid();
   resetHistory();
   bindGlobalControls();
@@ -463,6 +529,7 @@ function init() {
   updateStatus();
   updateMobileBlocker();
   renderShowcaseLinks();
+  await refreshCommunitySessions();
   renderCommunityPanelLinks();
   renderArrangement();
   updateArrangementControls();
@@ -979,9 +1046,17 @@ function bindGlobalControls() {
   });
 
   shareBtn.addEventListener("click", async () => {
-    saveToUrl();
+    const payload = saveToUrl();
+    let shareUrl = window.location.href;
+    if (hasBackendApi()) {
+      const result = await createShortSession(payload);
+      if (result?.id) {
+        shareUrl = buildShareUrlFromShortId(result.id);
+        window.history.replaceState({}, "", `?s=${encodeURIComponent(result.id)}`);
+      }
+    }
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       shareBtn.classList.add("copied");
       shareBtn.textContent = "✓";
       showShareHint("Session copied to clipboard - paste anywhere to share or save your session");
@@ -1023,6 +1098,24 @@ function bindGlobalControls() {
     if (event.target === communityPanel) {
       setCommunityOpen(false);
     }
+  });
+  communityPublishBtn?.addEventListener("click", async () => {
+    if (!hasBackendApi()) {
+      statusEl.textContent = "Backend API is not configured for publishing yet.";
+      return;
+    }
+    const defaultName = generateSessionName();
+    const name = (window.prompt("Publish session as:", defaultName) || "").trim();
+    if (!name) return;
+    const payload = buildSessionPayload();
+    const published = await publishCurrentSession(name, payload);
+    if (!published?.id) {
+      statusEl.textContent = "Publishing failed. Try again.";
+      return;
+    }
+    await refreshCommunitySessions();
+    renderCommunityPanelLinks();
+    statusEl.textContent = `Published: ${name}`;
   });
 
   showcaseToggleBtn?.addEventListener("click", () => setShowcaseOpen(true));
@@ -2531,10 +2624,8 @@ function playDesiredVideos() {
   updateTileDisplays();
 }
 
-function saveToUrl() {
-  // Session persistence is hash-based so a single URL fully reproduces state
-  // without requiring a backend.
-  const payload = {
+function buildSessionPayload() {
+  return {
     bpm: state.bpm,
     isEditMode: state.isEditMode,
     layoutMode: "grid",
@@ -2575,11 +2666,56 @@ function saveToUrl() {
       customCues: tile.customCues,
     })),
   };
-  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
-  window.history.replaceState({}, "", `#${encoded}`);
 }
 
-function loadFromUrl() {
+function saveToUrl() {
+  const payload = buildSessionPayload();
+  // Keep hash persistence when there is no backend short-session id.
+  // This preserves the current no-backend UX and gives a safe fallback.
+  if (getCurrentShortId()) return payload;
+  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+  window.history.replaceState({}, "", `#${encoded}`);
+  return payload;
+}
+
+function applySessionPayload(payload) {
+  if (!payload || !Array.isArray(payload.tiles)) return false;
+  state.bpm = payload.bpm || 120;
+  state.isEditMode = payload.isEditMode !== false;
+  state.layoutMode = "grid";
+  state.topbarCollapsed = Boolean(payload.topbarCollapsed);
+  state.isEditMode = !state.topbarCollapsed;
+  state.selectedIndex = payload.selectedIndex || 0;
+  state.selectedCue = payload.selectedCue || 0;
+  state.arrangement = normalizeArrangementState(payload.arrangement);
+  const legacyPool = parsePoolKey(payload.videoPool);
+  state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
+  state.tiles = state.tiles.concat(
+    Array.from({ length: TILE_COUNT - state.tiles.length }, () => getDefaultTileState())
+  );
+  const hasComposition = state.tiles.some(
+    (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
+  );
+  if (hasComposition) {
+    applyDesiredPlayStateFromArrangementOrFallback();
+    pendingAutoplayFromLoadedSession = true;
+    state.topbarCollapsed = true;
+    state.isEditMode = false;
+  }
+  return true;
+}
+
+async function loadFromUrl() {
+  const shortId = getCurrentShortId();
+  if (shortId && hasBackendApi()) {
+    const payload = await loadShortSessionPayload(shortId);
+    if (payload && applySessionPayload(payload)) {
+      bpmInput.value = state.bpm;
+      state.division = state.division || BASE_DIVISION;
+      return;
+    }
+  }
+
   const hash = window.location.hash.replace("#", "");
   if (!hash) {
     state.tiles.forEach((tile) => {
@@ -2591,30 +2727,7 @@ function loadFromUrl() {
     // Backward-compatible parse: tolerate missing fields and fill defaults.
     const decoded = decodeURIComponent(atob(hash));
     const payload = JSON.parse(decoded);
-    if (payload && payload.tiles) {
-      state.bpm = payload.bpm || 120;
-      state.isEditMode = payload.isEditMode !== false;
-      state.layoutMode = "grid";
-      state.topbarCollapsed = Boolean(payload.topbarCollapsed);
-      state.isEditMode = !state.topbarCollapsed;
-      state.selectedIndex = payload.selectedIndex || 0;
-      state.selectedCue = payload.selectedCue || 0;
-      state.arrangement = normalizeArrangementState(payload.arrangement);
-      const legacyPool = parsePoolKey(payload.videoPool);
-      state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
-      state.tiles = state.tiles.concat(
-        Array.from({ length: TILE_COUNT - state.tiles.length }, () => getDefaultTileState())
-      );
-      const hasComposition = state.tiles.some(
-        (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
-      );
-      if (hasComposition) {
-        applyDesiredPlayStateFromArrangementOrFallback();
-        pendingAutoplayFromLoadedSession = true;
-        state.topbarCollapsed = true;
-        state.isEditMode = false;
-      }
-    }
+    applySessionPayload(payload);
   } catch (error) {
     console.warn("Failed to load state from URL", error);
   }
@@ -2674,7 +2787,7 @@ function startNewSession() {
     return tile;
   });
   bpmInput.value = "120";
-  window.history.pushState({}, "", `?s=${Math.random().toString(36).slice(2, 10)}`);
+  window.history.pushState({}, "", window.location.pathname);
   buildGrid();
   updateTransportButton();
   saveToUrl();
@@ -3194,6 +3307,9 @@ function setShowcaseOpen(open) {
 function setCommunityOpen(open) {
   communityPanel?.classList.toggle("show", open);
   communityPanel?.setAttribute("aria-hidden", open ? "false" : "true");
+  if (open) {
+    refreshCommunitySessions().then(renderCommunityPanelLinks);
+  }
 }
 
 function addShowcaseLink(name, url) {
@@ -3296,17 +3412,37 @@ function generateSessionName() {
   return picked.join(" ");
 }
 
+async function refreshCommunitySessions() {
+  runtimeCommunitySessions = [...COMMUNITY_SESSIONS];
+  if (!hasBackendApi()) return;
+  const published = await fetchPublishedSessions();
+  if (!published.length) return;
+  const merged = published
+    .filter((item) => item && typeof item.id === "string")
+    .map((item, index) => ({
+      name: String(item.name || `Published ${index + 1}`),
+      url: buildShareUrlFromShortId(item.id),
+    }))
+    .concat(runtimeCommunitySessions);
+  const dedup = new Map();
+  merged.forEach((item) => {
+    if (!isValidSessionUrl(item.url)) return;
+    if (!dedup.has(item.url)) dedup.set(item.url, item);
+  });
+  runtimeCommunitySessions = Array.from(dedup.values());
+}
+
 function renderCommunityPanelLinks() {
   if (!communityPopupList) return;
   if (communityDiscordLink) {
     communityDiscordLink.href = COMMUNITY_DISCORD_URL;
   }
-  if (!COMMUNITY_SESSIONS.length) {
+  if (!runtimeCommunitySessions.length) {
     communityPopupList.innerHTML = '<div class="showcase-item">No community sessions yet.</div>';
     return;
   }
   communityPopupList.innerHTML = "";
-  COMMUNITY_SESSIONS.forEach((item, index) => {
+  runtimeCommunitySessions.forEach((item, index) => {
     if (!isValidSessionUrl(item.url)) return;
     const row = document.createElement("div");
     row.className = "showcase-item";
