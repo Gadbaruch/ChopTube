@@ -15,7 +15,10 @@
     <meta name="twitter:title" content="ChopTube" />
     <meta name="twitter:description" content="Drop videos. Loop cues (0-9). Remix the internet." />
     <meta name="twitter:image" content="https://gadbaruch.github.io/ChopTube/assets/choptube-logo.png" />
-    <link rel="stylesheet" href="styles.css?v=20260205b" />
+    <meta name="choptube-api" content="https://choptube-backend.onrender.com" />
+    <link rel="icon" type="image/png" href="assets/choptube-logo.png" />
+    <link rel="apple-touch-icon" href="assets/choptube-logo.png" />
+    <link rel="stylesheet" href="styles.css?v=20260209t" />
   </head>
   <body>
     <div class="app">
@@ -26,9 +29,14 @@
           <div class="brand-actions">
             <div class="brand-buttons">
               <button id="help-toggle" class="help-toggle" aria-label="How to use?">How to use?</button>
-              <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Featured sessions">
-                Featured sessions
-              </button>
+              <a
+                id="community-discord-link"
+                class="help-toggle discord-top-link"
+                href="https://discord.gg/"
+                target="_blank"
+                rel="noreferrer"
+                >Join Discord</a
+              >
             </div>
             <div class="quick-start-line">Drop videos. Loop cues (0-9). Remix the internet.</div>
           </div>
@@ -53,11 +61,7 @@
         </div>
         <div class="global-controls">
           <div class="global-buttons">
-            <button id="showcase-toggle">My Sessions</button>
-            <button id="new-session">+ New</button>
-            <button id="share" class="share-button" aria-label="Copy share link">
-              <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
-            </button>
+            <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Sessions">Sessions &gt;</button>
           </div>
           <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
@@ -137,22 +141,53 @@
         <img class="community-logo" src="assets/choptube-logo.png" alt="ChopTube logo" />
         <div class="help-header">
           <div>
-            <div class="help-title">Top Choppers Showcase</div>
-            <div class="help-subtitle">See what people are making with ChopTube</div>
+            <div class="help-title">Sessions</div>
+            <div class="help-subtitle">Discover choppers, share and publish your own chops.</div>
           </div>
         </div>
-        <p class="help-paragraph">
-          Join our Discord to share your session links, submit your sessions to get featured, and discover new remixes.
-        </p>
-        <a
-          id="community-discord-link"
-          class="community-discord-link"
-          href="https://discord.gg/"
-          target="_blank"
-          rel="noreferrer"
-          >Join ChopTube Discord</a
-        >
-        <div class="community-list" id="community-popup-list"></div>
+        <button id="sessions-new-current" class="session-action-btn session-new-btn" type="button">+ Start New Session</button>
+        <div class="sessions-main-heading">CURRENT SESSION</div>
+        <div class="sessions-current-card">
+          <div class="sessions-current-label">Artist name</div>
+          <input
+            id="sessions-artist-edit"
+            class="sessions-current-edit show sessions-artist-edit"
+            type="text"
+            maxlength="80"
+            value="Anonymous"
+            aria-label="Artist name"
+          />
+          <div class="sessions-current-label">Session name</div>
+          <input
+            id="sessions-current-edit"
+            class="sessions-current-edit show"
+            type="text"
+            maxlength="120"
+            value="Temp session name"
+            aria-label="Current session name"
+          />
+          <div class="community-publish-actions">
+            <button id="community-publish-submit" class="session-action-btn session-publish-btn" type="button">
+              <span class="save-glyph" aria-hidden="true"></span>
+              <span>Publish</span>
+            </button>
+            <button id="sessions-share-current" class="session-action-btn session-share-btn" type="button">
+              <img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />
+              <span>Share</span>
+            </button>
+          </div>
+          <div id="community-publish-feedback" class="community-publish-feedback" aria-live="polite"></div>
+        </div>
+        <div class="sessions-feed-shell">
+          <div class="sessions-tabs">
+            <button id="sessions-tab-greatest" class="sessions-tab" type="button">Greatest</button>
+            <button id="sessions-tab-latest" class="sessions-tab active" type="button">Latest</button>
+            <button id="sessions-tab-published" class="sessions-tab" type="button">My Published</button>
+          </div>
+          <div class="community-list sessions-list active" id="sessions-greatest-list"></div>
+          <div class="community-list sessions-list" id="sessions-latest-list"></div>
+          <div class="community-list sessions-list" id="sessions-published-list"></div>
+        </div>
       </div>
     </div>
 
@@ -163,25 +198,7 @@
       </div>
     </div>
 
-    <aside class="showcase-sidebar" id="showcase-sidebar" aria-hidden="true">
-      <div class="showcase-header">
-        <div class="showcase-title">My Sessions</div>
-        <button id="showcase-close" class="showcase-close" aria-label="Close links">×</button>
-      </div>
-      <p class="showcase-subtitle">
-        This list is saved only in your current browser on this computer. To back up sessions, keep your URLs in any note or
-        document you can access later.
-      </p>
-      <div class="showcase-actions">
-        <button id="showcase-add-current" type="button">Add Current Session</button>
-      </div>
-      <div class="showcase-form">
-        <input id="showcase-name" type="text" placeholder="Session name" />
-        <input id="showcase-url" type="url" placeholder="https://..." />
-        <button id="showcase-add" type="button">Add Link</button>
-      </div>
-      <div class="showcase-list" id="showcase-list"></div>
-    </aside>
+    <aside class="showcase-sidebar" id="showcase-sidebar" aria-hidden="true"></aside>
     <div class="showcase-backdrop" id="showcase-backdrop" aria-hidden="true"></div>
     <div id="tile-url-popup" class="tile-url-popup" aria-hidden="true">
       <div class="tile-url-popup-card">
@@ -199,6 +216,6 @@
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="app.js?v=20260205b"></script>
+    <script src="app.js?v=20260209u"></script>
   </body>
 </html>

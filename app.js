@@ -387,7 +387,6 @@ const loopToggleBtn = document.getElementById("loop-toggle");
 const tapTempoBtn = document.getElementById("tap-tempo");
 const metronomeToggleBtn = document.getElementById("metronome-toggle");
 const metronomeVolumeInput = document.getElementById("metronome-volume");
-const newSessionBtn = document.getElementById("new-session");
 const shareBtn = document.getElementById("share");
 const helpToggleBtn = document.getElementById("help-toggle");
 const communityToggleBtn = document.getElementById("community-toggle");
@@ -396,9 +395,19 @@ const helpCloseBtn = document.getElementById("help-close");
 const communityPanel = document.getElementById("community-panel");
 const communityCloseBtn = document.getElementById("community-close");
 const communityDiscordLink = document.getElementById("community-discord-link");
-const communityPopupList = document.getElementById("community-popup-list");
+const sessionsShareCurrentBtn = document.getElementById("sessions-share-current");
+const sessionsTabGreatestBtn = document.getElementById("sessions-tab-greatest");
+const sessionsTabLatestBtn = document.getElementById("sessions-tab-latest");
+const sessionsTabPublishedBtn = document.getElementById("sessions-tab-published");
+const sessionsGreatestList = document.getElementById("sessions-greatest-list");
+const sessionsLatestList = document.getElementById("sessions-latest-list");
+const sessionsPublishedList = document.getElementById("sessions-published-list");
+const sessionsArtistEditInput = document.getElementById("sessions-artist-edit");
+const sessionsCurrentEditInput = document.getElementById("sessions-current-edit");
+const sessionsNewCurrentBtn = document.getElementById("sessions-new-current");
+const communityPublishSubmitBtn = document.getElementById("community-publish-submit");
+const communityPublishFeedback = document.getElementById("community-publish-feedback");
 const mobileBlocker = document.getElementById("mobile-blocker");
-const showcaseToggleBtn = document.getElementById("showcase-toggle");
 const showcaseSidebar = document.getElementById("showcase-sidebar");
 const showcaseCloseBtn = document.getElementById("showcase-close");
 const showcaseBackdrop = document.getElementById("showcase-backdrop");
@@ -427,6 +436,8 @@ const arrangementLengthValueInput = document.getElementById("arr-length-value");
 const arrangementLengthUnitSelect = document.getElementById("arr-length-unit");
 const topbarToggleBtn = document.getElementById("topbar-toggle");
 const topbarToggleIcon = document.getElementById("topbar-toggle-icon");
+const brandImageEl = document.querySelector(".brand-image");
+const collapsedTitleLogoEl = document.querySelector(".collapsed-title-logo");
 
 const tileEls = [];
 const stepEls = [];
@@ -450,10 +461,247 @@ let tooltipEl = null;
 let tooltipTimer = null;
 let tooltipTarget = null;
 let pendingAutoplayFromLoadedSession = false;
+let runtimeCommunitySessions = [];
+let backendPublishedSessions = [];
+let sessionsActiveTab = "latest";
+let likedPublishedSessionIds = loadLikedPublishedSessionIds();
+let myPublishedSessionIds = loadMyPublishedSessionIds();
+const likePendingSessionIds = new Set();
+const deletePendingSessionIds = new Set();
+let lastLoadedTileIndex = 0;
+let sessionsRestoreTopbarCollapsed = null;
+let currentSessionTitle = "Current Session";
+let currentArtistName = loadArtistName();
+let isSessionTitleManual = false;
 
-function init() {
-  loadShowcaseLinks();
-  loadFromUrl();
+const API_BASE_URL = detectApiBaseUrl();
+
+function detectApiBaseUrl() {
+  const meta = document.querySelector('meta[name="choptube-api"]')?.getAttribute("content")?.trim();
+  if (meta) return meta.replace(/\/+$/, "");
+  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    return `${window.location.protocol}//${window.location.hostname}:8787`;
+  }
+  return "";
+}
+
+function hasBackendApi() {
+  return Boolean(API_BASE_URL);
+}
+
+async function apiRequest(path, options = {}) {
+  if (!hasBackendApi()) return null;
+  try {
+    const method = String(options.method || "GET").toUpperCase();
+    const baseHeaders = { ...(options.headers || {}) };
+    // Do not force Content-Type on GET/HEAD; this can trigger avoidable preflight failures.
+    if (method !== "GET" && method !== "HEAD" && !baseHeaders["Content-Type"]) {
+      baseHeaders["Content-Type"] = "application/json";
+    }
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: baseHeaders,
+      ...options,
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
+
+function getCurrentShortId() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("s");
+  return id && /^[a-zA-Z0-9_-]{4,24}$/.test(id) ? id : "";
+}
+
+async function createShortSession(payload) {
+  const body = JSON.stringify({ payload });
+  return apiRequest("/api/sessions", { method: "POST", body });
+}
+
+async function loadShortSessionPayload(shortId) {
+  const result = await apiRequest(`/api/sessions/${encodeURIComponent(shortId)}`);
+  if (!result || !result.payload || typeof result.payload !== "object") return null;
+  return result.payload;
+}
+
+async function publishCurrentSession(name, artistName, payload, description = "", tags = []) {
+  const body = JSON.stringify({ name, artistName, payload, description, tags });
+  return apiRequest("/api/published", { method: "POST", body });
+}
+
+async function fetchPublishedSessions() {
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const result = await apiRequest("/api/published");
+    if (Array.isArray(result?.items)) return result.items;
+    if (Array.isArray(result)) return result;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/published`);
+      if (response.ok) {
+        const direct = await response.json();
+        if (Array.isArray(direct?.items)) return direct.items;
+        if (Array.isArray(direct)) return direct;
+      }
+    } catch (error) {
+      // continue retrying
+    }
+    if (attempt < 2) {
+      await wait(1100 * (attempt + 1));
+    }
+  }
+  return null;
+}
+
+async function updatePublishedLike(id, delta) {
+  if (!id) return null;
+  const body = JSON.stringify({ delta });
+  return apiRequest(`/api/published/${encodeURIComponent(id)}/like`, { method: "POST", body });
+}
+
+async function deletePublishedSession(id) {
+  if (!id) return null;
+  const byPost = await apiRequest(`/api/published/${encodeURIComponent(id)}/delete`, { method: "POST", body: "{}" });
+  if (byPost?.ok) return byPost;
+  // Fallback for deploys that only support DELETE.
+  const byDelete = await apiRequest(`/api/published/${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (byDelete?.ok) return byDelete;
+  return null;
+}
+
+function buildShareUrlFromShortId(id) {
+  return `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(id)}`;
+}
+
+function applyOpenedSessionMeta(meta) {
+  const sessionName = String(meta?.name || "").trim();
+  const artistName = String(meta?.artistName || "").trim();
+  if (sessionName) {
+    currentSessionTitle = sessionName;
+    isSessionTitleManual = true;
+    if (sessionsCurrentEditInput) {
+      sessionsCurrentEditInput.value = currentSessionTitle;
+    }
+  }
+  if (artistName) {
+    currentArtistName = saveArtistName(artistName);
+    if (sessionsArtistEditInput) {
+      sessionsArtistEditInput.value = currentArtistName;
+    }
+  }
+}
+
+async function loadSessionFromUrlInPlace(urlValue, meta = null) {
+  let parsed;
+  try {
+    parsed = new URL(String(urlValue || ""), window.location.origin);
+  } catch {
+    return false;
+  }
+
+  const shortId = parsed.searchParams.get("s");
+  if (shortId && hasBackendApi()) {
+    const payload = await loadShortSessionPayload(shortId);
+    if (payload && applySessionPayload(payload)) {
+      setCollapsedMode(false);
+      window.history.pushState({}, "", `${window.location.pathname}?s=${encodeURIComponent(shortId)}`);
+      applyOpenedSessionMeta(meta);
+      buildGrid();
+      updateTransportButton();
+      updateStatus();
+      renderArrangement();
+      updateArrangementControls();
+      renderSessionsModal();
+      return true;
+    }
+  }
+
+  const hash = (parsed.hash || "").replace(/^#/, "");
+  if (hash) {
+    try {
+      const decoded = decodeURIComponent(atob(hash));
+      const payload = JSON.parse(decoded);
+      if (applySessionPayload(payload)) {
+        setCollapsedMode(false);
+        window.history.pushState({}, "", `${window.location.pathname}#${hash}`);
+        applyOpenedSessionMeta(meta);
+        buildGrid();
+        updateTransportButton();
+        updateStatus();
+        renderArrangement();
+        updateArrangementControls();
+        renderSessionsModal();
+        return true;
+      }
+    } catch {}
+  }
+
+  return false;
+}
+
+function loadLikedPublishedSessionIds() {
+  try {
+    const raw = window.localStorage.getItem("choptube_liked_published_ids");
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.map((id) => String(id)));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLikedPublishedSessionIds() {
+  try {
+    window.localStorage.setItem(
+      "choptube_liked_published_ids",
+      JSON.stringify(Array.from(likedPublishedSessionIds).slice(0, 500))
+    );
+  } catch {}
+}
+
+function loadMyPublishedSessionIds() {
+  try {
+    const raw = window.localStorage.getItem("choptube_my_published_ids");
+    const parsed = JSON.parse(raw || "[]");
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.map((id) => String(id)));
+  } catch {
+    return new Set();
+  }
+}
+
+function saveMyPublishedSessionIds() {
+  try {
+    window.localStorage.setItem(
+      "choptube_my_published_ids",
+      JSON.stringify(Array.from(myPublishedSessionIds).slice(0, 500))
+    );
+  } catch {}
+}
+
+function loadArtistName() {
+  try {
+    const saved = String(window.localStorage.getItem("choptube_artist_name") || "").trim();
+    return saved || "Anonymous";
+  } catch {
+    return "Anonymous";
+  }
+}
+
+function saveArtistName(value) {
+  const normalized = String(value || "").trim() || "Anonymous";
+  try {
+    window.localStorage.setItem("choptube_artist_name", normalized);
+  } catch {}
+  return normalized;
+}
+
+async function init() {
+  await loadFromUrl();
+  if (communityPublishSubmitBtn && !hasBackendApi()) {
+    communityPublishSubmitBtn.disabled = true;
+  }
   buildGrid();
   resetHistory();
   bindGlobalControls();
@@ -462,8 +710,8 @@ function init() {
   updateTransportButton();
   updateStatus();
   updateMobileBlocker();
-  renderShowcaseLinks();
-  renderCommunityPanelLinks();
+  await refreshCommunitySessions();
+  renderSessionsModal();
   renderArrangement();
   updateArrangementControls();
   applyLayoutMode();
@@ -900,6 +1148,12 @@ function bindGlobalControls() {
     setCollapsedMode(false);
     saveToUrl();
   });
+  brandImageEl?.addEventListener("click", () => {
+    window.location.reload();
+  });
+  collapsedTitleLogoEl?.addEventListener("click", () => {
+    window.location.reload();
+  });
   tapTempoBtn?.addEventListener("click", () => {
     tapTempoBtn.classList.remove("flash");
     void tapTempoBtn.offsetWidth;
@@ -971,28 +1225,50 @@ function bindGlobalControls() {
     saveToUrl();
     pushHistorySnapshot();
   });
-  newSessionBtn.addEventListener("click", () => {
-    newSessionBtn.classList.add("clicked");
-    clearTimeout(newBtnResetTimer);
-    newBtnResetTimer = setTimeout(() => newSessionBtn.classList.remove("clicked"), 220);
-    startNewSession();
-  });
-
-  shareBtn.addEventListener("click", async () => {
-    saveToUrl();
+  const runShareAction = async () => {
+    const payload = saveToUrl();
+    let shareUrl = window.location.href;
+    if (hasBackendApi()) {
+      const result = await createShortSession(payload);
+      if (result?.id) {
+        shareUrl = buildShareUrlFromShortId(result.id);
+        window.history.replaceState({}, "", `?s=${encodeURIComponent(result.id)}`);
+      }
+    }
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      shareBtn.classList.add("copied");
-      shareBtn.textContent = "✓";
-      showShareHint("Session copied to clipboard - paste anywhere to share or save your session");
+      await navigator.clipboard.writeText(shareUrl);
+      const visualShareBtn = sessionsShareCurrentBtn || shareBtn;
+      visualShareBtn?.classList.add("copied");
+      if (visualShareBtn) visualShareBtn.textContent = "✓";
+      if (communityPublishFeedback) {
+        communityPublishFeedback.textContent = "Session copied to clipboard - paste anywhere to share or save it.";
+      }
       clearTimeout(shareResetTimer);
       shareResetTimer = setTimeout(() => {
-        shareBtn.classList.remove("copied");
-        shareBtn.innerHTML =
-          '<img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" />';
+        visualShareBtn?.classList.remove("copied");
+        if (visualShareBtn === sessionsShareCurrentBtn) {
+          visualShareBtn.innerHTML =
+            '<img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" /><span>Share</span>';
+        } else if (visualShareBtn) {
+          visualShareBtn.innerHTML =
+            '<img class="share-icon" src="assets/share-icon.png" alt="" aria-hidden="true" /><span>Share</span>';
+        }
+        if (communityPublishFeedback) {
+          communityPublishFeedback.textContent = "";
+        }
       }, 1300);
     } catch (error) {
       statusEl.textContent = "Could not copy link. Select the URL manually.";
+    }
+  };
+  shareBtn?.addEventListener("click", runShareAction);
+  sessionsShareCurrentBtn?.addEventListener("click", runShareAction);
+  sessionsNewCurrentBtn?.addEventListener("click", () => {
+    startNewSession();
+    renderSessionsModal();
+    setSessionsTab("latest");
+    if (communityPublishFeedback) {
+      communityPublishFeedback.textContent = "Started a new empty session.";
     }
   });
 
@@ -1006,7 +1282,51 @@ function bindGlobalControls() {
   communityToggleBtn?.addEventListener("pointerup", () => {
     setCommunityOpen(true);
   });
-
+  sessionsTabGreatestBtn?.addEventListener("click", () => setSessionsTab("greatest"));
+  sessionsTabLatestBtn?.addEventListener("click", () => setSessionsTab("latest"));
+  sessionsTabPublishedBtn?.addEventListener("click", () => setSessionsTab("published"));
+  sessionsCurrentEditInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sessionsCurrentEditInput.blur();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      sessionsCurrentEditInput.blur();
+    }
+  });
+  sessionsCurrentEditInput?.addEventListener("input", () => {
+    const next = (sessionsCurrentEditInput.value || "").trim();
+    if (next) {
+      currentSessionTitle = next;
+      isSessionTitleManual = true;
+    } else {
+      isSessionTitleManual = false;
+      currentSessionTitle = generateSessionName() || "Current Session";
+    }
+    if (communityPublishSubmitBtn?.classList.contains("error")) {
+      setPublishUiState("idle");
+    }
+  });
+  sessionsCurrentEditInput?.addEventListener("blur", () => {
+    const next = (sessionsCurrentEditInput.value || "").trim();
+    if (next) {
+      currentSessionTitle = next;
+      isSessionTitleManual = true;
+    } else {
+      isSessionTitleManual = false;
+      currentSessionTitle = generateSessionName() || "Current Session";
+    }
+    sessionsCurrentEditInput.value = currentSessionTitle;
+  });
+  sessionsArtistEditInput?.addEventListener("input", () => {
+    const next = (sessionsArtistEditInput.value || "").trim();
+    currentArtistName = saveArtistName(next || "Anonymous");
+  });
+  sessionsArtistEditInput?.addEventListener("blur", () => {
+    const next = (sessionsArtistEditInput.value || "").trim();
+    currentArtistName = saveArtistName(next || "Anonymous");
+    sessionsArtistEditInput.value = currentArtistName;
+  });
   helpCloseBtn.addEventListener("click", () => {
     helpPanel.classList.remove("show");
     helpPanel.setAttribute("aria-hidden", "true");
@@ -1024,24 +1344,45 @@ function bindGlobalControls() {
       setCommunityOpen(false);
     }
   });
-
-  showcaseToggleBtn?.addEventListener("click", () => setShowcaseOpen(true));
-  showcaseToggleBtn?.addEventListener("pointerup", () => setShowcaseOpen(true));
-  showcaseCloseBtn?.addEventListener("click", () => setShowcaseOpen(false));
-  showcaseBackdrop?.addEventListener("click", () => setShowcaseOpen(false));
-  showcaseAddCurrentBtn?.addEventListener("click", () => {
-    addShowcaseLink(generateSessionName(), window.location.href);
-  });
-  showcaseAddBtn?.addEventListener("click", () => {
-    const name = (showcaseNameInput?.value || "").trim();
-    const url = (showcaseUrlInput?.value || "").trim();
-    addShowcaseLink(name || `Session ${showcaseLinks.length + 1}`, url);
-  });
-  showcaseUrlInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      showcaseAddBtn?.click();
+  communityPublishSubmitBtn?.addEventListener("click", async () => {
+    if (!hasBackendApi()) {
+      setPublishUiState("error", "Backend is not configured.");
+      return;
     }
+    const name = (sessionsCurrentEditInput?.value || "").trim();
+    if (!name) {
+      setPublishUiState("error", "Title is required.");
+      return;
+    }
+    const payload = buildSessionPayload();
+    setPublishUiState("publishing", "Publishing to community...");
+    const artistName = (sessionsArtistEditInput?.value || "").trim() || "Anonymous";
+    const published = await publishCurrentSession(name, artistName, payload, "", []);
+    if (!published?.id) {
+      setPublishUiState("error", "Publish failed. Try again.");
+      statusEl.textContent = "Publishing failed. Try again.";
+      return;
+    }
+    myPublishedSessionIds.add(String(published.id));
+    saveMyPublishedSessionIds();
+    const normalizedPublished = normalizePublishedSessionItem(
+      {
+        ...published,
+        name,
+        artistName,
+        createdAt: published.createdAt || Date.now(),
+      },
+      0
+    );
+    if (normalizedPublished) {
+      backendPublishedSessions = [normalizedPublished, ...backendPublishedSessions.filter((item) => item.id !== normalizedPublished.id)];
+    }
+    setPublishUiState("success", "Published successfully.");
+    setSessionsTab("published");
+    renderSessionsModal();
+    await refreshCommunitySessions();
+    renderSessionsModal();
+    statusEl.textContent = `Published: ${name}`;
   });
   tileCopyBtn?.addEventListener("click", () => {
     if (contextTileIndex === null) return;
@@ -1114,6 +1455,12 @@ function bindGlobalControls() {
 }
 
 function handleKeyDown(event) {
+  if (event.key === "Escape" && state.topbarCollapsed) {
+    event.preventDefault();
+    setCollapsedMode(false);
+    saveToUrl();
+    return;
+  }
   if (event.key === "Escape" && tileUrlPopup?.classList.contains("show")) {
     event.preventDefault();
     closeTileUrlPopup();
@@ -1131,6 +1478,19 @@ function handleKeyDown(event) {
     return;
   }
   if (event.key === "Escape") {
+    const active = document.activeElement;
+    if (
+      active &&
+      (active instanceof HTMLInputElement ||
+        active instanceof HTMLSelectElement ||
+        active instanceof HTMLTextAreaElement)
+    ) {
+      event.preventDefault();
+      active.blur();
+      return;
+    }
+  }
+  if (event.key === "Enter") {
     const active = document.activeElement;
     if (
       active &&
@@ -1408,6 +1768,7 @@ function loadVideo(index, url, options = {}) {
   }
 
   const tile = state.tiles[index];
+  lastLoadedTileIndex = Math.max(0, Math.min(TILE_COUNT - 1, Number(index) || 0));
   const trackHistory = options.trackHistory !== false;
   if (trackHistory && tile.videoUrl && tile.videoUrl !== normalizedUrl) {
     tile.videoHistory.push(tile.videoUrl);
@@ -1449,13 +1810,16 @@ function loadVideo(index, url, options = {}) {
       videoId: videoId || undefined,
       playerVars,
       events: {
-        onReady: () => maybeSetDefaultCues(index),
+        onReady: () => {
+          maybeSetDefaultCues(index);
+        },
         onStateChange: (event) => handlePlayerState(index, event),
       },
     });
   }
 
   updateTileDisplays();
+  scheduleAutoSessionTitleRefresh();
   saveToUrl();
 }
 
@@ -1496,6 +1860,7 @@ function clearTileVideo(index) {
   }
 
   updateTileDisplays();
+  updateAutoSessionTitle();
   saveToUrl();
   pushHistorySnapshot();
 }
@@ -2003,17 +2368,29 @@ function updateStepIndicators() {
 function updateTileDisplays() {
   tileEls.forEach((entry, idx) => {
     const tile = state.tiles[idx];
-    entry.poolSelect.value = parsePoolKey(tile.videoPool);
-    entry.stepsInput.value = String(tile.steps);
-    entry.divisionSelect.value = String(tile.division || BASE_DIVISION);
-    entry.perfVolInput.value = String(clamp(tile.masterVolume ?? 100, 0, 100));
-    entry.perfSpeedSelect.value = String(tile.playbackRate ?? 1);
+    if (document.activeElement !== entry.poolSelect) {
+      entry.poolSelect.value = parsePoolKey(tile.videoPool);
+    }
+    if (document.activeElement !== entry.stepsInput) {
+      entry.stepsInput.value = String(tile.steps);
+    }
+    if (document.activeElement !== entry.divisionSelect) {
+      entry.divisionSelect.value = String(tile.division || BASE_DIVISION);
+    }
+    if (document.activeElement !== entry.perfVolInput) {
+      entry.perfVolInput.value = String(clamp(tile.masterVolume ?? 100, 0, 100));
+    }
+    if (document.activeElement !== entry.perfSpeedSelect) {
+      entry.perfSpeedSelect.value = String(tile.playbackRate ?? 1);
+    }
     entry.perfPlayBtn.innerHTML = tile.isClipPlaying
       ? `❚❚ <span class="hotkey">${TILE_PLAY_KEYS[idx].toUpperCase()}</span>`
       : `▶ <span class="hotkey">${TILE_PLAY_KEYS[idx].toUpperCase()}</span>`;
     const cueIndex = idx === state.selectedIndex ? state.selectedCue : 0;
     const cueTime = tile.cues[cueIndex] || 0;
-    entry.cueSelect.value = String(cueIndex);
+    if (document.activeElement !== entry.cueSelect) {
+      entry.cueSelect.value = String(cueIndex);
+    }
     if (document.activeElement !== entry.cueSecInput) {
       entry.cueSecInput.value = cueTime.toFixed(2);
     }
@@ -2032,7 +2409,7 @@ function updateTileDisplays() {
 
   updateShowLayout();
   updateStepIndicators();
-  renderArrangement();
+  updateArrangementProgressVisuals();
   updateArrangementControls();
   updateStatus();
 }
@@ -2335,8 +2712,12 @@ function updateArrangementControls() {
   const selectedPart = getSelectedArrangementPart();
   const value = selectedPart ? selectedPart.lengthValue : state.arrangement.defaultLengthValue;
   const unit = selectedPart ? selectedPart.lengthUnit : state.arrangement.defaultLengthUnit;
-  if (arrangementLengthValueInput) arrangementLengthValueInput.value = String(value);
-  if (arrangementLengthUnitSelect) arrangementLengthUnitSelect.value = unit;
+  if (arrangementLengthValueInput && document.activeElement !== arrangementLengthValueInput) {
+    arrangementLengthValueInput.value = String(value);
+  }
+  if (arrangementLengthUnitSelect && document.activeElement !== arrangementLengthUnitSelect) {
+    arrangementLengthUnitSelect.value = unit;
+  }
 }
 
 function renderArrangement() {
@@ -2531,10 +2912,8 @@ function playDesiredVideos() {
   updateTileDisplays();
 }
 
-function saveToUrl() {
-  // Session persistence is hash-based so a single URL fully reproduces state
-  // without requiring a backend.
-  const payload = {
+function buildSessionPayload() {
+  return {
     bpm: state.bpm,
     isEditMode: state.isEditMode,
     layoutMode: "grid",
@@ -2575,11 +2954,57 @@ function saveToUrl() {
       customCues: tile.customCues,
     })),
   };
-  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
-  window.history.replaceState({}, "", `#${encoded}`);
 }
 
-function loadFromUrl() {
+function saveToUrl() {
+  const payload = buildSessionPayload();
+  // Keep hash persistence when there is no backend short-session id.
+  // This preserves the current no-backend UX and gives a safe fallback.
+  if (getCurrentShortId()) return payload;
+  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+  window.history.replaceState({}, "", `#${encoded}`);
+  return payload;
+}
+
+function applySessionPayload(payload) {
+  if (!payload || !Array.isArray(payload.tiles)) return false;
+  currentSessionTitle = "Current Session";
+  state.bpm = payload.bpm || 120;
+  state.isEditMode = payload.isEditMode !== false;
+  state.layoutMode = "grid";
+  state.topbarCollapsed = Boolean(payload.topbarCollapsed);
+  state.isEditMode = !state.topbarCollapsed;
+  state.selectedIndex = payload.selectedIndex || 0;
+  state.selectedCue = payload.selectedCue || 0;
+  state.arrangement = normalizeArrangementState(payload.arrangement);
+  const legacyPool = parsePoolKey(payload.videoPool);
+  state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
+  state.tiles = state.tiles.concat(
+    Array.from({ length: TILE_COUNT - state.tiles.length }, () => getDefaultTileState())
+  );
+  const hasComposition = state.tiles.some(
+    (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
+  );
+  if (hasComposition) {
+    applyDesiredPlayStateFromArrangementOrFallback();
+    pendingAutoplayFromLoadedSession = true;
+    state.topbarCollapsed = true;
+    state.isEditMode = false;
+  }
+  return true;
+}
+
+async function loadFromUrl() {
+  const shortId = getCurrentShortId();
+  if (shortId && hasBackendApi()) {
+    const payload = await loadShortSessionPayload(shortId);
+    if (payload && applySessionPayload(payload)) {
+      bpmInput.value = state.bpm;
+      state.division = state.division || BASE_DIVISION;
+      return;
+    }
+  }
+
   const hash = window.location.hash.replace("#", "");
   if (!hash) {
     state.tiles.forEach((tile) => {
@@ -2591,30 +3016,7 @@ function loadFromUrl() {
     // Backward-compatible parse: tolerate missing fields and fill defaults.
     const decoded = decodeURIComponent(atob(hash));
     const payload = JSON.parse(decoded);
-    if (payload && payload.tiles) {
-      state.bpm = payload.bpm || 120;
-      state.isEditMode = payload.isEditMode !== false;
-      state.layoutMode = "grid";
-      state.topbarCollapsed = Boolean(payload.topbarCollapsed);
-      state.isEditMode = !state.topbarCollapsed;
-      state.selectedIndex = payload.selectedIndex || 0;
-      state.selectedCue = payload.selectedCue || 0;
-      state.arrangement = normalizeArrangementState(payload.arrangement);
-      const legacyPool = parsePoolKey(payload.videoPool);
-      state.tiles = payload.tiles.map((tile) => normalizeTileState(tile, legacyPool));
-      state.tiles = state.tiles.concat(
-        Array.from({ length: TILE_COUNT - state.tiles.length }, () => getDefaultTileState())
-      );
-      const hasComposition = state.tiles.some(
-        (tile) => tile.videoUrl || tile.actions.some((step) => (step || []).length > 0)
-      );
-      if (hasComposition) {
-        applyDesiredPlayStateFromArrangementOrFallback();
-        pendingAutoplayFromLoadedSession = true;
-        state.topbarCollapsed = true;
-        state.isEditMode = false;
-      }
-    }
+    applySessionPayload(payload);
   } catch (error) {
     console.warn("Failed to load state from URL", error);
   }
@@ -2663,6 +3065,7 @@ function startNewSession() {
   state.selectedCue = 0;
   state.selectedStep = null;
   state.arrangement = getDefaultArrangementState();
+  isSessionTitleManual = false;
   metronomeEnabled = false;
   metronomeToggleBtn?.classList.remove("active");
   metronomeVolume = 50;
@@ -2674,7 +3077,7 @@ function startNewSession() {
     return tile;
   });
   bpmInput.value = "120";
-  window.history.pushState({}, "", `?s=${Math.random().toString(36).slice(2, 10)}`);
+  window.history.pushState({}, "", window.location.pathname);
   buildGrid();
   updateTransportButton();
   saveToUrl();
@@ -2842,6 +3245,7 @@ function maybeSetDefaultCues(index) {
   tile.player?.setPlaybackRate?.(tile.playbackRate ?? 1);
   applySelectedCueVolume(index);
   queueDefaultCues(index);
+  updateAutoSessionTitle();
   if (state.isPlaying && tile.desiredClipPlaying === true) {
     player.playVideo?.();
     ensureTilePlaying(index, PLAY_RETRY_COUNT);
@@ -3185,15 +3589,81 @@ function hideShareHint() {
 }
 
 function setShowcaseOpen(open) {
-  showcaseSidebar?.classList.toggle("show", open);
-  showcaseBackdrop?.classList.toggle("show", open);
-  showcaseSidebar?.setAttribute("aria-hidden", open ? "false" : "true");
-  showcaseBackdrop?.setAttribute("aria-hidden", open ? "false" : "true");
+  setCommunityOpen(open);
+  if (open) setSessionsTab("saved");
 }
 
 function setCommunityOpen(open) {
   communityPanel?.classList.toggle("show", open);
   communityPanel?.setAttribute("aria-hidden", open ? "false" : "true");
+  appEl?.classList.toggle("sessions-open", open);
+  if (open) {
+    if (sessionsRestoreTopbarCollapsed === null) {
+      sessionsRestoreTopbarCollapsed = Boolean(state.topbarCollapsed);
+    }
+    if (!state.topbarCollapsed) {
+      setCollapsedMode(true);
+    }
+    setCommunityPublishFormOpen(false);
+    refreshCommunitySessions().then(renderSessionsModal);
+    setSessionsTab(sessionsActiveTab || "latest");
+  } else {
+    if (sessionsRestoreTopbarCollapsed !== null) {
+      setCollapsedMode(sessionsRestoreTopbarCollapsed);
+      sessionsRestoreTopbarCollapsed = null;
+    }
+  }
+}
+
+function setCommunityPublishFormOpen(open) {
+  if (!open && communityPublishFeedback) communityPublishFeedback.textContent = "";
+  if (communityPublishSubmitBtn) {
+    communityPublishSubmitBtn.textContent = "Publish";
+    communityPublishSubmitBtn.disabled = !hasBackendApi();
+    communityPublishSubmitBtn.classList.remove("success", "error");
+  }
+  if (sessionsCurrentEditInput) {
+    if (!isSessionTitleManual) {
+      updateAutoSessionTitle();
+    }
+    sessionsCurrentEditInput.value = currentSessionTitle || generateSessionName() || "Current Session";
+  }
+  if (sessionsArtistEditInput) {
+    sessionsArtistEditInput.value = currentArtistName || "Anonymous";
+  }
+}
+
+function setPublishUiState(stateName, message = "") {
+  if (!communityPublishSubmitBtn) return;
+  communityPublishSubmitBtn.classList.remove("success", "error");
+  if (stateName === "idle") {
+    communityPublishSubmitBtn.disabled = !hasBackendApi();
+    communityPublishSubmitBtn.textContent = "Publish";
+  } else if (stateName === "publishing") {
+    communityPublishSubmitBtn.disabled = true;
+    communityPublishSubmitBtn.textContent = "Publishing...";
+  } else if (stateName === "success") {
+    communityPublishSubmitBtn.disabled = false;
+    communityPublishSubmitBtn.textContent = "Published";
+    communityPublishSubmitBtn.classList.add("success");
+  } else if (stateName === "error") {
+    communityPublishSubmitBtn.disabled = false;
+    communityPublishSubmitBtn.textContent = "Failed";
+    communityPublishSubmitBtn.classList.add("error");
+  }
+  if (communityPublishFeedback) {
+    communityPublishFeedback.textContent = message || "";
+  }
+}
+
+function setSessionsTab(tab) {
+  sessionsActiveTab = tab;
+  sessionsTabGreatestBtn?.classList.toggle("active", tab === "greatest");
+  sessionsTabLatestBtn?.classList.toggle("active", tab === "latest");
+  sessionsTabPublishedBtn?.classList.toggle("active", tab === "published");
+  sessionsGreatestList?.classList.toggle("active", tab === "greatest");
+  sessionsLatestList?.classList.toggle("active", tab === "latest");
+  sessionsPublishedList?.classList.toggle("active", tab === "published");
 }
 
 function addShowcaseLink(name, url) {
@@ -3227,113 +3697,460 @@ function renameShowcaseLink(index) {
 }
 
 function renderShowcaseLinks() {
-  if (!showcaseList) return;
-  if (!showcaseLinks.length) {
-    showcaseList.innerHTML = '<div class="showcase-item">No links yet. Add one above.</div>';
-    return;
-  }
-  showcaseList.innerHTML = "";
-  showcaseLinks.forEach((item, index) => {
-    const row = document.createElement("div");
-    row.className = "showcase-item";
+  // Legacy local-saved sessions UI was removed in the unified publish flow.
+}
 
-    const title = document.createElement("div");
-    title.className = "showcase-item-title";
-    title.textContent = item.name || `Session ${index + 1}`;
+function splitTitleIntoWords(title) {
+  return String(title || "")
+    .replace(/\[[^\]]*\]|\([^\)]*\)/g, " ")
+    .split(/[^a-zA-Z0-9]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 3);
+}
 
-    const actions = document.createElement("div");
-    actions.className = "showcase-item-row";
-
-    const loadBtn = document.createElement("button");
-    loadBtn.type = "button";
-    loadBtn.textContent = "Load Session";
-    loadBtn.addEventListener("click", () => {
-      window.location.href = item.url;
-    });
-
-    const openNewTabBtn = document.createElement("button");
-    openNewTabBtn.type = "button";
-    openNewTabBtn.textContent = "Open In New Tab";
-    openNewTabBtn.addEventListener("click", () => {
-      window.open(item.url, "_blank", "noopener,noreferrer");
-    });
-
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.textContent = "Remove";
-    removeBtn.addEventListener("click", () => removeShowcaseLink(index));
-
-    const renameBtn = document.createElement("button");
-    renameBtn.type = "button";
-    renameBtn.textContent = "Rename";
-    renameBtn.addEventListener("click", () => renameShowcaseLink(index));
-
-    actions.append(loadBtn, openNewTabBtn, renameBtn, removeBtn);
-    row.append(title, actions);
-    showcaseList.appendChild(row);
-  });
+function blendWords(a, b) {
+  const left = String(a || "").trim();
+  const right = String(b || "").trim();
+  if (left.length < 3 || right.length < 3) return "";
+  const leftPart = left.slice(0, Math.ceil(left.length * 0.6));
+  const rightPart = right.slice(Math.floor(right.length * 0.4));
+  const mixed = `${leftPart}${rightPart}`;
+  return mixed.length >= 4 ? mixed : "";
 }
 
 function generateSessionName() {
   const words = [];
-  state.tiles.forEach((tile) => {
+  const orderedTileIndexes = [];
+  for (let offset = 0; offset < TILE_COUNT; offset += 1) {
+    orderedTileIndexes.push((lastLoadedTileIndex + offset) % TILE_COUNT);
+  }
+  orderedTileIndexes.forEach((tileIdx) => {
+    const tile = state.tiles[tileIdx];
     const title = tile.player?.getVideoData?.()?.title || "";
     if (!title) return;
-    const token = title
-      .replace(/\[[^\]]*\]|\([^\)]*\)/g, " ")
-      .split(/[^a-zA-Z0-9]+/)
-      .map((part) => part.trim())
-      .filter((part) => part.length >= 4);
-    if (token.length) {
-      words.push(token[Math.floor(Math.random() * token.length)]);
-    }
+    splitTitleIntoWords(title)
+      .slice(0, 5)
+      .forEach((part) => words.push(part));
   });
   if (!words.length) {
-    return `Session ${showcaseLinks.length + 1}`;
+    return "Untitled Mix";
   }
-  const unique = Array.from(new Set(words));
-  const picked = unique.slice(0, 3);
-  return picked.join(" ");
+  const skip = new Set(["official", "video", "lyrics", "audio", "music", "feat", "ft", "and", "the"]);
+  const unique = Array.from(new Set(words)).filter((word) => !skip.has(word.toLowerCase()));
+  if (!unique.length) return "Untitled Mix";
+
+  const chunks = [];
+  if (unique.length >= 2) {
+    const blendA = blendWords(unique[0], unique[1]);
+    if (blendA) chunks.push(blendA);
+  }
+  if (unique.length >= 4) {
+    const blendB = blendWords(unique[2], unique[3]);
+    if (blendB) chunks.push(blendB);
+  }
+  unique.slice(0, 3).forEach((word) => {
+    if (chunks.length >= 3) return;
+    chunks.push(word);
+  });
+  return chunks.slice(0, 3).join(" ").trim() || "Untitled Mix";
 }
 
-function renderCommunityPanelLinks() {
-  if (!communityPopupList) return;
+function updateAutoSessionTitle() {
+  if (isSessionTitleManual) return;
+  const generated = generateSessionName();
+  if (!generated) return;
+  currentSessionTitle = generated;
+  if (sessionsCurrentEditInput) {
+    sessionsCurrentEditInput.value = generated;
+  }
+}
+
+let sessionTitleRefreshToken = 0;
+function scheduleAutoSessionTitleRefresh(totalTries = 12) {
+  if (isSessionTitleManual) return;
+  const token = ++sessionTitleRefreshToken;
+  let triesLeft = Math.max(1, totalTries);
+  let lastCandidate = "";
+  let stableCount = 0;
+
+  const commitCandidate = (value) => {
+    if (!value) return;
+    currentSessionTitle = value;
+    if (sessionsCurrentEditInput) {
+      sessionsCurrentEditInput.value = value;
+    }
+  };
+
+  const run = () => {
+    if (token !== sessionTitleRefreshToken) return;
+    const candidate = generateSessionName();
+    if (candidate && candidate !== "Untitled Mix") {
+      if (candidate === lastCandidate) {
+        stableCount += 1;
+      } else {
+        lastCandidate = candidate;
+        stableCount = 1;
+      }
+      if (stableCount >= 2) {
+        commitCandidate(candidate);
+        return;
+      }
+    }
+    triesLeft -= 1;
+    if (triesLeft <= 0) {
+      if (lastCandidate && lastCandidate !== "Untitled Mix") {
+        commitCandidate(lastCandidate);
+      } else {
+        updateAutoSessionTitle();
+      }
+      return;
+    }
+    setTimeout(run, 250);
+  };
+  setTimeout(run, 120);
+}
+
+async function refreshCommunitySessions() {
+  runtimeCommunitySessions = [...COMMUNITY_SESSIONS];
+  if (!hasBackendApi()) return;
+  const published = await fetchPublishedSessions();
+  if (!published) {
+    if (communityPublishFeedback) {
+      communityPublishFeedback.textContent = "Community feed is waking up. Retry in a moment.";
+    }
+    return;
+  }
+  if (communityPublishFeedback && !communityPublishSubmitBtn?.classList.contains("success")) {
+    communityPublishFeedback.textContent = "";
+  }
+  const normalized = published
+    .map((item, index) => normalizePublishedSessionItem(item, index))
+    .filter(Boolean);
+  backendPublishedSessions = await hydratePublishedThumbs(normalized);
+}
+
+function deriveThumbUrlsFromPublishedPayload(payload) {
+  if (!payload || typeof payload !== "object") return [];
+  const tiles = Array.isArray(payload.tiles) ? payload.tiles : [];
+  const urls = [];
+  for (let i = 0; i < tiles.length; i += 1) {
+    const tile = tiles[i];
+    const rawUrl = typeof tile?.videoUrl === "string" ? tile.videoUrl.trim() : "";
+    if (!rawUrl) continue;
+    const videoId = parseVideoId(rawUrl);
+    if (!videoId) continue;
+    urls.push(`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`);
+    if (urls.length >= 4) break;
+  }
+  return urls;
+}
+
+async function hydratePublishedThumbs(items) {
+  if (!Array.isArray(items) || !items.length) return Array.isArray(items) ? items : [];
+  const hydrated = await Promise.all(
+    items.map(async (item) => {
+      if (!item?.id) return item;
+      if (Array.isArray(item.thumbUrls) && item.thumbUrls.length) return item;
+      if (item.thumbUrl) return item;
+      const payload = await loadShortSessionPayload(item.id);
+      const derived = deriveThumbUrlsFromPublishedPayload(payload);
+      if (!derived.length) return item;
+      return {
+        ...item,
+        thumbUrls: derived,
+        thumbUrl: derived[0],
+      };
+    })
+  );
+  return hydrated;
+}
+
+function normalizePublishedSessionItem(item, index = 0) {
+  if (!item || item.id === undefined || item.id === null) return null;
+  const normalizedId = String(item.id).trim();
+  if (!normalizedId) return null;
+  const previewVideoId = String(item.previewVideoId || "").trim();
+  const thumbUrlsFromApi = Array.isArray(item.thumbUrls)
+    ? item.thumbUrls.map((u) => String(u)).filter(Boolean).slice(0, 4)
+    : [];
+  const fallbackThumbUrls = deriveThumbUrlsFromPublishedPayload(item.payload);
+  const previewThumbUrl = previewVideoId ? `https://i.ytimg.com/vi/${previewVideoId}/hqdefault.jpg` : "";
+  const mergedThumbUrls = thumbUrlsFromApi.length
+    ? thumbUrlsFromApi
+    : fallbackThumbUrls.length
+      ? fallbackThumbUrls
+      : String(item.thumbUrl || "").trim()
+        ? [String(item.thumbUrl || "").trim()]
+        : previewThumbUrl
+          ? [previewThumbUrl]
+        : [];
+
+  return {
+    id: normalizedId,
+    name: String(item.name || `Published ${index + 1}`),
+    artistName: String(item.artistName || "Anonymous").trim() || "Anonymous",
+    description: String(item.description || ""),
+    tags: Array.isArray(item.tags) ? item.tags.map((tag) => String(tag)).slice(0, 12) : [],
+    likes: Number(item.likes) || 0,
+    createdAt: Number(item.createdAt) || Date.now(),
+    previewVideoId,
+    thumbUrl: mergedThumbUrls[0] || "",
+    thumbUrls: mergedThumbUrls,
+    url: buildShareUrlFromShortId(item.id),
+  };
+}
+
+function setPublishedSessionLikes(id, likesValue) {
+  const nextLikes = Math.max(0, Number(likesValue) || 0);
+  backendPublishedSessions = backendPublishedSessions.map((entry) =>
+    entry.id === id ? { ...entry, likes: nextLikes } : entry
+  );
+}
+
+function getPublishedSessionById(id) {
+  return backendPublishedSessions.find((entry) => entry.id === id) || null;
+}
+
+function removePublishedSessionLocal(id) {
+  backendPublishedSessions = backendPublishedSessions.filter((entry) => entry.id !== id);
+}
+
+function updateCommunityPublishPreview() {
+  if (!sessionsCurrentEditInput) return;
+  const next = (sessionsCurrentEditInput.value || "").trim();
+  currentSessionTitle = next || generateSessionName() || "Untitled Mix";
+}
+
+function renderSessionsModal() {
   if (communityDiscordLink) {
     communityDiscordLink.href = COMMUNITY_DISCORD_URL;
   }
-  if (!COMMUNITY_SESSIONS.length) {
-    communityPopupList.innerHTML = '<div class="showcase-item">No community sessions yet.</div>';
-    return;
+  updateAutoSessionTitle();
+  if (sessionsCurrentEditInput) {
+    sessionsCurrentEditInput.value = currentSessionTitle || "Current Session";
   }
-  communityPopupList.innerHTML = "";
-  COMMUNITY_SESSIONS.forEach((item, index) => {
-    if (!isValidSessionUrl(item.url)) return;
-    const row = document.createElement("div");
-    row.className = "showcase-item";
+  if (sessionsArtistEditInput) {
+    sessionsArtistEditInput.value = currentArtistName || "Anonymous";
+  }
+  updateCommunityPublishPreview();
+  if (sessionsPublishedList) {
+    sessionsPublishedList.innerHTML = "";
+    const mine = backendPublishedSessions
+      .filter((item) => myPublishedSessionIds.has(String(item.id)))
+      .sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+    if (!mine.length) {
+      sessionsPublishedList.innerHTML =
+        '<div class="showcase-item">No sessions published from this browser yet.</div>';
+    } else {
+      mine.forEach((item, index) => {
+        if (!isValidSessionUrl(item.url)) return;
+        const row = buildSessionRow(item, index, "mine");
+        sessionsPublishedList.appendChild(row);
+      });
+    }
+  }
+  if (sessionsLatestList) {
+    sessionsLatestList.innerHTML = "";
+    const latest = [...backendPublishedSessions].sort(
+      (a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0)
+    );
+    if (!latest.length) {
+      sessionsLatestList.innerHTML = '<div class="showcase-item">No published sessions yet.</div>';
+    } else {
+      latest.forEach((item, index) => {
+        if (!isValidSessionUrl(item.url)) return;
+        const row = buildSessionRow(item, index, "public");
+        sessionsLatestList.appendChild(row);
+      });
+    }
+  }
+  if (sessionsGreatestList) {
+    sessionsGreatestList.innerHTML = "";
+    const greatest = [...backendPublishedSessions].sort((a, b) => {
+      const likeDiff = (Number(b.likes) || 0) - (Number(a.likes) || 0);
+      if (likeDiff !== 0) return likeDiff;
+      return (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+    });
+    if (!greatest.length) {
+      sessionsGreatestList.innerHTML = '<div class="showcase-item">No published sessions yet.</div>';
+    } else {
+      greatest.forEach((item, index) => {
+        if (!isValidSessionUrl(item.url)) return;
+        const row = buildSessionRow(item, index, "public");
+        sessionsGreatestList.appendChild(row);
+      });
+    }
+  }
+}
 
-    const title = document.createElement("div");
-    title.className = "showcase-item-title";
-    title.textContent = item.name || `Community ${index + 1}`;
+function buildSessionRow(item, index, mode = "public") {
+  const row = document.createElement("div");
+  row.className = "showcase-item";
 
-    const actions = document.createElement("div");
-    actions.className = "showcase-item-row";
-    const loadBtn = document.createElement("button");
-    loadBtn.type = "button";
-    loadBtn.textContent = "Load Session";
-    loadBtn.addEventListener("click", () => {
+  const thumbCandidates = (Array.isArray(item.thumbUrls) && item.thumbUrls.length ? item.thumbUrls : item.thumbUrl ? [item.thumbUrl] : []).slice(0, 4);
+  if (thumbCandidates.length) {
+    const strip = document.createElement("div");
+    strip.className = "showcase-thumb-strip";
+    for (let i = 0; i < Math.min(4, thumbCandidates.length); i += 1) {
+      const img = document.createElement("img");
+      img.className = "showcase-thumb-chip";
+      img.src = thumbCandidates[i];
+      img.alt = "";
+      img.loading = "lazy";
+      strip.appendChild(img);
+    }
+    row.appendChild(strip);
+  }
+  if (thumbCandidates.length) {
+    const collage = document.createElement("div");
+    collage.className = "showcase-thumb-collage";
+    for (let i = 0; i < 4; i += 1) {
+      const tile = document.createElement("div");
+      const thumb = thumbCandidates[i % thumbCandidates.length];
+      tile.style.backgroundImage = `url("${thumb}")`;
+      collage.appendChild(tile);
+    }
+    row.appendChild(collage);
+  }
+
+  const title = document.createElement("div");
+  title.className = "showcase-item-title";
+  title.textContent = item.name || `Session ${index + 1}`;
+  row.appendChild(title);
+
+  const artist = document.createElement("div");
+  artist.className = "showcase-item-artist";
+  artist.textContent = item.artistName || "Anonymous";
+  row.appendChild(artist);
+
+  if (item.featured) {
+    const badge = document.createElement("div");
+    badge.className = "showcase-item-url";
+    badge.textContent = "Featured";
+    row.appendChild(badge);
+  }
+
+  if (item.description) {
+    const description = document.createElement("div");
+    description.className = "showcase-item-url";
+    description.textContent = item.description;
+    row.appendChild(description);
+  }
+  if (Array.isArray(item.tags) && item.tags.length) {
+    const tags = document.createElement("div");
+    tags.className = "showcase-item-url";
+    tags.textContent = item.tags.slice(0, 6).map((tag) => `#${tag}`).join(" ");
+    row.appendChild(tags);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "showcase-item-row";
+  const openLink = document.createElement("a");
+  openLink.className = "session-open-btn";
+  openLink.href = item.url;
+  openLink.textContent = "Open Session";
+  openLink.setAttribute("role", "button");
+  openLink.addEventListener("click", async (event) => {
+    const isPlainLeftClick =
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey;
+    if (!isPlainLeftClick) return;
+    event.preventDefault();
+    const loaded = await loadSessionFromUrlInPlace(item.url, item);
+    if (!loaded) {
       window.location.href = item.url;
-    });
-    const openNewTabBtn = document.createElement("button");
-    openNewTabBtn.type = "button";
-    openNewTabBtn.textContent = "Open In New Tab";
-    openNewTabBtn.addEventListener("click", () => {
-      window.open(item.url, "_blank", "noopener,noreferrer");
-    });
-    actions.append(loadBtn, openNewTabBtn);
-
-    row.append(title, actions);
-    communityPopupList.appendChild(row);
+    }
   });
+  actions.append(openLink);
+
+  if (mode === "public" && item.id) {
+    const liked = likedPublishedSessionIds.has(item.id);
+    const likeBtn = document.createElement("button");
+    likeBtn.type = "button";
+    if (likePendingSessionIds.has(item.id)) {
+      likeBtn.disabled = true;
+    }
+    likeBtn.textContent = `Like ${Number(item.likes) || 0}${liked ? " ✓" : ""}`;
+    likeBtn.addEventListener("click", async () => {
+      const targetId = item.id;
+      if (!targetId || likePendingSessionIds.has(targetId)) return;
+      likePendingSessionIds.add(targetId);
+      const isLiked = likedPublishedSessionIds.has(targetId);
+      const previousLikes = Number(getPublishedSessionById(targetId)?.likes) || 0;
+      likedPublishedSessionIds[isLiked ? "delete" : "add"](targetId);
+      saveLikedPublishedSessionIds();
+      const delta = isLiked ? -1 : 1;
+      setPublishedSessionLikes(targetId, previousLikes + delta);
+      renderSessionsModal();
+
+      const result = await updatePublishedLike(targetId, delta);
+      if (!result) {
+        likedPublishedSessionIds[isLiked ? "add" : "delete"](targetId);
+        saveLikedPublishedSessionIds();
+        setPublishedSessionLikes(targetId, previousLikes);
+        likePendingSessionIds.delete(targetId);
+        renderSessionsModal();
+        statusEl.textContent = "Like update failed. Try again.";
+        return;
+      }
+      if (typeof result.likes === "number") {
+        setPublishedSessionLikes(targetId, result.likes);
+      }
+      likePendingSessionIds.delete(targetId);
+      renderSessionsModal();
+    });
+
+    actions.append(likeBtn);
+  }
+
+  if (mode === "mine" && item.id) {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "session-delete-btn";
+    deleteBtn.textContent = "Delete";
+    if (deletePendingSessionIds.has(item.id)) {
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = "Deleting...";
+    }
+    deleteBtn.addEventListener("click", async () => {
+      if (!item.id || deletePendingSessionIds.has(item.id)) return;
+      const ok = window.confirm("Delete this published session from community?");
+      if (!ok) return;
+      const removedId = String(item.id);
+      const backup = getPublishedSessionById(removedId);
+      deletePendingSessionIds.add(item.id);
+      removePublishedSessionLocal(removedId);
+      myPublishedSessionIds.delete(removedId);
+      likedPublishedSessionIds.delete(removedId);
+      saveMyPublishedSessionIds();
+      saveLikedPublishedSessionIds();
+      renderSessionsModal();
+      const result = await deletePublishedSession(item.id);
+      if (!result?.ok) {
+        if (backup) {
+          backendPublishedSessions = [backup, ...backendPublishedSessions.filter((entry) => entry.id !== removedId)];
+        }
+        myPublishedSessionIds.add(removedId);
+        saveMyPublishedSessionIds();
+        deletePendingSessionIds.delete(item.id);
+        renderSessionsModal();
+        statusEl.textContent = "Could not delete session.";
+        return;
+      }
+      await refreshCommunitySessions();
+      deletePendingSessionIds.delete(item.id);
+      renderSessionsModal();
+      statusEl.textContent = "Session deleted.";
+    });
+
+    actions.append(deleteBtn);
+  }
+
+  row.append(actions);
+  return row;
 }
 
 function saveShowcaseLinks() {
