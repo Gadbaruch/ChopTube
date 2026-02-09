@@ -38,7 +38,7 @@ function sendJson(res, status, payload) {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   });
   res.end(JSON.stringify(payload));
@@ -86,12 +86,41 @@ function normalizePublishedItem(item) {
   return {
     id: String(item.id || ''),
     name: String(item.name || 'Untitled Session'),
+    artistName: String(item.artistName || 'Anonymous').slice(0, 80).trim() || 'Anonymous',
     description: String(item.description || '').slice(0, 280),
     tags: Array.isArray(item.tags)
       ? item.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
       : [],
+    likes: Number(item.likes) > 0 ? Number(item.likes) : 0,
+    comments: Array.isArray(item.comments)
+      ? item.comments
+          .map((comment) => ({
+            author: String(comment?.author || 'Guest').slice(0, 40),
+            text: String(comment?.text || '').slice(0, 280),
+            createdAt: Number(comment?.createdAt) || Date.now(),
+          }))
+          .filter((comment) => comment.text)
+          .slice(-200)
+      : [],
     createdAt: Number(item.createdAt) || Date.now(),
   };
+}
+
+function parseVideoIdFromUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{6,})/);
+  return match ? match[1] : '';
+}
+
+function getSessionPreviewVideoIds(payload) {
+  if (!payload || !Array.isArray(payload.tiles)) return [];
+  const out = [];
+  for (const tile of payload.tiles) {
+    const id = parseVideoIdFromUrl(tile?.videoUrl || '');
+    if (id && !out.includes(id)) out.push(id);
+    if (out.length >= 4) break;
+  }
+  return out;
 }
 
 function getPublicSessionResponse(id, record) {
@@ -151,10 +180,94 @@ const server = http.createServer(async (req, res) => {
       .sort((a, b) => b.createdAt - a.createdAt)
       .slice(0, 200)
       .map((item) => ({
+        ...(() => {
+          const previewVideoIds = getSessionPreviewVideoIds(store.sessions[item.id]?.payload);
+          const thumbUrls = previewVideoIds.map((id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+          return {
+            previewVideoId: previewVideoIds[0] || '',
+            thumbUrl: thumbUrls[0] || '',
+            thumbUrls,
+          };
+        })(),
         ...item,
+        commentsCount: item.comments.length,
+        comments: undefined,
         url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(item.id)}` : undefined,
       }));
     return sendJson(res, 200, { items });
+  }
+
+  if (req.method === 'GET' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
+    const id = url.pathname.split('/')[3];
+    const store = readStore();
+    const item = store.published.map(normalizePublishedItem).find((entry) => entry.id === id);
+    if (!item || !store.sessions[id]) {
+      return sendJson(res, 404, { error: 'Published session not found' });
+    }
+    return sendJson(res, 200, { id, comments: item.comments });
+  }
+
+  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
+    const id = url.pathname.split('/')[3];
+    const body = await readJsonBody(req);
+    if (!body || typeof body !== 'object') {
+      return sendJson(res, 400, { error: 'Invalid payload' });
+    }
+    const text = String(body.text || '').trim().slice(0, 280);
+    if (!text) return sendJson(res, 400, { error: 'Comment text is required' });
+    const author = String(body.author || 'Guest').trim().slice(0, 40) || 'Guest';
+
+    const store = readStore();
+    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+    if (index < 0 || !store.sessions[id]) {
+      return sendJson(res, 404, { error: 'Published session not found' });
+    }
+    const normalized = normalizePublishedItem(store.published[index]);
+    normalized.comments.push({ author, text, createdAt: Date.now() });
+    normalized.comments = normalized.comments.slice(-200);
+    store.published[index] = normalized;
+    writeStore(store);
+    return sendJson(res, 201, { id, comments: normalized.comments, commentsCount: normalized.comments.length });
+  }
+
+  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/like$/.test(url.pathname)) {
+    const id = url.pathname.split('/')[3];
+    const body = await readJsonBody(req);
+    const delta = Number(body?.delta) < 0 ? -1 : 1;
+    const store = readStore();
+    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+    if (index < 0 || !store.sessions[id]) {
+      return sendJson(res, 404, { error: 'Published session not found' });
+    }
+    const normalized = normalizePublishedItem(store.published[index]);
+    normalized.likes = Math.max(0, normalized.likes + delta);
+    store.published[index] = normalized;
+    writeStore(store);
+    return sendJson(res, 200, { id, likes: normalized.likes });
+  }
+
+  if (req.method === 'DELETE' && /^\/api\/published\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
+    const id = url.pathname.split('/')[3];
+    const store = readStore();
+    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+    if (index < 0) {
+      return sendJson(res, 404, { error: 'Published session not found' });
+    }
+    store.published.splice(index, 1);
+    writeStore(store);
+    return sendJson(res, 200, { ok: true, id });
+  }
+
+  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/delete$/.test(url.pathname)) {
+    const id = url.pathname.split('/')[3];
+    const store = readStore();
+    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+    if (index < 0) {
+      return sendJson(res, 404, { error: 'Published session not found' });
+    }
+    store.published.splice(index, 1);
+    writeStore(store);
+    return sendJson(res, 200, { ok: true, id });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/published') {
@@ -177,6 +290,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const name = String(body.name || 'Untitled Session').slice(0, 120).trim() || 'Untitled Session';
+    const artistName = String(body.artistName || 'Anonymous').slice(0, 80).trim() || 'Anonymous';
     const description = String(body.description || '').slice(0, 280).trim();
     const tags = Array.isArray(body.tags)
       ? body.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
@@ -185,14 +299,24 @@ const server = http.createServer(async (req, res) => {
     const existingIndex = store.published.findIndex((item) => item && item.id === id);
     if (existingIndex >= 0) {
       store.published[existingIndex] = {
-        ...store.published[existingIndex],
+        ...normalizePublishedItem(store.published[existingIndex]),
         name,
+        artistName,
         description,
         tags,
         createdAt: now,
       };
     } else {
-      store.published.unshift({ id, name, description, tags, createdAt: now });
+      store.published.unshift({
+        id,
+        name,
+        artistName,
+        description,
+        tags,
+        likes: 0,
+        comments: [],
+        createdAt: now,
+      });
     }
     store.published = store.published.slice(0, 400);
     writeStore(store);
@@ -200,8 +324,11 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, {
       id,
       name,
+      artistName,
       description,
       tags,
+      likes: 0,
+      commentsCount: 0,
       url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(id)}` : undefined,
     });
   }
