@@ -18,7 +18,7 @@
     <meta name="choptube-api" content="https://choptube-backend.onrender.com" />
     <link rel="icon" type="image/png" href="assets/choptube-logo.png" />
     <link rel="apple-touch-icon" href="assets/choptube-logo.png" />
-    <link rel="stylesheet" href="styles.css?v=20260209h" />
+    <link rel="stylesheet" href="styles.css?v=20260209t" />
   </head>
   <body>
     <div class="app">
@@ -61,7 +61,7 @@
         </div>
         <div class="global-controls">
           <div class="global-buttons">
-            <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Sessions">Sessions</button>
+            <button id="community-toggle" class="help-toggle featured-toggle" aria-label="Sessions">Sessions &gt;</button>
           </div>
           <div id="share-hint" class="share-hint" aria-live="polite"></div>
         </div>
@@ -187,18 +187,6 @@
           <div class="community-list sessions-list active" id="sessions-greatest-list"></div>
           <div class="community-list sessions-list" id="sessions-latest-list"></div>
           <div class="community-list sessions-list" id="sessions-published-list"></div>
-          <div class="sessions-comments" id="sessions-comments">
-            <div class="sessions-comments-header">
-              <strong id="sessions-comments-title">Comments</strong>
-              <button id="sessions-comments-close" type="button">×</button>
-            </div>
-            <div class="sessions-comments-list" id="sessions-comments-list"></div>
-            <div class="sessions-comments-form">
-              <input id="sessions-comments-author" type="text" maxlength="40" placeholder="Name (optional)" />
-              <textarea id="sessions-comments-text" maxlength="280" rows="3" placeholder="Write a comment"></textarea>
-              <button id="sessions-comments-send" type="button">Post Comment</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -228,6 +216,6 @@
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="app.js?v=20260209l"></script>
+    <script src="app.js?v=20260209u"></script>
   </body>
 </html>

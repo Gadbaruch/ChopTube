@@ -402,13 +402,6 @@ const sessionsTabPublishedBtn = document.getElementById("sessions-tab-published"
 const sessionsGreatestList = document.getElementById("sessions-greatest-list");
 const sessionsLatestList = document.getElementById("sessions-latest-list");
 const sessionsPublishedList = document.getElementById("sessions-published-list");
-const sessionsCommentsEl = document.getElementById("sessions-comments");
-const sessionsCommentsTitle = document.getElementById("sessions-comments-title");
-const sessionsCommentsCloseBtn = document.getElementById("sessions-comments-close");
-const sessionsCommentsList = document.getElementById("sessions-comments-list");
-const sessionsCommentsAuthorInput = document.getElementById("sessions-comments-author");
-const sessionsCommentsTextInput = document.getElementById("sessions-comments-text");
-const sessionsCommentsSendBtn = document.getElementById("sessions-comments-send");
 const sessionsArtistEditInput = document.getElementById("sessions-artist-edit");
 const sessionsCurrentEditInput = document.getElementById("sessions-current-edit");
 const sessionsNewCurrentBtn = document.getElementById("sessions-new-current");
@@ -443,6 +436,8 @@ const arrangementLengthValueInput = document.getElementById("arr-length-value");
 const arrangementLengthUnitSelect = document.getElementById("arr-length-unit");
 const topbarToggleBtn = document.getElementById("topbar-toggle");
 const topbarToggleIcon = document.getElementById("topbar-toggle-icon");
+const brandImageEl = document.querySelector(".brand-image");
+const collapsedTitleLogoEl = document.querySelector(".collapsed-title-logo");
 
 const tileEls = [];
 const stepEls = [];
@@ -469,14 +464,15 @@ let pendingAutoplayFromLoadedSession = false;
 let runtimeCommunitySessions = [];
 let backendPublishedSessions = [];
 let sessionsActiveTab = "latest";
-let activeCommentsSessionId = "";
 let likedPublishedSessionIds = loadLikedPublishedSessionIds();
 let myPublishedSessionIds = loadMyPublishedSessionIds();
 const likePendingSessionIds = new Set();
 const deletePendingSessionIds = new Set();
+let lastLoadedTileIndex = 0;
 let sessionsRestoreTopbarCollapsed = null;
 let currentSessionTitle = "Current Session";
-let currentArtistName = "Anonymous";
+let currentArtistName = loadArtistName();
+let isSessionTitleManual = false;
 
 const API_BASE_URL = detectApiBaseUrl();
 
@@ -558,18 +554,6 @@ async function fetchPublishedSessions() {
   return null;
 }
 
-async function fetchPublishedComments(id) {
-  if (!id) return [];
-  const result = await apiRequest(`/api/published/${encodeURIComponent(id)}/comments`);
-  return Array.isArray(result?.comments) ? result.comments : [];
-}
-
-async function postPublishedComment(id, author, text) {
-  if (!id) return null;
-  const body = JSON.stringify({ author, text });
-  return apiRequest(`/api/published/${encodeURIComponent(id)}/comments`, { method: "POST", body });
-}
-
 async function updatePublishedLike(id, delta) {
   if (!id) return null;
   const body = JSON.stringify({ delta });
@@ -588,6 +572,72 @@ async function deletePublishedSession(id) {
 
 function buildShareUrlFromShortId(id) {
   return `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(id)}`;
+}
+
+function applyOpenedSessionMeta(meta) {
+  const sessionName = String(meta?.name || "").trim();
+  const artistName = String(meta?.artistName || "").trim();
+  if (sessionName) {
+    currentSessionTitle = sessionName;
+    isSessionTitleManual = true;
+    if (sessionsCurrentEditInput) {
+      sessionsCurrentEditInput.value = currentSessionTitle;
+    }
+  }
+  if (artistName) {
+    currentArtistName = saveArtistName(artistName);
+    if (sessionsArtistEditInput) {
+      sessionsArtistEditInput.value = currentArtistName;
+    }
+  }
+}
+
+async function loadSessionFromUrlInPlace(urlValue, meta = null) {
+  let parsed;
+  try {
+    parsed = new URL(String(urlValue || ""), window.location.origin);
+  } catch {
+    return false;
+  }
+
+  const shortId = parsed.searchParams.get("s");
+  if (shortId && hasBackendApi()) {
+    const payload = await loadShortSessionPayload(shortId);
+    if (payload && applySessionPayload(payload)) {
+      setCollapsedMode(false);
+      window.history.pushState({}, "", `${window.location.pathname}?s=${encodeURIComponent(shortId)}`);
+      applyOpenedSessionMeta(meta);
+      buildGrid();
+      updateTransportButton();
+      updateStatus();
+      renderArrangement();
+      updateArrangementControls();
+      renderSessionsModal();
+      return true;
+    }
+  }
+
+  const hash = (parsed.hash || "").replace(/^#/, "");
+  if (hash) {
+    try {
+      const decoded = decodeURIComponent(atob(hash));
+      const payload = JSON.parse(decoded);
+      if (applySessionPayload(payload)) {
+        setCollapsedMode(false);
+        window.history.pushState({}, "", `${window.location.pathname}#${hash}`);
+        applyOpenedSessionMeta(meta);
+        buildGrid();
+        updateTransportButton();
+        updateStatus();
+        renderArrangement();
+        updateArrangementControls();
+        renderSessionsModal();
+        return true;
+      }
+    } catch {}
+  }
+
+  return false;
 }
 
 function loadLikedPublishedSessionIds() {
@@ -628,6 +678,23 @@ function saveMyPublishedSessionIds() {
       JSON.stringify(Array.from(myPublishedSessionIds).slice(0, 500))
     );
   } catch {}
+}
+
+function loadArtistName() {
+  try {
+    const saved = String(window.localStorage.getItem("choptube_artist_name") || "").trim();
+    return saved || "Anonymous";
+  } catch {
+    return "Anonymous";
+  }
+}
+
+function saveArtistName(value) {
+  const normalized = String(value || "").trim() || "Anonymous";
+  try {
+    window.localStorage.setItem("choptube_artist_name", normalized);
+  } catch {}
+  return normalized;
 }
 
 async function init() {
@@ -1081,6 +1148,12 @@ function bindGlobalControls() {
     setCollapsedMode(false);
     saveToUrl();
   });
+  brandImageEl?.addEventListener("click", () => {
+    window.location.reload();
+  });
+  collapsedTitleLogoEl?.addEventListener("click", () => {
+    window.location.reload();
+  });
   tapTempoBtn?.addEventListener("click", () => {
     tapTempoBtn.classList.remove("flash");
     void tapTempoBtn.offsetWidth;
@@ -1223,30 +1296,37 @@ function bindGlobalControls() {
   });
   sessionsCurrentEditInput?.addEventListener("input", () => {
     const next = (sessionsCurrentEditInput.value || "").trim();
-    currentSessionTitle = next || generateSessionName() || "Current Session";
+    if (next) {
+      currentSessionTitle = next;
+      isSessionTitleManual = true;
+    } else {
+      isSessionTitleManual = false;
+      currentSessionTitle = generateSessionName() || "Current Session";
+    }
     if (communityPublishSubmitBtn?.classList.contains("error")) {
       setPublishUiState("idle");
     }
   });
   sessionsCurrentEditInput?.addEventListener("blur", () => {
     const next = (sessionsCurrentEditInput.value || "").trim();
-    currentSessionTitle = next || generateSessionName() || "Current Session";
+    if (next) {
+      currentSessionTitle = next;
+      isSessionTitleManual = true;
+    } else {
+      isSessionTitleManual = false;
+      currentSessionTitle = generateSessionName() || "Current Session";
+    }
     sessionsCurrentEditInput.value = currentSessionTitle;
   });
   sessionsArtistEditInput?.addEventListener("input", () => {
     const next = (sessionsArtistEditInput.value || "").trim();
-    currentArtistName = next || "Anonymous";
+    currentArtistName = saveArtistName(next || "Anonymous");
   });
   sessionsArtistEditInput?.addEventListener("blur", () => {
     const next = (sessionsArtistEditInput.value || "").trim();
-    currentArtistName = next || "Anonymous";
+    currentArtistName = saveArtistName(next || "Anonymous");
     sessionsArtistEditInput.value = currentArtistName;
   });
-  sessionsCommentsCloseBtn?.addEventListener("click", () => closeSessionsComments());
-  sessionsCommentsSendBtn?.addEventListener("click", async () => {
-    await submitSessionComment();
-  });
-
   helpCloseBtn.addEventListener("click", () => {
     helpPanel.classList.remove("show");
     helpPanel.setAttribute("aria-hidden", "true");
@@ -1375,6 +1455,12 @@ function bindGlobalControls() {
 }
 
 function handleKeyDown(event) {
+  if (event.key === "Escape" && state.topbarCollapsed) {
+    event.preventDefault();
+    setCollapsedMode(false);
+    saveToUrl();
+    return;
+  }
   if (event.key === "Escape" && tileUrlPopup?.classList.contains("show")) {
     event.preventDefault();
     closeTileUrlPopup();
@@ -1682,6 +1768,7 @@ function loadVideo(index, url, options = {}) {
   }
 
   const tile = state.tiles[index];
+  lastLoadedTileIndex = Math.max(0, Math.min(TILE_COUNT - 1, Number(index) || 0));
   const trackHistory = options.trackHistory !== false;
   if (trackHistory && tile.videoUrl && tile.videoUrl !== normalizedUrl) {
     tile.videoHistory.push(tile.videoUrl);
@@ -1723,14 +1810,16 @@ function loadVideo(index, url, options = {}) {
       videoId: videoId || undefined,
       playerVars,
       events: {
-        onReady: () => maybeSetDefaultCues(index),
+        onReady: () => {
+          maybeSetDefaultCues(index);
+        },
         onStateChange: (event) => handlePlayerState(index, event),
       },
     });
   }
 
   updateTileDisplays();
-  updateAutoSessionTitle();
+  scheduleAutoSessionTitleRefresh();
   saveToUrl();
 }
 
@@ -2976,6 +3065,7 @@ function startNewSession() {
   state.selectedCue = 0;
   state.selectedStep = null;
   state.arrangement = getDefaultArrangementState();
+  isSessionTitleManual = false;
   metronomeEnabled = false;
   metronomeToggleBtn?.classList.remove("active");
   metronomeVolume = 50;
@@ -3249,7 +3339,6 @@ function handlePlayerState(index, event) {
     }
     tile.isClipPlaying = false;
   }
-  updateAutoSessionTitle();
   updateTileDisplays();
 }
 
@@ -3523,7 +3612,6 @@ function setCommunityOpen(open) {
       setCollapsedMode(sessionsRestoreTopbarCollapsed);
       sessionsRestoreTopbarCollapsed = null;
     }
-    closeSessionsComments();
   }
 }
 
@@ -3535,7 +3623,9 @@ function setCommunityPublishFormOpen(open) {
     communityPublishSubmitBtn.classList.remove("success", "error");
   }
   if (sessionsCurrentEditInput) {
-    updateAutoSessionTitle();
+    if (!isSessionTitleManual) {
+      updateAutoSessionTitle();
+    }
     sessionsCurrentEditInput.value = currentSessionTitle || generateSessionName() || "Current Session";
   }
   if (sessionsArtistEditInput) {
@@ -3576,60 +3666,6 @@ function setSessionsTab(tab) {
   sessionsPublishedList?.classList.toggle("active", tab === "published");
 }
 
-function closeSessionsComments() {
-  activeCommentsSessionId = "";
-  sessionsCommentsEl?.classList.remove("show");
-  if (sessionsCommentsTitle) sessionsCommentsTitle.textContent = "Comments";
-  if (sessionsCommentsList) sessionsCommentsList.innerHTML = "";
-  if (sessionsCommentsTextInput) sessionsCommentsTextInput.value = "";
-}
-
-async function openSessionsComments(session) {
-  if (!session?.id || !sessionsCommentsEl || !sessionsCommentsList) return;
-  activeCommentsSessionId = session.id;
-  sessionsCommentsEl.classList.add("show");
-  sessionsCommentsTitle.textContent = `Comments · ${session.name || "Session"}`;
-  sessionsCommentsList.innerHTML = '<div class="showcase-item-url">Loading comments...</div>';
-  const comments = await fetchPublishedComments(session.id);
-  sessionsCommentsList.innerHTML = "";
-  if (!comments.length) {
-    sessionsCommentsList.innerHTML = '<div class="showcase-item-url">No comments yet.</div>';
-    return;
-  }
-  comments.forEach((comment) => {
-    const row = document.createElement("div");
-    row.className = "showcase-item";
-    const header = document.createElement("div");
-    header.className = "showcase-item-title";
-    const date = Number(comment.createdAt) ? new Date(comment.createdAt).toLocaleString() : "";
-    header.textContent = `${comment.author || "Guest"}${date ? ` · ${date}` : ""}`;
-    const text = document.createElement("div");
-    text.className = "showcase-item-url";
-    text.textContent = comment.text || "";
-    row.append(header, text);
-    sessionsCommentsList.appendChild(row);
-  });
-}
-
-async function submitSessionComment() {
-  if (!activeCommentsSessionId) return;
-  const text = (sessionsCommentsTextInput?.value || "").trim();
-  if (!text) return;
-  const author = (sessionsCommentsAuthorInput?.value || "").trim() || "Guest";
-  const result = await postPublishedComment(activeCommentsSessionId, author, text);
-  if (!result?.comments) {
-    statusEl.textContent = "Could not post comment.";
-    return;
-  }
-  if (sessionsCommentsTextInput) sessionsCommentsTextInput.value = "";
-  await refreshCommunitySessions();
-  renderSessionsModal();
-  const session = backendPublishedSessions.find((item) => item.id === activeCommentsSessionId);
-  if (session) {
-    await openSessionsComments(session);
-  }
-}
-
 function addShowcaseLink(name, url) {
   if (!isValidSessionUrl(url)) {
     statusEl.textContent = "Please enter a valid session URL.";
@@ -3664,34 +3700,114 @@ function renderShowcaseLinks() {
   // Legacy local-saved sessions UI was removed in the unified publish flow.
 }
 
+function splitTitleIntoWords(title) {
+  return String(title || "")
+    .replace(/\[[^\]]*\]|\([^\)]*\)/g, " ")
+    .split(/[^a-zA-Z0-9]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 3);
+}
+
+function blendWords(a, b) {
+  const left = String(a || "").trim();
+  const right = String(b || "").trim();
+  if (left.length < 3 || right.length < 3) return "";
+  const leftPart = left.slice(0, Math.ceil(left.length * 0.6));
+  const rightPart = right.slice(Math.floor(right.length * 0.4));
+  const mixed = `${leftPart}${rightPart}`;
+  return mixed.length >= 4 ? mixed : "";
+}
+
 function generateSessionName() {
   const words = [];
-  state.tiles.forEach((tile) => {
+  const orderedTileIndexes = [];
+  for (let offset = 0; offset < TILE_COUNT; offset += 1) {
+    orderedTileIndexes.push((lastLoadedTileIndex + offset) % TILE_COUNT);
+  }
+  orderedTileIndexes.forEach((tileIdx) => {
+    const tile = state.tiles[tileIdx];
     const title = tile.player?.getVideoData?.()?.title || "";
     if (!title) return;
-    const token = title
-      .replace(/\[[^\]]*\]|\([^\)]*\)/g, " ")
-      .split(/[^a-zA-Z0-9]+/)
-      .map((part) => part.trim())
-      .filter((part) => part.length >= 3);
-    token.slice(0, 4).forEach((part) => words.push(part));
+    splitTitleIntoWords(title)
+      .slice(0, 5)
+      .forEach((part) => words.push(part));
   });
   if (!words.length) {
     return "Untitled Mix";
   }
   const skip = new Set(["official", "video", "lyrics", "audio", "music", "feat", "ft", "and", "the"]);
   const unique = Array.from(new Set(words)).filter((word) => !skip.has(word.toLowerCase()));
-  const picked = unique.slice(0, 3);
-  return picked.length ? picked.join(" ") : "Untitled Mix";
+  if (!unique.length) return "Untitled Mix";
+
+  const chunks = [];
+  if (unique.length >= 2) {
+    const blendA = blendWords(unique[0], unique[1]);
+    if (blendA) chunks.push(blendA);
+  }
+  if (unique.length >= 4) {
+    const blendB = blendWords(unique[2], unique[3]);
+    if (blendB) chunks.push(blendB);
+  }
+  unique.slice(0, 3).forEach((word) => {
+    if (chunks.length >= 3) return;
+    chunks.push(word);
+  });
+  return chunks.slice(0, 3).join(" ").trim() || "Untitled Mix";
 }
 
 function updateAutoSessionTitle() {
+  if (isSessionTitleManual) return;
   const generated = generateSessionName();
   if (!generated) return;
   currentSessionTitle = generated;
   if (sessionsCurrentEditInput) {
     sessionsCurrentEditInput.value = generated;
   }
+}
+
+let sessionTitleRefreshToken = 0;
+function scheduleAutoSessionTitleRefresh(totalTries = 12) {
+  if (isSessionTitleManual) return;
+  const token = ++sessionTitleRefreshToken;
+  let triesLeft = Math.max(1, totalTries);
+  let lastCandidate = "";
+  let stableCount = 0;
+
+  const commitCandidate = (value) => {
+    if (!value) return;
+    currentSessionTitle = value;
+    if (sessionsCurrentEditInput) {
+      sessionsCurrentEditInput.value = value;
+    }
+  };
+
+  const run = () => {
+    if (token !== sessionTitleRefreshToken) return;
+    const candidate = generateSessionName();
+    if (candidate && candidate !== "Untitled Mix") {
+      if (candidate === lastCandidate) {
+        stableCount += 1;
+      } else {
+        lastCandidate = candidate;
+        stableCount = 1;
+      }
+      if (stableCount >= 2) {
+        commitCandidate(candidate);
+        return;
+      }
+    }
+    triesLeft -= 1;
+    if (triesLeft <= 0) {
+      if (lastCandidate && lastCandidate !== "Untitled Mix") {
+        commitCandidate(lastCandidate);
+      } else {
+        updateAutoSessionTitle();
+      }
+      return;
+    }
+    setTimeout(run, 250);
+  };
+  setTimeout(run, 120);
 }
 
 async function refreshCommunitySessions() {
@@ -3776,7 +3892,6 @@ function normalizePublishedSessionItem(item, index = 0) {
     description: String(item.description || ""),
     tags: Array.isArray(item.tags) ? item.tags.map((tag) => String(tag)).slice(0, 12) : [],
     likes: Number(item.likes) || 0,
-    commentsCount: Number(item.commentsCount) || 0,
     createdAt: Number(item.createdAt) || Date.now(),
     previewVideoId,
     thumbUrl: mergedThumbUrls[0] || "",
@@ -3935,6 +4050,20 @@ function buildSessionRow(item, index, mode = "public") {
   openLink.href = item.url;
   openLink.textContent = "Open Session";
   openLink.setAttribute("role", "button");
+  openLink.addEventListener("click", async (event) => {
+    const isPlainLeftClick =
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey;
+    if (!isPlainLeftClick) return;
+    event.preventDefault();
+    const loaded = await loadSessionFromUrlInPlace(item.url, item);
+    if (!loaded) {
+      window.location.href = item.url;
+    }
+  });
   actions.append(openLink);
 
   if (mode === "public" && item.id) {
@@ -3974,24 +4103,10 @@ function buildSessionRow(item, index, mode = "public") {
       renderSessionsModal();
     });
 
-    const commentsBtn = document.createElement("button");
-    commentsBtn.type = "button";
-    commentsBtn.textContent = `Comments ${Number(item.commentsCount) || 0}`;
-    commentsBtn.addEventListener("click", async () => {
-      await openSessionsComments(item);
-    });
-
-    actions.append(likeBtn, commentsBtn);
+    actions.append(likeBtn);
   }
 
   if (mode === "mine" && item.id) {
-    const commentsBtn = document.createElement("button");
-    commentsBtn.type = "button";
-    commentsBtn.textContent = `Comments ${Number(item.commentsCount) || 0}`;
-    commentsBtn.addEventListener("click", async () => {
-      await openSessionsComments(item);
-    });
-
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "session-delete-btn";
@@ -4012,7 +4127,6 @@ function buildSessionRow(item, index, mode = "public") {
       likedPublishedSessionIds.delete(removedId);
       saveMyPublishedSessionIds();
       saveLikedPublishedSessionIds();
-      closeSessionsComments();
       renderSessionsModal();
       const result = await deletePublishedSession(item.id);
       if (!result?.ok) {
@@ -4032,7 +4146,7 @@ function buildSessionRow(item, index, mode = "public") {
       statusEl.textContent = "Session deleted.";
     });
 
-    actions.append(commentsBtn, deleteBtn);
+    actions.append(deleteBtn);
   }
 
   row.append(actions);

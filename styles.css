@@ -1763,68 +1763,6 @@ button.active {
   justify-content: center;
 }
 
-.sessions-comments {
-  display: none;
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  margin-top: 10px;
-  padding-top: 10px;
-}
-
-.sessions-comments.show {
-  display: block;
-}
-
-.sessions-comments-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.sessions-comments-header button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: #1f2a3d;
-  color: #e1e9f8;
-  border-radius: 8px;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-}
-
-.sessions-comments-list {
-  max-height: 180px;
-  overflow-y: auto;
-  display: grid;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.sessions-comments-form {
-  display: grid;
-  gap: 8px;
-}
-
-.sessions-comments-form input,
-.sessions-comments-form textarea {
-  border: 1px solid rgba(119, 159, 219, 0.35);
-  border-radius: 8px;
-  background: #101827;
-  color: #e8edf8;
-  font-size: 12px;
-  padding: 8px 10px;
-}
-
-.sessions-comments-form button {
-  justify-self: end;
-  border: 1px solid rgba(126, 174, 255, 0.5);
-  border-radius: 8px;
-  padding: 7px 10px;
-  background: #26509b;
-  color: #f2f7ff;
-  cursor: pointer;
-}
-
 .mobile-blocker {
   position: fixed;
   inset: 0;
