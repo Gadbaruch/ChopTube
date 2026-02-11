@@ -1,12 +1,22 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'sessions.json');
 const APP_BASE_URL = (process.env.APP_BASE_URL || '').replace(/\/+$/, '');
+const DATABASE_URL = String(process.env.DATABASE_URL || '').trim();
+const USE_DB = Boolean(DATABASE_URL);
+
+const db = USE_DB
+  ? new Pool({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+  : null;
 
 function ensureDataStore() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -72,16 +82,6 @@ function makeId(length = 8) {
   return out;
 }
 
-function createUniqueId(store) {
-  let id = makeId();
-  let guard = 0;
-  while (store.sessions[id] && guard < 1000) {
-    id = makeId();
-    guard += 1;
-  }
-  return id;
-}
-
 function normalizePublishedItem(item) {
   return {
     id: String(item.id || ''),
@@ -136,183 +136,184 @@ function getPublicSessionResponse(id, record) {
   return response;
 }
 
-const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+async function initDb() {
+  if (!USE_DB) return;
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      payload JSONB NOT NULL,
+      created_at BIGINT NOT NULL,
+      updated_at BIGINT NOT NULL
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS published (
+      id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      artist_name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+      likes INTEGER NOT NULL DEFAULT 0,
+      comments JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at BIGINT NOT NULL
+    )
+  `);
+}
 
-  if (req.method === 'OPTIONS') {
-    return sendJson(res, 204, {});
+async function sessionExists(id) {
+  if (USE_DB) {
+    const r = await db.query('SELECT 1 FROM sessions WHERE id = $1 LIMIT 1', [id]);
+    return r.rowCount > 0;
   }
+  const store = readStore();
+  return Boolean(store.sessions[id]);
+}
 
-  if (req.method === 'GET' && url.pathname === '/api/health') {
-    return sendJson(res, 200, { ok: true, ts: Date.now() });
+async function createUniqueId() {
+  let id = makeId();
+  let guard = 0;
+  while ((await sessionExists(id)) && guard < 1000) {
+    id = makeId();
+    guard += 1;
   }
+  return id;
+}
 
-  if (req.method === 'POST' && url.pathname === '/api/sessions') {
-    const body = await readJsonBody(req);
-    if (!body || typeof body !== 'object' || !body.payload || typeof body.payload !== 'object') {
-      return sendJson(res, 400, { error: 'Invalid payload' });
-    }
-    const store = readStore();
-    const id = createUniqueId(store);
-    const now = Date.now();
-    store.sessions[id] = {
-      payload: body.payload,
-      createdAt: now,
-      updatedAt: now,
+async function createSession(payload) {
+  const id = await createUniqueId();
+  const now = Date.now();
+  if (USE_DB) {
+    await db.query(
+      'INSERT INTO sessions (id, payload, created_at, updated_at) VALUES ($1, $2::jsonb, $3, $4)',
+      [id, JSON.stringify(payload), now, now]
+    );
+    return { id, payload, createdAt: now, updatedAt: now };
+  }
+  const store = readStore();
+  store.sessions[id] = { payload, createdAt: now, updatedAt: now };
+  writeStore(store);
+  return { id, payload, createdAt: now, updatedAt: now };
+}
+
+async function getSession(id) {
+  if (USE_DB) {
+    const r = await db.query(
+      'SELECT id, payload, created_at, updated_at FROM sessions WHERE id = $1 LIMIT 1',
+      [id]
+    );
+    if (!r.rowCount) return null;
+    const row = r.rows[0];
+    return {
+      id: row.id,
+      payload: row.payload,
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at),
     };
-    writeStore(store);
-    return sendJson(res, 201, getPublicSessionResponse(id, store.sessions[id]));
+  }
+  const store = readStore();
+  const record = store.sessions[id];
+  if (!record) return null;
+  return {
+    id,
+    payload: record.payload,
+    createdAt: Number(record.createdAt) || Date.now(),
+    updatedAt: Number(record.updatedAt) || Date.now(),
+  };
+}
+
+async function listPublished() {
+  if (USE_DB) {
+    const r = await db.query(`
+      SELECT
+        p.id,
+        p.name,
+        p.artist_name,
+        p.description,
+        p.tags,
+        p.likes,
+        p.comments,
+        p.created_at,
+        s.payload
+      FROM published p
+      JOIN sessions s ON s.id = p.id
+      ORDER BY p.created_at DESC
+      LIMIT 200
+    `);
+    return r.rows.map((row) => ({
+      id: String(row.id),
+      name: String(row.name || 'Untitled Session'),
+      artistName: String(row.artist_name || 'Anonymous'),
+      description: String(row.description || ''),
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      likes: Number(row.likes) || 0,
+      comments: Array.isArray(row.comments) ? row.comments : [],
+      createdAt: Number(row.created_at) || Date.now(),
+      payload: row.payload,
+    }));
   }
 
-  if (req.method === 'GET' && /^\/api\/sessions\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
-    const id = url.pathname.split('/').pop();
-    const store = readStore();
-    const record = store.sessions[id];
-    if (!record) return sendJson(res, 404, { error: 'Session not found' });
-    return sendJson(res, 200, getPublicSessionResponse(id, record));
+  const store = readStore();
+  return store.published
+    .map(normalizePublishedItem)
+    .filter((item) => item.id && store.sessions[item.id])
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 200)
+    .map((item) => ({ ...item, payload: store.sessions[item.id]?.payload }));
+}
+
+async function publishSession({ id, payload, name, artistName, description, tags }) {
+  const now = Date.now();
+  let targetId = typeof id === 'string' ? id.trim() : '';
+
+  if (!targetId && payload && typeof payload === 'object') {
+    const created = await createSession(payload);
+    targetId = created.id;
   }
+  if (!targetId) return null;
 
-  if (req.method === 'GET' && url.pathname === '/api/published') {
+  const session = await getSession(targetId);
+  if (!session) return null;
+
+  const normalizedName = String(name || 'Untitled Session').slice(0, 120).trim() || 'Untitled Session';
+  const normalizedArtist = String(artistName || 'Anonymous').slice(0, 80).trim() || 'Anonymous';
+  const normalizedDescription = String(description || '').slice(0, 280).trim();
+  const normalizedTags = Array.isArray(tags)
+    ? tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
+    : [];
+
+  if (USE_DB) {
+    await db.query(
+      `
+      INSERT INTO published (id, name, artist_name, description, tags, likes, comments, created_at)
+      VALUES ($1, $2, $3, $4, $5::jsonb, 0, '[]'::jsonb, $6)
+      ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        artist_name = EXCLUDED.artist_name,
+        description = EXCLUDED.description,
+        tags = EXCLUDED.tags,
+        created_at = EXCLUDED.created_at
+      `,
+      [targetId, normalizedName, normalizedArtist, normalizedDescription, JSON.stringify(normalizedTags), now]
+    );
+  } else {
     const store = readStore();
-    const items = store.published
-      .map(normalizePublishedItem)
-      .filter((item) => item.id && store.sessions[item.id])
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 200)
-      .map((item) => ({
-        ...(() => {
-          const previewVideoIds = getSessionPreviewVideoIds(store.sessions[item.id]?.payload);
-          const thumbUrls = previewVideoIds.map((id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
-          return {
-            previewVideoId: previewVideoIds[0] || '',
-            thumbUrl: thumbUrls[0] || '',
-            thumbUrls,
-          };
-        })(),
-        ...item,
-        commentsCount: item.comments.length,
-        comments: undefined,
-        url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(item.id)}` : undefined,
-      }));
-    return sendJson(res, 200, { items });
-  }
-
-  if (req.method === 'GET' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
-    const id = url.pathname.split('/')[3];
-    const store = readStore();
-    const item = store.published.map(normalizePublishedItem).find((entry) => entry.id === id);
-    if (!item || !store.sessions[id]) {
-      return sendJson(res, 404, { error: 'Published session not found' });
-    }
-    return sendJson(res, 200, { id, comments: item.comments });
-  }
-
-  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
-    const id = url.pathname.split('/')[3];
-    const body = await readJsonBody(req);
-    if (!body || typeof body !== 'object') {
-      return sendJson(res, 400, { error: 'Invalid payload' });
-    }
-    const text = String(body.text || '').trim().slice(0, 280);
-    if (!text) return sendJson(res, 400, { error: 'Comment text is required' });
-    const author = String(body.author || 'Guest').trim().slice(0, 40) || 'Guest';
-
-    const store = readStore();
-    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
-    if (index < 0 || !store.sessions[id]) {
-      return sendJson(res, 404, { error: 'Published session not found' });
-    }
-    const normalized = normalizePublishedItem(store.published[index]);
-    normalized.comments.push({ author, text, createdAt: Date.now() });
-    normalized.comments = normalized.comments.slice(-200);
-    store.published[index] = normalized;
-    writeStore(store);
-    return sendJson(res, 201, { id, comments: normalized.comments, commentsCount: normalized.comments.length });
-  }
-
-  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/like$/.test(url.pathname)) {
-    const id = url.pathname.split('/')[3];
-    const body = await readJsonBody(req);
-    const delta = Number(body?.delta) < 0 ? -1 : 1;
-    const store = readStore();
-    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
-    if (index < 0 || !store.sessions[id]) {
-      return sendJson(res, 404, { error: 'Published session not found' });
-    }
-    const normalized = normalizePublishedItem(store.published[index]);
-    normalized.likes = Math.max(0, normalized.likes + delta);
-    store.published[index] = normalized;
-    writeStore(store);
-    return sendJson(res, 200, { id, likes: normalized.likes });
-  }
-
-  if (req.method === 'DELETE' && /^\/api\/published\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
-    const id = url.pathname.split('/')[3];
-    const store = readStore();
-    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
-    if (index < 0) {
-      return sendJson(res, 404, { error: 'Published session not found' });
-    }
-    store.published.splice(index, 1);
-    writeStore(store);
-    return sendJson(res, 200, { ok: true, id });
-  }
-
-  if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/delete$/.test(url.pathname)) {
-    const id = url.pathname.split('/')[3];
-    const store = readStore();
-    const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
-    if (index < 0) {
-      return sendJson(res, 404, { error: 'Published session not found' });
-    }
-    store.published.splice(index, 1);
-    writeStore(store);
-    return sendJson(res, 200, { ok: true, id });
-  }
-
-  if (req.method === 'POST' && url.pathname === '/api/published') {
-    const body = await readJsonBody(req);
-    if (!body || typeof body !== 'object') {
-      return sendJson(res, 400, { error: 'Invalid payload' });
-    }
-
-    const store = readStore();
-    let id = typeof body.id === 'string' ? body.id.trim() : '';
-
-    if (!id && body.payload && typeof body.payload === 'object') {
-      id = createUniqueId(store);
-      const now = Date.now();
-      store.sessions[id] = { payload: body.payload, createdAt: now, updatedAt: now };
-    }
-
-    if (!id || !store.sessions[id]) {
-      return sendJson(res, 404, { error: 'Session not found' });
-    }
-
-    const name = String(body.name || 'Untitled Session').slice(0, 120).trim() || 'Untitled Session';
-    const artistName = String(body.artistName || 'Anonymous').slice(0, 80).trim() || 'Anonymous';
-    const description = String(body.description || '').slice(0, 280).trim();
-    const tags = Array.isArray(body.tags)
-      ? body.tags.map((tag) => String(tag).trim()).filter(Boolean).slice(0, 12)
-      : [];
-    const now = Date.now();
-    const existingIndex = store.published.findIndex((item) => item && item.id === id);
+    const existingIndex = store.published.findIndex((item) => item && item.id === targetId);
     if (existingIndex >= 0) {
       store.published[existingIndex] = {
         ...normalizePublishedItem(store.published[existingIndex]),
-        name,
-        artistName,
-        description,
-        tags,
+        name: normalizedName,
+        artistName: normalizedArtist,
+        description: normalizedDescription,
+        tags: normalizedTags,
         createdAt: now,
       };
     } else {
       store.published.unshift({
-        id,
-        name,
-        artistName,
-        description,
-        tags,
+        id: targetId,
+        name: normalizedName,
+        artistName: normalizedArtist,
+        description: normalizedDescription,
+        tags: normalizedTags,
         likes: 0,
         comments: [],
         createdAt: now,
@@ -320,26 +321,238 @@ const server = http.createServer(async (req, res) => {
     }
     store.published = store.published.slice(0, 400);
     writeStore(store);
+  }
 
-    return sendJson(res, 201, {
-      id,
-      name,
-      artistName,
-      description,
-      tags,
-      likes: 0,
-      commentsCount: 0,
-      url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(id)}` : undefined,
+  return {
+    id: targetId,
+    name: normalizedName,
+    artistName: normalizedArtist,
+    description: normalizedDescription,
+    tags: normalizedTags,
+    likes: 0,
+    commentsCount: 0,
+    url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(targetId)}` : undefined,
+  };
+}
+
+async function updateLike(id, delta) {
+  const direction = Number(delta) < 0 ? -1 : 1;
+  if (USE_DB) {
+    const result = await db.query(
+      'UPDATE published SET likes = GREATEST(0, likes + $2) WHERE id = $1 RETURNING likes',
+      [id, direction]
+    );
+    if (!result.rowCount) return null;
+    return { id, likes: Number(result.rows[0].likes) || 0 };
+  }
+
+  const store = readStore();
+  const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+  if (index < 0 || !store.sessions[id]) return null;
+  const normalized = normalizePublishedItem(store.published[index]);
+  normalized.likes = Math.max(0, normalized.likes + direction);
+  store.published[index] = normalized;
+  writeStore(store);
+  return { id, likes: normalized.likes };
+}
+
+async function deletePublished(id) {
+  if (USE_DB) {
+    const result = await db.query('DELETE FROM published WHERE id = $1', [id]);
+    if (!result.rowCount) return null;
+    return { ok: true, id };
+  }
+
+  const store = readStore();
+  const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+  if (index < 0) return null;
+  store.published.splice(index, 1);
+  writeStore(store);
+  return { ok: true, id };
+}
+
+async function getPublishedComments(id) {
+  if (USE_DB) {
+    const result = await db.query('SELECT comments FROM published WHERE id = $1 LIMIT 1', [id]);
+    if (!result.rowCount) return null;
+    const comments = Array.isArray(result.rows[0].comments) ? result.rows[0].comments : [];
+    return { id, comments };
+  }
+
+  const store = readStore();
+  const item = store.published.map(normalizePublishedItem).find((entry) => entry.id === id);
+  if (!item || !store.sessions[id]) return null;
+  return { id, comments: item.comments };
+}
+
+async function addPublishedComment(id, author, text) {
+  const safeAuthor = String(author || 'Guest').trim().slice(0, 40) || 'Guest';
+  const safeText = String(text || '').trim().slice(0, 280);
+  if (!safeText) return null;
+
+  if (USE_DB) {
+    const current = await getPublishedComments(id);
+    if (!current) return null;
+    const comments = Array.isArray(current.comments) ? current.comments.slice(-199) : [];
+    comments.push({ author: safeAuthor, text: safeText, createdAt: Date.now() });
+    await db.query('UPDATE published SET comments = $2::jsonb WHERE id = $1', [id, JSON.stringify(comments)]);
+    return { id, comments, commentsCount: comments.length };
+  }
+
+  const store = readStore();
+  const index = store.published.findIndex((entry) => entry && String(entry.id) === id);
+  if (index < 0 || !store.sessions[id]) return null;
+  const normalized = normalizePublishedItem(store.published[index]);
+  normalized.comments.push({ author: safeAuthor, text: safeText, createdAt: Date.now() });
+  normalized.comments = normalized.comments.slice(-200);
+  store.published[index] = normalized;
+  writeStore(store);
+  return { id, comments: normalized.comments, commentsCount: normalized.comments.length };
+}
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+    if (req.method === 'OPTIONS') {
+      return sendJson(res, 204, {});
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/health') {
+      return sendJson(res, 200, { ok: true, ts: Date.now(), storage: USE_DB ? 'postgres' : 'file' });
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/sessions') {
+      const body = await readJsonBody(req);
+      if (!body || typeof body !== 'object' || !body.payload || typeof body.payload !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid payload' });
+      }
+      const created = await createSession(body.payload);
+      return sendJson(res, 201, getPublicSessionResponse(created.id, created));
+    }
+
+    if (req.method === 'GET' && /^\/api\/sessions\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
+      const id = url.pathname.split('/').pop();
+      const record = await getSession(id);
+      if (!record) return sendJson(res, 404, { error: 'Session not found' });
+      return sendJson(res, 200, getPublicSessionResponse(id, record));
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/published') {
+      const published = await listPublished();
+      const items = published.map((item) => {
+        const normalized = normalizePublishedItem(item);
+        const previewVideoIds = getSessionPreviewVideoIds(item.payload);
+        const thumbUrls = previewVideoIds.map((id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+        return {
+          previewVideoId: previewVideoIds[0] || '',
+          thumbUrl: thumbUrls[0] || '',
+          thumbUrls,
+          ...normalized,
+          commentsCount: normalized.comments.length,
+          comments: undefined,
+          url: APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(normalized.id)}` : undefined,
+        };
+      });
+      return sendJson(res, 200, { items });
+    }
+
+    if (req.method === 'GET' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
+      const id = url.pathname.split('/')[3];
+      const comments = await getPublishedComments(id);
+      if (!comments) {
+        return sendJson(res, 404, { error: 'Published session not found' });
+      }
+      return sendJson(res, 200, comments);
+    }
+
+    if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/comments$/.test(url.pathname)) {
+      const id = url.pathname.split('/')[3];
+      const body = await readJsonBody(req);
+      if (!body || typeof body !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid payload' });
+      }
+      const response = await addPublishedComment(id, body.author, body.text);
+      if (!response) {
+        return sendJson(res, 404, { error: 'Published session not found' });
+      }
+      return sendJson(res, 201, response);
+    }
+
+    if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/like$/.test(url.pathname)) {
+      const id = url.pathname.split('/')[3];
+      const body = await readJsonBody(req);
+      const result = await updateLike(id, body?.delta);
+      if (!result) {
+        return sendJson(res, 404, { error: 'Published session not found' });
+      }
+      return sendJson(res, 200, result);
+    }
+
+    if (req.method === 'DELETE' && /^\/api\/published\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
+      const id = url.pathname.split('/')[3];
+      const result = await deletePublished(id);
+      if (!result) {
+        return sendJson(res, 404, { error: 'Published session not found' });
+      }
+      return sendJson(res, 200, result);
+    }
+
+    if (req.method === 'POST' && /^\/api\/published\/[a-zA-Z0-9_-]+\/delete$/.test(url.pathname)) {
+      const id = url.pathname.split('/')[3];
+      const result = await deletePublished(id);
+      if (!result) {
+        return sendJson(res, 404, { error: 'Published session not found' });
+      }
+      return sendJson(res, 200, result);
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/published') {
+      const body = await readJsonBody(req);
+      if (!body || typeof body !== 'object') {
+        return sendJson(res, 400, { error: 'Invalid payload' });
+      }
+      const result = await publishSession({
+        id: body.id,
+        payload: body.payload,
+        name: body.name,
+        artistName: body.artistName,
+        description: body.description,
+        tags: body.tags,
+      });
+      if (!result) {
+        return sendJson(res, 404, { error: 'Session not found' });
+      }
+      return sendJson(res, 201, result);
+    }
+
+    return sendJson(res, 404, { error: 'Not found' });
+  } catch (error) {
+    console.error('Request handling error:', error);
+    return sendJson(res, 500, { error: 'Internal server error' });
+  }
+});
+
+async function start() {
+  try {
+    if (USE_DB) {
+      await initDb();
+      console.log('Using Postgres persistent storage');
+    } else {
+      ensureDataStore();
+      console.log('Using local file storage');
+    }
+
+    server.listen(PORT, HOST, () => {
+      console.log(`ChopTube backend listening on http://${HOST}:${PORT}`);
+      if (APP_BASE_URL) {
+        console.log(`Public app base URL: ${APP_BASE_URL}`);
+      }
     });
+  } catch (error) {
+    console.error('Failed to start backend:', error);
+    process.exit(1);
   }
+}
 
-  return sendJson(res, 404, { error: 'Not found' });
-});
-
-server.listen(PORT, HOST, () => {
-  ensureDataStore();
-  console.log(`ChopTube backend listening on http://${HOST}:${PORT}`);
-  if (APP_BASE_URL) {
-    console.log(`Public app base URL: ${APP_BASE_URL}`);
-  }
-});
+start();
