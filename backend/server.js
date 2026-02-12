@@ -597,7 +597,6 @@ const server = http.createServer(async (req, res) => {
   <meta name="twitter:title" content="${escapeHtml(title)}" />
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
-  <meta http-equiv="refresh" content="1; url=${escapeHtml(appUrl)}" />
 </head>
 <body style="background:#070c18;color:#eaf0ff;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0">
   <div style="text-align:center;padding:24px">
@@ -605,7 +604,13 @@ const server = http.createServer(async (req, res) => {
     <p style="margin:0 0 16px;opacity:.8">Opening ChopTube session...</p>
     <a href="${escapeHtml(appUrl)}" style="color:#9dc4ff">Open now</a>
   </div>
-  <script>setTimeout(function(){window.location.href=${JSON.stringify(appUrl)};}, 300);</script>
+  <script>
+    setTimeout(function () {
+      try {
+        window.location.href = ${JSON.stringify(appUrl)};
+      } catch (e) {}
+    }, 1200);
+  </script>
 </body>
 </html>`;
       res.writeHead(200, {
