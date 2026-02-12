@@ -889,10 +889,12 @@ async function deletePublishedSession(id) {
 }
 
 function buildShareUrlFromShortId(id) {
-  if (hasBackendApi()) {
-    return `${API_BASE_URL.replace(/\/+$/, "")}/s/${encodeURIComponent(id)}`;
-  }
-  return `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(id)}`;
+  const base = API_BASE_URL.replace(/\/+$/, "");
+  return `${base}/s/${encodeURIComponent(id)}`;
+}
+
+function isTransportRunning() {
+  return Boolean(state.isPlaying && transportTimer && Number.isFinite(transportTickMs) && transportTickMs > 0);
 }
 
 function applyOpenedSessionMeta(meta) {
@@ -1547,15 +1549,18 @@ function bindGlobalControls() {
     pushHistorySnapshot();
   });
   const runShareAction = async () => {
-    const payload = saveToUrl();
-    let shareUrl = window.location.href;
-    if (hasBackendApi()) {
-      const result = await createShortSession(payload);
-      if (result?.id) {
-        shareUrl = buildShareUrlFromShortId(result.id);
-        window.history.replaceState({}, "", `?s=${encodeURIComponent(result.id)}`);
-      }
+    if (!hasBackendApi()) {
+      statusEl.textContent = "Sharing requires backend API. Set choptube-api meta tag.";
+      return;
     }
+    const payload = saveToUrl();
+    const result = await createShortSession(payload);
+    if (!result?.id) {
+      statusEl.textContent = "Could not create share link. Try again.";
+      return;
+    }
+    const shareUrl = buildShareUrlFromShortId(result.id);
+    window.history.replaceState({}, "", `?s=${encodeURIComponent(result.id)}`);
     try {
       await navigator.clipboard.writeText(shareUrl);
       const visualShareBtn = sessionsShareCurrentBtn || shareBtn;
@@ -3199,6 +3204,13 @@ function updateStatus() {
 }
 
 function togglePlay() {
+  if (state.isPlaying && !isTransportRunning()) {
+    startTransport();
+    playDesiredVideos();
+    updateTransportButton();
+    updateStatus();
+    return;
+  }
   if (state.isPlaying && shouldRecoverDesiredPlayback()) {
     playDesiredVideos();
     updateTransportButton();
@@ -3658,9 +3670,13 @@ function maybeAutoplayLoadedSession() {
   state.isPlaying = true;
   startTransport();
   playDesiredVideos();
-  // Players may not all be ready at init time. Retry once shortly after.
+  // Players may not all be ready at init time. Retry shortly and also ensure
+  // transport loop is still armed so first key press is always a clean stop.
   setTimeout(() => {
     if (!state.isPlaying) return;
+    if (!isTransportRunning()) {
+      startTransport();
+    }
     playDesiredVideos();
   }, 450);
   updateTransportButton();
