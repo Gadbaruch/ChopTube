@@ -9,6 +9,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'sessions.json');
 const APP_BASE_URL = (process.env.APP_BASE_URL || '').replace(/\/+$/, '');
+const FB_APP_ID = String(process.env.FB_APP_ID || '').trim();
 const DATABASE_URL = String(process.env.DATABASE_URL || '').trim();
 const USE_DB = Boolean(DATABASE_URL);
 
@@ -579,6 +580,9 @@ const server = http.createServer(async (req, res) => {
       const title = session.name || 'ChopTube Session';
       const artist = session.artistName || 'Anonymous';
       const description = `Session by ${artist}. Open in ChopTube to remix and play.`;
+      const fbAppMeta = FB_APP_ID
+        ? `  <meta property="fb:app_id" content="${escapeHtml(FB_APP_ID)}" />`
+        : '';
       const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -593,11 +597,11 @@ const server = http.createServer(async (req, res) => {
   <meta property="og:image" content="${escapeHtml(imageUrl)}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+${fbAppMeta}
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${escapeHtml(title)}" />
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
-  <meta http-equiv="refresh" content="1; url=${escapeHtml(appUrl)}" />
 </head>
 <body style="background:#070c18;color:#eaf0ff;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0">
   <div style="text-align:center;padding:24px">
@@ -605,7 +609,13 @@ const server = http.createServer(async (req, res) => {
     <p style="margin:0 0 16px;opacity:.8">Opening ChopTube session...</p>
     <a href="${escapeHtml(appUrl)}" style="color:#9dc4ff">Open now</a>
   </div>
-  <script>setTimeout(function(){window.location.href=${JSON.stringify(appUrl)};}, 300);</script>
+  <script>
+    setTimeout(function () {
+      try {
+        window.location.href = ${JSON.stringify(appUrl)};
+      } catch (e) {}
+    }, 1200);
+  </script>
 </body>
 </html>`;
       res.writeHead(200, {
