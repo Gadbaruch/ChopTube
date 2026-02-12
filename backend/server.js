@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
+const Jimp = require('jimp');
 
 const PORT = Number(process.env.PORT || 8787);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -134,6 +135,136 @@ function getPublicSessionResponse(id, record) {
     response.url = `${APP_BASE_URL}?s=${encodeURIComponent(id)}`;
   }
   return response;
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function getRequestBase(req) {
+  const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+  return host ? `${proto}://${host}` : '';
+}
+
+function getPublicAppSessionUrl(id) {
+  return APP_BASE_URL ? `${APP_BASE_URL}?s=${encodeURIComponent(id)}` : '';
+}
+
+async function getPublishedById(id) {
+  if (USE_DB) {
+    const result = await db.query(
+      `
+      SELECT
+        p.id,
+        p.name,
+        p.artist_name,
+        p.description,
+        p.tags,
+        p.likes,
+        p.comments,
+        p.created_at,
+        s.payload
+      FROM published p
+      JOIN sessions s ON s.id = p.id
+      WHERE p.id = $1
+      LIMIT 1
+      `,
+      [id]
+    );
+    if (!result.rowCount) return null;
+    const row = result.rows[0];
+    return {
+      id: String(row.id),
+      name: String(row.name || 'Untitled Session'),
+      artistName: String(row.artist_name || 'Anonymous'),
+      description: String(row.description || ''),
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      likes: Number(row.likes) || 0,
+      comments: Array.isArray(row.comments) ? row.comments : [],
+      createdAt: Number(row.created_at) || Date.now(),
+      payload: row.payload,
+    };
+  }
+
+  const store = readStore();
+  const normalized = store.published.map(normalizePublishedItem).find((entry) => entry.id === id);
+  if (!normalized) return null;
+  const payload = store.sessions[id]?.payload || null;
+  if (!payload) return null;
+  return { ...normalized, payload };
+}
+
+async function getSessionForShare(id) {
+  const published = await getPublishedById(id);
+  if (published) {
+    return {
+      id,
+      name: published.name || 'ChopTube Session',
+      artistName: published.artistName || 'Anonymous',
+      payload: published.payload,
+    };
+  }
+  const session = await getSession(id);
+  if (!session) return null;
+  return {
+    id,
+    name: 'ChopTube Session',
+    artistName: 'Anonymous',
+    payload: session.payload,
+  };
+}
+
+async function createShareImageBuffer(videoIds) {
+  const width = 1200;
+  const height = 630;
+  const cols = 2;
+  const rows = 2;
+  const cellWidth = Math.floor(width / cols);
+  const cellHeight = Math.floor(height / rows);
+  const bg = new Jimp(width, height, 0x0b1222ff);
+  const fallbackOverlay = new Jimp(width, height, 0x17213d88);
+  bg.composite(fallbackOverlay, 0, 0);
+
+  const ids = Array.from(new Set((videoIds || []).filter(Boolean))).slice(0, 4);
+  if (!ids.length) {
+    return bg.getBufferAsync(Jimp.MIME_PNG);
+  }
+
+  const thumbs = await Promise.all(
+    ids.map(async (id) => {
+      const thumbUrl = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+      try {
+        return await Jimp.read(thumbUrl);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  let placed = 0;
+  for (let i = 0; i < rows * cols; i += 1) {
+    const img = thumbs[i] || thumbs[0];
+    if (!img) continue;
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const x = col * cellWidth;
+    const y = row * cellHeight;
+    const frame = img.clone().cover(cellWidth, cellHeight, Jimp.HORIZONTAL_ALIGN_CENTER | Jimp.VERTICAL_ALIGN_MIDDLE);
+    bg.composite(frame, x, y);
+    placed += 1;
+  }
+
+  if (!placed) return bg.getBufferAsync(Jimp.MIME_PNG);
+
+  const shade = new Jimp(width, height, 0x00000033);
+  bg.composite(shade, 0, 0);
+  return bg.getBufferAsync(Jimp.MIME_PNG);
 }
 
 async function initDb() {
@@ -420,6 +551,69 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname === '/api/health') {
       return sendJson(res, 200, { ok: true, ts: Date.now(), storage: USE_DB ? 'postgres' : 'file' });
+    }
+
+    if (req.method === 'GET' && /^\/api\/og\/[a-zA-Z0-9_-]+\.png$/.test(url.pathname)) {
+      const id = url.pathname.split('/').pop().replace(/\.png$/i, '');
+      const session = await getSessionForShare(id);
+      if (!session) return sendJson(res, 404, { error: 'Session not found' });
+      const videoIds = getSessionPreviewVideoIds(session.payload);
+      const imageBuffer = await createShareImageBuffer(videoIds);
+      res.writeHead(200, {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=300',
+        'Access-Control-Allow-Origin': '*',
+      });
+      res.end(imageBuffer);
+      return;
+    }
+
+    if (req.method === 'GET' && /^\/s\/[a-zA-Z0-9_-]+$/.test(url.pathname)) {
+      const id = url.pathname.split('/').pop();
+      const session = await getSessionForShare(id);
+      if (!session) return sendJson(res, 404, { error: 'Session not found' });
+      const base = getRequestBase(req);
+      const shareUrl = base ? `${base}/s/${encodeURIComponent(id)}` : '';
+      const imageUrl = base ? `${base}/api/og/${encodeURIComponent(id)}.png` : '';
+      const appUrl = getPublicAppSessionUrl(id) || `${url.origin}?s=${encodeURIComponent(id)}`;
+      const title = session.name || 'ChopTube Session';
+      const artist = session.artistName || 'Anonymous';
+      const description = `Session by ${artist}. Open in ChopTube to remix and play.`;
+      const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(title)} | ChopTube</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ChopTube" />
+  <meta property="og:title" content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:url" content="${escapeHtml(shareUrl)}" />
+  <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+  <meta http-equiv="refresh" content="1; url=${escapeHtml(appUrl)}" />
+</head>
+<body style="background:#070c18;color:#eaf0ff;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0">
+  <div style="text-align:center;padding:24px">
+    <h1 style="margin:0 0 8px;font-size:28px">${escapeHtml(title)}</h1>
+    <p style="margin:0 0 16px;opacity:.8">Opening ChopTube session...</p>
+    <a href="${escapeHtml(appUrl)}" style="color:#9dc4ff">Open now</a>
+  </div>
+  <script>setTimeout(function(){window.location.href=${JSON.stringify(appUrl)};}, 300);</script>
+</body>
+</html>`;
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=300',
+      });
+      res.end(html);
+      return;
     }
 
     if (req.method === 'POST' && url.pathname === '/api/sessions') {
