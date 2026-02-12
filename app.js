@@ -889,6 +889,9 @@ async function deletePublishedSession(id) {
 }
 
 function buildShareUrlFromShortId(id) {
+  if (hasBackendApi()) {
+    return `${API_BASE_URL.replace(/\/+$/, "")}/s/${encodeURIComponent(id)}`;
+  }
   return `${window.location.origin}${window.location.pathname}?s=${encodeURIComponent(id)}`;
 }
 
